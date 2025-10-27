@@ -3,332 +3,231 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Lagosta FM</title>
+<title>Lagosta Filmes</title>
 
 <style>
-  body {
-    margin: 0;
-    background-color: #f5d94a;
-    background-image:
-      repeating-linear-gradient(
-        0deg,
-        rgba(0,0,0,0.15) 0px,
-        rgba(0,0,0,0.15) 1px,
-        transparent 1px,
-        transparent 24px
-      ),
-      repeating-linear-gradient(
-        90deg,
-        rgba(0,0,0,0.15) 0px,
-        rgba(0,0,0,0.15) 1px,
-        transparent 1px,
-        transparent 24px
-      );
-    font-family: "Comic Sans MS", "Trebuchet MS", Arial, sans-serif;
-    color: #000;
-  }
+body {
+  margin: 0;
+  background: #f4d84a;
+  font-family: "Comic Sans MS", sans-serif;
+  color: #000;
+}
+main {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
 
-  .wrap {
-    max-width: 480px;
-    margin: 16px auto 40px auto;
-    background-color: #efefef;
-    border: 4px solid #7a0000;
-    box-shadow: 0 0 0 4px #000;
-    padding: 16px;
-  }
+/* logo */
+header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+header img {
+  max-width: 240px;
+  image-rendering: pixelated;
+}
 
-  /* header da rádio */
-  .fm-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
+/* filme */
+section.filme {
+  background: #fff;
+  border: 2px solid #000;
+  padding: 10px;
+  margin-bottom: 32px;
+}
+section.filme img {
+  width: 100%;
+  display: block;
+  border: 2px solid #000;
+}
+section.filme p {
+  font-family: "Times New Roman", serif;
+  font-size: 13px;
+  margin-top: 8px;
+}
 
-  .fm-header-left {
-    flex: 1 1 auto;
-    min-width: 0;
-  }
+/* rádio */
+section.fm {
+  background: #fff;
+  border: 2px solid #000;
+  padding: 14px;
+  margin-bottom: 32px;
+}
+.fm-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+.fm-header h2 {
+  font-size: 18px;
+  color: #7a0000;
+  margin: 0;
+}
+.fm-header img {
+  width: 60px;
+  border: 1px solid #000;
+}
 
-  .fm-title {
-    font-size: 20px;
-    font-weight: bold;
-    color: #7a0000;
-    text-shadow: 1px 1px 0 #fff;
-    line-height: 1.1;
-    letter-spacing: 0.03em;
-  }
+/* player */
+.player {
+  background: #eee;
+  border: 2px solid #000;
+  padding: 10px;
+  margin-bottom: 12px;
+}
+.player button {
+  background: #7a0000;
+  color: #fff;
+  border: none;
+  padding: 6px 14px;
+  font-family: "Courier New", monospace;
+  cursor: pointer;
+}
+.bar {
+  width: 100%;
+  height: 8px;
+  background: #ff0000;
+  margin: 6px 0;
+  position: relative;
+}
+.fill {
+  background: #fff;
+  height: 100%;
+  width: 0%;
+}
+.time {
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+}
 
-  .fm-status {
-    font-size: 12px;
-    font-family: "Courier New", monospace;
-    color: #fff;
-    background-color: #c00000;
-    border: 2px solid #000;
-    padding: 2px 6px;
-    display: inline-block;
-    margin-top: 4px;
-    box-shadow: 2px 2px 0 #000;
-  }
+/* chat */
+.chat {
+  background: #000;
+  color: #00ff66;
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  border: 2px solid #000;
+  padding: 6px;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+}
+.chat-log {
+  flex: 1;
+  overflow-y: auto;
+  padding: 4px;
+}
+.chat-input {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+.chat-input input {
+  flex: 1;
+  background: #111;
+  border: 1px solid #00ff66;
+  color: #00ff66;
+  padding: 4px;
+  font-family: inherit;
+}
+.chat-input button {
+  background: #00ff66;
+  color: #000;
+  border: 1px solid #000;
+  font-weight: bold;
+  cursor: pointer;
+}
 
-  .fm-mascote {
-    width: 90px;
-    max-width: 40%;
-    height: auto;
-    border: 2px solid #000;
-    box-shadow: 3px 3px 0 #000;
-    background-color: #fff;
-    image-rendering: pixelated;
-  }
-
-  /* player estilo caixa velha */
-  .player-box {
-    border: 3px solid #7a0000;
-    background-color: #ffffff;
-    box-shadow: 4px 4px 0 #000;
-    padding: 12px;
-    margin-bottom: 20px;
-    font-family: "Times New Roman", Times, serif;
-    font-size: 13px;
-    line-height: 1.4;
-    color: #000;
-  }
-
-  .track-head {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    font-size: 13px;
-    font-family: "Courier New", monospace;
-    color: #000;
-    margin-bottom: 8px;
-  }
-
-  .track-head-left {
-    font-weight: bold;
-  }
-
-  .track-head-right {
-    color: #7a0000;
-    font-weight: bold;
-  }
-
-  audio {
-    width: 100%;
-    display: block;
-    margin-top: 8px;
-  }
-
-  /* chat terminal pirata */
-  .chat-box {
-    border: 3px solid #000;
-    background-color: #000;
-    color: #00ff66;
-    box-shadow: 4px 4px 0 #000;
-    font-family: "Courier New", monospace;
-    font-size: 12px;
-    line-height: 1.4;
-    display: flex;
-    flex-direction: column;
-    min-height: 220px;
-  }
-
-  .chat-header {
-    background-color: #111;
-    border-bottom: 1px solid #00ff66;
-    padding: 6px 8px;
-    font-weight: bold;
-    font-size: 11px;
-    color: #00ff66;
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-
-  .chat-header .live-dot {
-    background-color: #ff0000;
-    color: #fff;
-    border: 1px solid #000;
-    font-size: 10px;
-    font-weight: bold;
-    padding: 1px 4px;
-    box-shadow: 1px 1px 0 #000;
-    height: fit-content;
-  }
-
-  .chat-log {
-    flex: 1 1 auto;
-    overflow-y: auto;
-    max-height: 180px;
-    padding: 8px;
-    background-color: #000;
-    scrollbar-color: #00ff66 #000;
-    border-bottom: 1px solid #00ff66;
-    word-break: break-word;
-  }
-
-  .chat-line {
-    margin-bottom: 6px;
-  }
-
-  .chat-meta {
-    color: #999;
-  }
-
-  .chat-input-row {
-    display: flex;
-    flex-wrap: nowrap;
-    padding: 8px;
-    background-color: #000;
-    gap: 6px;
-  }
-
-  .chat-input-row input {
-    flex: 1 1 auto;
-    min-width: 0;
-    font-family: "Courier New", monospace;
-    font-size: 12px;
-    padding: 6px 8px;
-    background-color: #111;
-    color: #00ff66;
-    border: 1px solid #00ff66;
-    outline: none;
-  }
-
-  .chat-input-row button {
-    flex: 0 0 auto;
-    font-family: "Courier New", monospace;
-    font-size: 12px;
-    font-weight: bold;
-    background-color: #00ff66;
-    color: #000;
-    border: 2px solid #000;
-    padding: 6px 8px;
-    cursor: pointer;
-    box-shadow: 2px 2px 0 #000;
-  }
-
-  .chat-input-row button:active {
-    transform: translate(1px,1px);
-    box-shadow: 1px 1px 0 #000;
-  }
-
-  /* rodapé */
-  .footer-block {
-    margin-top: 24px;
-    border: 3px solid #7a0000;
-    background-color: #ffffff;
-    box-shadow: 4px 4px 0 #000;
-    padding: 12px;
-    font-family: "Times New Roman", Times, serif;
-    font-size: 13px;
-    line-height: 1.4;
-    color: #000;
-  }
-
-  .footer-block b {
-    font-weight: bold;
-  }
-
-  .back-link {
-    text-align: center;
-    font-size: 12px;
-    font-family: "Times New Roman", Times, serif;
-    margin-top: 16px;
-  }
-
-  .back-link a {
-    color: #0000ee;
-    text-decoration: underline;
-  }
+/* contato */
+footer {
+  background: #fff;
+  border: 2px solid #000;
+  padding: 10px;
+  font-family: "Times New Roman", serif;
+  font-size: 13px;
+}
+footer b { font-weight: bold; }
 </style>
 </head>
 
 <body>
+<main>
+  <header>
+    <img src="logo-lagosta-filmes.png" alt="Lagosta Filmes">
+  </header>
 
-<div class="wrap">
+  <section class="filme">
+    <img src="poster-fortown.png" alt="Em breve">
+    <p><b>EM BREVE...</b><br>um filme de <span style="border:1px solid #000;padding:1px 3px;">(redigido)</span><br>apresentado por Lagosta Filmes</p>
+  </section>
 
-  <!-- TOPO DA RÁDIO -->
-  <div class="fm-header">
-    <div class="fm-header-left">
-      <div class="fm-title">LAGOSTA FM</div>
-      <div class="fm-status">ON AIR // SINAL INSTÁVEL</div>
-    </div>
-    <img src="lagosta-fm-mascote.png" class="fm-mascote" alt="Lagosta DJ">
-  </div>
-
-  <!-- PLAYER DO EP PILOTO -->
-  <div class="player-box">
-    <div class="track-head">
-      <div class="track-head-left">EP PILOTO</div>
-      <div class="track-head-right">LAGOSTA FM</div>
+  <section class="fm">
+    <div class="fm-header">
+      <h2>LAGOSTA FM</h2>
+      <img src="lagosta-fm-mascote.png" alt="Lagosta FM">
     </div>
 
-    <div>
-      <audio controls>
+    <div class="player">
+      <button id="playBtn">PLAY</button>
+      <div class="bar"><div class="fill" id="progress"></div></div>
+      <div class="time"><span id="current">00:00</span><span id="total">--:--</span></div>
+      <audio id="audio">
         <source src="ep-piloto.mp3" type="audio/mpeg">
-        Seu navegador não suporta o player de áudio.
       </audio>
     </div>
-  </div>
 
-  <!-- CHAT PIRATA -->
-  <div class="chat-box">
-    <div class="chat-header">
-      <div>CHAT DO ESTÚDIO / LAGOSTA FM</div>
-      <div class="live-dot">LIVE</div>
+    <div class="chat">
+      <div class="chat-log" id="chatLog">
+        <div>[22:31] OUVINTE_014: tô ouvindo no ônibus</div>
+        <div>[22:32] OUVINTE_LUA: manda um salve pra praia grande</div>
+      </div>
+      <div class="chat-input">
+        <input id="chatInput" type="text" placeholder="digite sua mensagem...">
+        <button onclick="sendMessage()">></button>
+      </div>
     </div>
+  </section>
 
-    <div id="chat-log" class="chat-log">
-      <div class="chat-line"><span class="chat-meta">[22:31]</span> OUVINTE_014: tô ouvindo no ônibus</div>
-      <div class="chat-line"><span class="chat-meta">[22:32]</span> OUVINTE_LUA: manda um salve pra praia grande</div>
-      <div class="chat-line"><span class="chat-meta">[22:33]</span> ESTÚDIO_LAGOSTA: salve registrado ☑</div>
-    </div>
-
-    <div class="chat-input-row">
-      <input id="chat-input" type="text" maxlength="180" placeholder="digite sua mensagem...">
-      <button onclick="sendMessage()">ENVIAR >></button>
-    </div>
-  </div>
-
-  <!-- CONTATO / VOLTAR -->
-  <div class="footer-block">
+  <footer>
     contato / envio<br>
     <b>contato@lagostafilmes.com</b><br>
     insta: <b>@lagostafilmes</b>
-  </div>
-
-  <div class="back-link">
-    <a href="index.html">« voltar para Lagosta Filmes</a>
-  </div>
-
-</div>
+  </footer>
+</main>
 
 <script>
-  function sendMessage() {
-    const input = document.getElementById('chat-input');
-    const log = document.getElementById('chat-log');
+/* player */
+const audio = document.getElementById('audio');
+const playBtn = document.getElementById('playBtn');
+const progress = document.getElementById('progress');
+const current = document.getElementById('current');
+const total = document.getElementById('total');
 
-    const text = input.value.trim();
-    if (!text) return;
+function formatTime(s){if(isNaN(s))return"--:--";let m=Math.floor(s/60),ss=Math.floor(s%60);return String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0");}
+playBtn.onclick=()=>{if(audio.paused){audio.play();playBtn.textContent="PAUSE";}else{audio.pause();playBtn.textContent="PLAY";}};
+audio.onloadedmetadata=()=>total.textContent=formatTime(audio.duration);
+audio.ontimeupdate=()=>{
+  current.textContent=formatTime(audio.currentTime);
+  progress.style.width=(audio.currentTime/audio.duration*100||0)+"%";
+};
 
-    // horário fake tipo rádio
-    const now = new Date();
-    const hh = now.getHours().toString().padStart(2,'0');
-    const mm = now.getMinutes().toString().padStart(2,'0');
-
-    const line = document.createElement('div');
-    line.className = 'chat-line';
-    line.innerHTML = '<span class="chat-meta">['+hh+':'+mm+']</span> VOCÊ: ' + text;
-    log.appendChild(line);
-
-    input.value = '';
-
-    // scroll desce pro fim
-    log.scrollTop = log.scrollHeight;
-  }
+/* chat */
+function sendMessage(){
+  const input=document.getElementById('chatInput');
+  const log=document.getElementById('chatLog');
+  const txt=input.value.trim();
+  if(!txt)return;
+  const t=new Date();
+  const h=String(t.getHours()).padStart(2,"0"),m=String(t.getMinutes()).padStart(2,"0");
+  const line=document.createElement("div");
+  line.textContent=`[${h}:${m}] VOCÊ: ${txt}`;
+  log.appendChild(line);
+  log.scrollTop=log.scrollHeight;
+  input.value="";
+}
 </script>
-
 </body>
 </html>
