@@ -6,228 +6,468 @@
 <title>Lagosta Filmes</title>
 
 <style>
+/* ---------- base ---------- */
+:root {
+  --bg-blue: #B0D0FF;
+  --line-dark: #000;
+  --line-mid: rgba(0,0,0,0.4);
+  --box-bg: #ffffff;
+  --fm-head: #7a0000;
+  --fm-green: #00e060;
+  --fm-black: #111;
+  --mono: "Courier New", monospace;
+  --bodyfont: "Comic Sans MS", "Trebuchet MS", Arial, sans-serif;
+  --serif: "Times New Roman", Times, serif;
+}
+
 body {
   margin: 0;
-  background: #f4d84a;
-  font-family: "Comic Sans MS", sans-serif;
+  background: var(--bg-blue);
+  font-family: var(--bodyfont);
   color: #000;
-}
-main {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
+  display: flex;
+  min-height: 100vh;
 }
 
-/* logo */
+/* container geral:
+   queremos tudo caber numa coluna e ficar centralizado na tela
+*/
+main {
+  max-width: 720px;
+  width: 100%;
+  margin: auto;
+  padding: 16px;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-rows: auto auto auto;
+  row-gap: 20px;
+}
+
+/* ---------- topo / filme ---------- */
+
 header {
   text-align: center;
-  margin-bottom: 24px;
-}
-header img {
-  max-width: 240px;
-  image-rendering: pixelated;
 }
 
-/* filme */
-section.filme {
-  background: #fff;
-  border: 2px solid #000;
-  padding: 10px;
-  margin-bottom: 32px;
+header .marca {
+  margin-bottom: 12px;
 }
-section.filme img {
+header .marca img {
+  max-width: 180px;
+  height: auto;
+  image-rendering: pixelated;
+  display: block;
+  margin: 0 auto;
+}
+
+/* pôster ocupa toda a largura do bloco mas com borda fina */
+.poster-wrap {
+  background: var(--box-bg);
+  border: 1px solid var(--line-dark);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  padding: 8px;
+}
+.poster-wrap img {
   width: 100%;
   display: block;
-  border: 2px solid #000;
-}
-section.filme p {
-  font-family: "Times New Roman", serif;
-  font-size: 13px;
-  margin-top: 8px;
+  border: 1px solid var(--line-dark);
 }
 
-/* rádio */
-section.fm {
-  background: #fff;
-  border: 2px solid #000;
-  padding: 14px;
-  margin-bottom: 32px;
+/* nenhuma legenda abaixo do pôster */
+.poster-caption {
+  display: none;
 }
+
+/* ---------- bloco lagosta fm (player + chat) ---------- */
+
+.fm-block {
+  background: var(--box-bg);
+  border: 1px solid var(--line-dark);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  padding: 12px;
+  display: grid;
+  row-gap: 12px;
+}
+
+/* título da rádio */
 .fm-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 10px;
+  align-items: baseline;
+  flex-wrap: wrap;
+  row-gap: 4px;
 }
-.fm-header h2 {
-  font-size: 18px;
-  color: #7a0000;
-  margin: 0;
+
+.fm-title {
+  font-size: 16px;
+  font-weight: bold;
+  color: var(--fm-head);
+  line-height: 1.1;
+  letter-spacing: 0.03em;
 }
-.fm-header img {
-  width: 60px;
-  border: 1px solid #000;
+
+.fm-status {
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1;
+  background: #fff4f4;
+  border: 1px solid var(--fm-head);
+  color: var(--fm-head);
+  padding: 2px 4px;
 }
 
 /* player */
-.player {
-  background: #eee;
-  border: 2px solid #000;
+.player-box {
+  border: 1px solid var(--line-dark);
+  background: #f2f2f2;
   padding: 10px;
-  margin-bottom: 12px;
+  display: grid;
+  row-gap: 8px;
 }
-.player button {
-  background: #7a0000;
-  color: #fff;
-  border: none;
-  padding: 6px 14px;
-  font-family: "Courier New", monospace;
-  cursor: pointer;
-}
-.bar {
-  width: 100%;
-  height: 8px;
-  background: #ff0000;
-  margin: 6px 0;
-  position: relative;
-}
-.fill {
-  background: #fff;
-  height: 100%;
-  width: 0%;
-}
-.time {
-  font-family: "Courier New", monospace;
-  font-size: 12px;
+
+.player-row-top {
   display: flex;
   justify-content: space-between;
-}
-
-/* chat */
-.chat {
-  background: #000;
-  color: #00ff66;
-  font-family: "Courier New", monospace;
+  flex-wrap: wrap;
+  font-family: var(--mono);
   font-size: 12px;
-  border: 2px solid #000;
-  padding: 6px;
-  min-height: 150px;
-  display: flex;
-  flex-direction: column;
-}
-.chat-log {
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px;
-}
-.chat-input {
-  display: flex;
-  gap: 4px;
-  margin-top: 6px;
-}
-.chat-input input {
-  flex: 1;
-  background: #111;
-  border: 1px solid #00ff66;
-  color: #00ff66;
-  padding: 4px;
-  font-family: inherit;
-}
-.chat-input button {
-  background: #00ff66;
   color: #000;
-  border: 1px solid #000;
+}
+.player-left {
   font-weight: bold;
-  cursor: pointer;
+}
+.player-right {
+  color: var(--fm-head);
+  font-weight: bold;
 }
 
-/* contato */
-footer {
-  background: #fff;
-  border: 2px solid #000;
-  padding: 10px;
-  font-family: "Times New Roman", serif;
-  font-size: 13px;
+.player-controls {
+  display: flex;
+  align-items: center;
+  column-gap: 10px;
 }
-footer b { font-weight: bold; }
+
+.play-btn {
+  background: var(--fm-head);
+  color: #fff;
+  border: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: bold;
+  padding: 6px 12px;
+  cursor: pointer;
+  line-height: 1;
+  border-radius: 2px;
+}
+.play-btn:active {
+  transform: translateY(1px);
+}
+
+.progress-area {
+  flex: 1;
+  display: grid;
+  row-gap: 4px;
+  min-width: 0;
+}
+.progress-bar-bg {
+  width: 100%;
+  height: 6px;
+  background: #d00;
+  border: 1px solid var(--line-dark);
+  position: relative;
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-bar-fill {
+  background: #fff;
+  width: 0%;
+  height: 100%;
+}
+.time-row {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #000;
+  display: flex;
+  justify-content: space-between;
+  line-height: 1;
+}
+
+audio {
+  display: none;
+}
+
+/* chat enxuto */
+.chat-box {
+  border: 1px solid var(--line-dark);
+  background: var(--fm-black);
+  color: var(--fm-green);
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.4;
+  display: grid;
+  row-gap: 8px;
+  padding: 10px;
+}
+
+/* cabecalho chat */
+.chat-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.chat-head-left {
+  font-weight: bold;
+  color: var(--fm-green);
+}
+.chat-head-right {
+  background: #d00;
+  color: #fff;
+  font-weight: bold;
+  font-size: 10px;
+  padding: 1px 4px;
+  border-radius: 2px;
+  line-height: 1;
+}
+
+/* log */
+.chat-log {
+  max-height: 70px;
+  overflow-y: auto;
+  border: 1px solid var(--fm-green);
+  padding: 6px;
+  background: #000;
+  font-family: var(--mono);
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--fm-green);
+  scrollbar-width: thin;
+}
+.chat-line {
+  white-space: nowrap;
+}
+.chat-line .nick {
+  color: var(--fm-green);
+  font-weight: bold;
+}
+.chat-line .hora {
+  color: #888;
+}
+
+/* input */
+.chat-input-row {
+  display: flex;
+  column-gap: 6px;
+}
+.chat-input-row input {
+  flex: 1;
+  background: #000;
+  color: var(--fm-green);
+  border: 1px solid var(--fm-green);
+  font-family: var(--mono);
+  font-size: 11px;
+  padding: 6px;
+  line-height: 1.2;
+  border-radius: 2px;
+}
+.chat-input-row button {
+  background: var(--fm-green);
+  color: #000;
+  border: 0;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: bold;
+  padding: 6px 8px;
+  cursor: pointer;
+  line-height: 1;
+  border-radius: 2px;
+}
+.chat-input-row button:active {
+  transform: translateY(1px);
+}
+
+/* ---------- contato ---------- */
+
+footer {
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 13px;
+  line-height: 1.4;
+  color: #000;
+  background: var(--box-bg);
+  border: 1px solid var(--line-dark);
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  padding: 10px;
+}
+footer b {
+  font-weight: bold;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #000;
+}
+
+/* ---------- responsivo ---------- */
+
+@media (max-width: 480px) {
+  main {
+    padding: 12px;
+    row-gap: 16px;
+  }
+  .fm-header {
+    row-gap: 2px;
+  }
+  .player-row-top {
+    font-size: 11px;
+  }
+  .play-btn {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+  .time-row {
+    font-size: 10px;
+  }
+  .chat-log {
+    max-height: 64px;
+  }
+  footer {
+    font-size: 12px;
+  }
+}
 </style>
 </head>
 
 <body>
 <main>
+
+  <!-- TOPO / POSTER -->
   <header>
-    <img src="logo-lagosta-filmes.png" alt="Lagosta Filmes">
+    <div class="marca">
+      <img src="logo-lagosta-filmes.png" alt="LAGOSTA FILMES">
+    </div>
+    <div class="poster-wrap">
+      <img src="poster-fortown.png" alt="EM BREVE">
+    </div>
   </header>
 
-  <section class="filme">
-    <img src="poster-fortown.png" alt="Em breve">
-    <p><b>EM BREVE...</b><br>um filme de <span style="border:1px solid #000;padding:1px 3px;">(redigido)</span><br>apresentado por Lagosta Filmes</p>
-  </section>
-
-  <section class="fm">
+  <!-- LAGOSTA FM -->
+  <section class="fm-block">
     <div class="fm-header">
-      <h2>LAGOSTA FM</h2>
-      <img src="lagosta-fm-mascote.png" alt="Lagosta FM">
+      <div class="fm-title">LAGOSTA FM</div>
+      <div class="fm-status">ON AIR // SINAL INSTÁVEL</div>
     </div>
 
-    <div class="player">
-      <button id="playBtn">PLAY</button>
-      <div class="bar"><div class="fill" id="progress"></div></div>
-      <div class="time"><span id="current">00:00</span><span id="total">--:--</span></div>
-      <audio id="audio">
+    <!-- player -->
+    <div class="player-box">
+      <div class="player-row-top">
+        <div class="player-left">EP PILOTO</div>
+        <div class="player-right">LAGOSTA FM</div>
+      </div>
+
+      <div class="player-controls">
+        <button id="playBtn" class="play-btn">PLAY</button>
+
+        <div class="progress-area">
+          <div class="progress-bar-bg">
+            <div id="progressFill" class="progress-bar-fill"></div>
+          </div>
+          <div class="time-row">
+            <div id="currentTime">00:00</div>
+            <div id="totalTime">--:--</div>
+          </div>
+        </div>
+      </div>
+
+      <audio id="audioPlayer">
         <source src="ep-piloto.mp3" type="audio/mpeg">
       </audio>
     </div>
 
-    <div class="chat">
-      <div class="chat-log" id="chatLog">
-        <div>[22:31] OUVINTE_014: tô ouvindo no ônibus</div>
-        <div>[22:32] OUVINTE_LUA: manda um salve pra praia grande</div>
+    <!-- chat compacto -->
+    <div class="chat-box">
+      <div class="chat-head">
+        <div class="chat-head-left">chat do estúdio / lagosta fm</div>
+        <div class="chat-head-right">LIVE</div>
       </div>
-      <div class="chat-input">
-        <input id="chatInput" type="text" placeholder="digite sua mensagem...">
-        <button onclick="sendMessage()">></button>
+
+      <div id="chat-log" class="chat-log">
+        <div class="chat-line"><span class="hora">[22:31]</span> <span class="nick">OUVINTE_014:</span> tô ouvindo no ônibus</div>
+        <div class="chat-line"><span class="hora">[22:32]</span> <span class="nick">OUVINTE_LUA:</span> manda um salve pra praia grande</div>
+        <div class="chat-line"><span class="hora">[22:33]</span> <span class="nick">ESTÚDIO_LAGOSTA:</span> salve registrado ☑</div>
+      </div>
+
+      <div class="chat-input-row">
+        <input id="chat-input" type="text" maxlength="180" placeholder="digite sua mensagem...">
+        <button onclick="sendMessage()">ENVIAR</button>
       </div>
     </div>
   </section>
 
+  <!-- CONTATO -->
   <footer>
-    contato / envio<br>
-    <b>contato@lagostafilmes.com</b><br>
-    insta: <b>@lagostafilmes</b>
+    <div><b>oi@lagostafilmes.com</b></div>
+    <div>insta: <b>@lagosta.filmes</b></div>
   </footer>
+
 </main>
 
 <script>
-/* player */
-const audio = document.getElementById('audio');
-const playBtn = document.getElementById('playBtn');
-const progress = document.getElementById('progress');
-const current = document.getElementById('current');
-const total = document.getElementById('total');
+/* PLAYER LOGIC */
+const audioEl = document.getElementById("audioPlayer");
+const playBtn = document.getElementById("playBtn");
+const progressFill = document.getElementById("progressFill");
+const currentTimeEl = document.getElementById("currentTime");
+const totalTimeEl = document.getElementById("totalTime");
 
-function formatTime(s){if(isNaN(s))return"--:--";let m=Math.floor(s/60),ss=Math.floor(s%60);return String(m).padStart(2,"0")+":"+String(ss).padStart(2,"0");}
-playBtn.onclick=()=>{if(audio.paused){audio.play();playBtn.textContent="PAUSE";}else{audio.pause();playBtn.textContent="PLAY";}};
-audio.onloadedmetadata=()=>total.textContent=formatTime(audio.duration);
-audio.ontimeupdate=()=>{
-  current.textContent=formatTime(audio.currentTime);
-  progress.style.width=(audio.currentTime/audio.duration*100||0)+"%";
-};
+function formatTime(sec) {
+  if (isNaN(sec)) return "--:--";
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+}
 
-/* chat */
-function sendMessage(){
-  const input=document.getElementById('chatInput');
-  const log=document.getElementById('chatLog');
-  const txt=input.value.trim();
-  if(!txt)return;
-  const t=new Date();
-  const h=String(t.getHours()).padStart(2,"0"),m=String(t.getMinutes()).padStart(2,"0");
-  const line=document.createElement("div");
-  line.textContent=`[${h}:${m}] VOCÊ: ${txt}`;
+playBtn.addEventListener("click", () => {
+  if (audioEl.paused) {
+    audioEl.play();
+    playBtn.textContent = "PAUSE";
+  } else {
+    audioEl.pause();
+    playBtn.textContent = "PLAY";
+  }
+});
+
+audioEl.addEventListener("loadedmetadata", () => {
+  totalTimeEl.textContent = formatTime(audioEl.duration);
+});
+
+audioEl.addEventListener("timeupdate", () => {
+  currentTimeEl.textContent = formatTime(audioEl.currentTime);
+  if (!isNaN(audioEl.duration) && audioEl.duration > 0) {
+    const pct = (audioEl.currentTime / audioEl.duration) * 100;
+    progressFill.style.width = pct + "%";
+  }
+});
+
+/* CHAT LOGIC (local only) */
+function sendMessage() {
+  const input = document.getElementById("chat-input");
+  const log = document.getElementById("chat-log");
+  const text = input.value.trim();
+  if (!text) return;
+
+  const now = new Date();
+  const hh = now.getHours().toString().padStart(2,"0");
+  const mm = now.getMinutes().toString().padStart(2,"0");
+
+  const line = document.createElement("div");
+  line.className = "chat-line";
+  line.innerHTML =
+    '<span class="hora">['+hh+':'+mm+']</span> <span class="nick">VOCÊ:</span> ' +
+    text;
   log.appendChild(line);
-  log.scrollTop=log.scrollHeight;
-  input.value="";
+
+  input.value = "";
+  log.scrollTop = log.scrollHeight;
 }
 </script>
+
 </body>
 </html>
