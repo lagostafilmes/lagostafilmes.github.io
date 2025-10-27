@@ -6,9 +6,9 @@
 <title>Lagosta Filmes</title>
 
 <style>
-/* ---------- base ---------- */
+/* --------- cores / fontes base --------- */
 :root {
-  --bg-blue: #B0D0FF;
+  --bg-blue: #A5C7F9;            /* azul CRT mais frio */
   --line-dark: #000;
   --line-mid: rgba(0,0,0,0.4);
   --box-bg: #ffffff;
@@ -20,18 +20,58 @@
   --serif: "Times New Roman", Times, serif;
 }
 
+/* --------- reset de corpo + CRT vibe --------- */
 body {
   margin: 0;
-  background: var(--bg-blue);
-  font-family: var(--bodyfont);
-  color: #000;
-  display: flex;
   min-height: 100vh;
+  background: var(--bg-blue);
+  color: #000;
+  font-family: var(--bodyfont);
+  display: flex;
+  /* fade-in tipo monitor ligando */
+  opacity: 0;
+  animation: boot 0.6s ease-out forwards;
+  position: relative;
+  cursor: default;
 }
 
-/* container geral:
-   queremos tudo caber numa coluna e ficar centralizado na tela
-*/
+/* textura leve de ruído + scanlines por cima do fundo */
+body::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  background-image:
+    /* scanlines horizontais finas */
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0.06) 0px,
+      rgba(0,0,0,0.06) 1px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0) 3px
+    ),
+    /* ruído suave */
+    repeating-radial-gradient(
+      circle at 20% 20%,
+      rgba(255,255,255,0.12) 0px,
+      rgba(255,255,255,0) 3px,
+      rgba(0,0,0,0.08) 4px,
+      rgba(0,0,0,0) 6px
+    );
+  background-size: 100% 3px, 140px 140px;
+  mix-blend-mode: multiply;
+  opacity: 0.4;
+  z-index: 1;
+}
+
+/* leve glow ao ligar */
+@keyframes boot {
+  0%   { opacity: 0; filter: brightness(1.8) contrast(1.4) blur(2px); }
+  60%  { opacity: 1; filter: brightness(1.2) contrast(1.1) blur(0.5px); }
+  100% { opacity: 1; filter: none; }
+}
+
+/* --------- layout geral --------- */
 main {
   max-width: 720px;
   width: 100%;
@@ -41,10 +81,11 @@ main {
   display: grid;
   grid-template-rows: auto auto auto;
   row-gap: 20px;
+  position: relative;
+  z-index: 2; /* fica acima do ruído */
 }
 
-/* ---------- topo / filme ---------- */
-
+/* --------- topo / marca / pôster --------- */
 header {
   text-align: center;
 }
@@ -60,11 +101,10 @@ header .marca img {
   margin: 0 auto;
 }
 
-/* pôster ocupa toda a largura do bloco mas com borda fina */
 .poster-wrap {
   background: var(--box-bg);
   border: 1px solid var(--line-dark);
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  box-shadow: 2px 2px 0 var(--line-mid);
   padding: 8px;
 }
 .poster-wrap img {
@@ -73,23 +113,23 @@ header .marca img {
   border: 1px solid var(--line-dark);
 }
 
-/* nenhuma legenda abaixo do pôster */
-.poster-caption {
-  display: none;
-}
+/* sem legenda */
+.poster-caption { display: none; }
 
-/* ---------- bloco lagosta fm (player + chat) ---------- */
+/* --------- bloco LAGOSTA FM (player + chat) --------- */
 
 .fm-block {
   background: var(--box-bg);
   border: 1px solid var(--line-dark);
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  box-shadow: 2px 2px 0 var(--line-mid);
   padding: 12px;
   display: grid;
   row-gap: 12px;
+  font-size: 14px;
+  line-height: 1.4;
 }
 
-/* título da rádio */
+/* header da rádio */
 .fm-header {
   display: flex;
   justify-content: space-between;
@@ -104,8 +144,10 @@ header .marca img {
   color: var(--fm-head);
   line-height: 1.1;
   letter-spacing: 0.03em;
+  text-shadow: 0 0 0 #fff; /* leve eco "barata" */
 }
 
+/* status on air simplificado */
 .fm-status {
   font-family: var(--mono);
   font-size: 11px;
@@ -114,24 +156,26 @@ header .marca img {
   border: 1px solid var(--fm-head);
   color: var(--fm-head);
   padding: 2px 4px;
+  border-radius: 2px;
+  text-transform: uppercase;
 }
 
-/* player */
+/* --- player box --- */
 .player-box {
   border: 1px solid var(--line-dark);
   background: #f2f2f2;
   padding: 10px;
   display: grid;
   row-gap: 8px;
+  font-family: var(--mono);
+  font-size: 12px;
+  color: #000;
 }
 
 .player-row-top {
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: #000;
 }
 .player-left {
   font-weight: bold;
@@ -139,8 +183,10 @@ header .marca img {
 .player-right {
   color: var(--fm-head);
   font-weight: bold;
+  text-align: right;
 }
 
+/* player layout */
 .player-controls {
   display: flex;
   align-items: center;
@@ -163,11 +209,21 @@ header .marca img {
   transform: translateY(1px);
 }
 
+/* cursor retrô pra elementos clicáveis */
+.play-btn,
+.chat-input-row button {
+  cursor: pointer;
+  cursor: url('data:image/svg+xml;utf8,\
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">\
+<path fill="white" stroke="black" stroke-width="1" d="M4 2 L4 22 L9 17 L12 28 L15 27 L12 16 L18 16 Z"/>\
+</svg>') 4 2, pointer;
+}
+
 .progress-area {
   flex: 1;
+  min-width: 0;
   display: grid;
   row-gap: 4px;
-  min-width: 0;
 }
 .progress-bar-bg {
   width: 100%;
@@ -184,19 +240,16 @@ header .marca img {
   height: 100%;
 }
 .time-row {
-  font-family: var(--mono);
-  font-size: 11px;
-  color: #000;
   display: flex;
   justify-content: space-between;
   line-height: 1;
+  font-size: 11px;
 }
 
-audio {
-  display: none;
-}
+/* esconde o player nativo */
+audio { display: none; }
 
-/* chat enxuto */
+/* --- chat compacto --- */
 .chat-box {
   border: 1px solid var(--line-dark);
   background: var(--fm-black);
@@ -207,13 +260,14 @@ audio {
   display: grid;
   row-gap: 8px;
   padding: 10px;
+  border-radius: 2px;
 }
 
-/* cabecalho chat */
 .chat-head {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
+  flex-wrap: nowrap;
 }
 .chat-head-left {
   font-weight: bold;
@@ -227,9 +281,9 @@ audio {
   padding: 1px 4px;
   border-radius: 2px;
   line-height: 1;
+  text-transform: uppercase;
 }
 
-/* log */
 .chat-log {
   max-height: 70px;
   overflow-y: auto;
@@ -245,15 +299,14 @@ audio {
 .chat-line {
   white-space: nowrap;
 }
+.chat-line .hora {
+  color: #888;
+}
 .chat-line .nick {
   color: var(--fm-green);
   font-weight: bold;
 }
-.chat-line .hora {
-  color: #888;
-}
 
-/* input */
 .chat-input-row {
   display: flex;
   column-gap: 6px;
@@ -277,16 +330,11 @@ audio {
   font-size: 11px;
   font-weight: bold;
   padding: 6px 8px;
-  cursor: pointer;
   line-height: 1;
   border-radius: 2px;
 }
-.chat-input-row button:active {
-  transform: translateY(1px);
-}
 
-/* ---------- contato ---------- */
-
+/* --------- contato --------- */
 footer {
   text-align: center;
   font-family: var(--serif);
@@ -295,7 +343,7 @@ footer {
   color: #000;
   background: var(--box-bg);
   border: 1px solid var(--line-dark);
-  box-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+  box-shadow: 2px 2px 0 var(--line-mid);
   padding: 10px;
 }
 footer b {
@@ -305,22 +353,14 @@ footer b {
   color: #000;
 }
 
-/* ---------- responsivo ---------- */
-
+/* --------- responsivo --------- */
 @media (max-width: 480px) {
   main {
     padding: 12px;
     row-gap: 16px;
   }
-  .fm-header {
-    row-gap: 2px;
-  }
   .player-row-top {
     font-size: 11px;
-  }
-  .play-btn {
-    font-size: 11px;
-    padding: 6px 10px;
   }
   .time-row {
     font-size: 10px;
@@ -338,7 +378,7 @@ footer b {
 <body>
 <main>
 
-  <!-- TOPO / POSTER -->
+  <!-- topo / pôster -->
   <header>
     <div class="marca">
       <img src="logo-lagosta-filmes.png" alt="LAGOSTA FILMES">
@@ -348,14 +388,14 @@ footer b {
     </div>
   </header>
 
-  <!-- LAGOSTA FM -->
+  <!-- lagosta fm -->
   <section class="fm-block">
     <div class="fm-header">
       <div class="fm-title">LAGOSTA FM</div>
-      <div class="fm-status">ON AIR // SINAL INSTÁVEL</div>
+      <div class="fm-status">ON AIR</div>
     </div>
 
-    <!-- player -->
+    <!-- player custom -->
     <div class="player-box">
       <div class="player-row-top">
         <div class="player-left">EP PILOTO</div>
@@ -381,11 +421,11 @@ footer b {
       </audio>
     </div>
 
-    <!-- chat compacto -->
+    <!-- chat minimal -->
     <div class="chat-box">
       <div class="chat-head">
         <div class="chat-head-left">chat do estúdio / lagosta fm</div>
-        <div class="chat-head-right">LIVE</div>
+        <div class="chat-head-right">live</div>
       </div>
 
       <div id="chat-log" class="chat-log">
@@ -401,7 +441,7 @@ footer b {
     </div>
   </section>
 
-  <!-- CONTATO -->
+  <!-- contato -->
   <footer>
     <div><b>oi@lagostafilmes.com</b></div>
     <div>insta: <b>@lagosta.filmes</b></div>
@@ -410,7 +450,7 @@ footer b {
 </main>
 
 <script>
-/* PLAYER LOGIC */
+/* PLAYER */
 const audioEl = document.getElementById("audioPlayer");
 const playBtn = document.getElementById("playBtn");
 const progressFill = document.getElementById("progressFill");
@@ -446,7 +486,7 @@ audioEl.addEventListener("timeupdate", () => {
   }
 });
 
-/* CHAT LOGIC (local only) */
+/* CHAT (local) */
 function sendMessage() {
   const input = document.getElementById("chat-input");
   const log = document.getElementById("chat-log");
@@ -460,12 +500,13 @@ function sendMessage() {
   const line = document.createElement("div");
   line.className = "chat-line";
   line.innerHTML =
-    '<span class="hora">['+hh+':'+mm+']</span> <span class="nick">VOCÊ:</span> ' +
+    '<span class="hora">['+hh+':'+mm+']</span> '+
+    '<span class="nick">VOCÊ:</span> '+
     text;
-  log.appendChild(line);
 
-  input.value = "";
+  log.appendChild(line);
   log.scrollTop = log.scrollHeight;
+  input.value = "";
 }
 </script>
 
