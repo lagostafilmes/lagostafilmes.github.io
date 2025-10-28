@@ -146,10 +146,7 @@ header .marca img {
   font-size: 12px;
   font-weight: bold;
   padding: 6px 12px;
-  cursor: url('data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">\
-<path fill="white" stroke="black" stroke-width="1" d="M4 2 L4 22 L9 17 L12 28 L15 27 L12 16 L18 16 Z"/>\
-</svg>') 4 2, pointer;
+  cursor: pointer;
   border-radius: 2px;
   line-height: 1;
 }
@@ -251,7 +248,6 @@ audio {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  flex-wrap: nowrap;
 }
 .chat-head-left {
   font-weight: bold;
@@ -299,7 +295,6 @@ audio {
 .chat-input-row {
   display: flex;
   gap: 6px;
-  flex-wrap: nowrap;
 }
 .chat-input-row input {
   flex: 1;
@@ -321,10 +316,7 @@ audio {
   padding: 6px 8px;
   border-radius: 2px;
   line-height: 1;
-  cursor: url('data:image/svg+xml;utf8,\
-<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32">\
-<path fill="white" stroke="black" stroke-width="1" d="M4 2 L4 22 L9 17 L12 28 L15 27 L12 16 L18 16 Z"/>\
-</svg>') 4 2, pointer;
+  cursor: pointer;
 }
 
 /* contato */
@@ -384,7 +376,7 @@ footer b {
           <div class="progress-wrapper">
             <div class="progress-bar-bg" id="progressBar">
               <div class="progress-bar-fill" id="progressFill"></div>
-              <!-- marcadores vão ser inseridos aqui via JS -->
+              <!-- marcadores via JS -->
               <div class="marker-bubble" id="markerBubble"></div>
             </div>
           </div>
@@ -410,7 +402,7 @@ footer b {
       </div>
 
       <div id="chatLog" class="chat-log">
-        <!-- mensagens aparecem aqui -->
+        <!-- mensagens em tempo real -->
       </div>
 
       <div class="chat-input-row">
@@ -479,20 +471,15 @@ progressBar.addEventListener("click", (e) => {
 });
 
 /* =========================================================
-   CHAT LOCAL + TIMECODE (Etapa 1)
-   - guardamos mensagens no localStorage
-   - cada msg tem {text, tAudio, at, nick}
-   - desenhamos marcadores na barra
+   CHAT LOCAL + TIMECODE
    ========================================================= */
 
 const chatLogEl = document.getElementById("chatLog");
 const chatInputEl = document.getElementById("chatInput");
 const sendBtn = document.getElementById("sendBtn");
 
-/* chave local */
 const STORAGE_KEY = "lagostaChatMessages_v1";
 
-/* carrega msgs do localStorage (fallback offline) */
 function loadLocalMessages() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -503,18 +490,16 @@ function loadLocalMessages() {
   }
 }
 
-/* salva msgs localmente */
 function saveLocalMessages(msgs) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
   } catch(e) {}
 }
 
-/* renderiza chat */
 function renderChat(msgs) {
   chatLogEl.innerHTML = "";
   msgs
-    .sort((a,b)=>a.at - b.at) // ordena por data de envio
+    .sort((a,b)=>a.at - b.at)
     .forEach(m => {
       const line = document.createElement("div");
       line.className = "chat-line";
@@ -532,22 +517,18 @@ function renderChat(msgs) {
   chatLogEl.scrollTop = chatLogEl.scrollHeight;
 }
 
-/* limpa e redesenha marcadores na barra */
 function renderMarkers(msgs) {
-  // remove antigos
   const olds = progressBar.querySelectorAll(".comment-marker");
   olds.forEach(o => o.remove());
 
-  // para cada msg, cria marcador posicionado de acordo com tAudio
   if (isNaN(audioEl.duration) || audioEl.duration === 0) return;
 
   msgs.forEach(m => {
     const pct = (m.tAudio / audioEl.duration) * 100;
     const marker = document.createElement("div");
     marker.className = "comment-marker";
-    marker.style.left = `calc(${pct}% - 3px)`; // centraliza a barrinha
+    marker.style.left = `calc(${pct}% - 3px)`;
 
-    // hover / toque mostra bolha
     marker.addEventListener("mouseenter", () => {
       showMarkerBubble(m, marker);
     });
@@ -555,7 +536,6 @@ function renderMarkers(msgs) {
       hideMarkerBubble();
     });
     marker.addEventListener("click", () => {
-      // clicar pula o áudio pra esse ponto
       audioEl.currentTime = m.tAudio;
     });
 
@@ -577,7 +557,6 @@ function hideMarkerBubble() {
   markerBubble.style.display = "none";
 }
 
-/* adicionar mensagem nova */
 function addMessage(text) {
   if (!text.trim()) return;
 
@@ -594,22 +573,19 @@ function addMessage(text) {
     at,
     atHour,
     atMin,
-    nick: "VOCÊ"  // pode evoluir depois p/ nickname custom
+    nick: "VOCÊ"
   };
 
-  // atualiza local cache
   messages.push(newMsg);
   saveLocalMessages(messages);
 
-  // tenta mandar pro Firebase (Etapa 2)
+  // manda pro Firebase também
   sendToFirebase(newMsg);
 
-  // redesenha chat e marcadores
   renderChat(messages);
   renderMarkers(messages);
 }
 
-/* clique no botão ENVIAR */
 sendBtn.addEventListener("click", () => {
   const v = chatInputEl.value;
   if (!v.trim()) return;
@@ -617,7 +593,6 @@ sendBtn.addEventListener("click", () => {
   chatInputEl.value = "";
 });
 
-/* enter também envia */
 chatInputEl.addEventListener("keydown", e => {
   if (e.key === "Enter") {
     e.preventDefault();
@@ -628,61 +603,89 @@ chatInputEl.addEventListener("keydown", e => {
   }
 });
 
-/* sani text pra não injetar html */
 function escapeHtml(str) {
   return str.replace(/[&<>"']/g, s => ({
     "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
   }[s]));
 }
 
-/* inicializa mensagens locais */
 let messages = loadLocalMessages();
 
-/* quando metadata do áudio carregar, podemos desenhar os marcadores */
 audioEl.addEventListener("loadedmetadata", () => {
   renderChat(messages);
   renderMarkers(messages);
 });
-/* se usuário comenta antes do áudio carregar, markers virão depois */
 renderChat(messages);
 
 /* =========================================================
-   Etapa 2: Firebase Realtime Database
-   ---------------------------------------------------------
-   O fluxo:
-   - initFirebase() chamada no fim
-   - sendToFirebase(msg) envia msg pro banco
-   - onFirebaseMessage(cb) escuta novas msgs vindas do banco,
-     atualiza 'messages' local e re-renderiza
+   FIREBASE (tempo real)
    ========================================================= */
 
-/* placeholders para Firebase SDK */
 let firebaseApp = null;
 let firebaseDb = null;
 let firebaseEnabled = false;
 
-/* envia pro Firebase */
+/* CONFIG DO SEU FIREBASE */
+const firebaseConfig = {
+  apiKey: "AIzaSyD4tr7eZNSvs3z49ROibvM48mjEZLCImZo",
+  authDomain: "lagosta-fm.firebaseapp.com",
+  databaseURL: "https://lagosta-fm-default-rtdb.firebaseio.com",
+  projectId: "lagosta-fm",
+  storageBucket: "lagosta-fm.firebasestorage.app",
+  messagingSenderId: "1037798589381",
+  appId: "1:1037798589381:web:f9c6b5d7721746994881ac"
+};
+
+/* inicializa firebase no modo SDK v8 (global) */
+function firebaseInit(cfg) {
+  firebaseApp = firebase.initializeApp(cfg);
+  firebaseDb  = firebase.database();
+  firebaseEnabled = true;
+}
+
+/* gera chave nova pra mensagem */
+function firebasePushKey() {
+  const ref = firebaseDb.ref("messages");
+  return ref.push().key;
+}
+
+/* escreve mensagem no realtime db */
+function firebaseWriteMessage(msg, key) {
+  const ref = firebaseDb.ref("messages/" + key);
+  ref.set(msg);
+}
+
+/* escuta alterações em tempo real */
+function firebaseOnMessage(cb) {
+  const ref = firebaseDb.ref("messages");
+  ref.on("value", (snapshot) => {
+    const data = snapshot.val() || {};
+    const list = Object.values(data);
+    cb(list);
+  });
+}
+
+/* envia pro db */
 function sendToFirebase(msg) {
   if (!firebaseEnabled || !firebaseDb) return;
   try {
-    // push pro caminho "messages"
-    const newKey = window.firebasePushKey();
-    window.firebaseWriteMessage(msg, newKey);
+    const newKey = firebasePushKey();
+    firebaseWriteMessage(msg, newKey);
   } catch(e) {
-    // se falhar, tudo bem, segue local
+    // se der pau, tudo bem, fica só local
   }
 }
 
-/* escuta Firebase em tempo real */
+/* quando receber msgs do db, mergeia e rerenderiza */
 function startFirebaseListener() {
   if (!firebaseEnabled || !firebaseDb) return;
-  window.firebaseOnMessage((incomingList) => {
-    // incomingList deve ser array de msgs do banco
-    // merge com local, evitando duplicar
+  firebaseOnMessage((incomingList) => {
     let changed = false;
     incomingList.forEach(m => {
       const exists = messages.some(
-        x => x.at === m.at && x.text === m.text && Math.abs(x.tAudio - m.tAudio) < 0.01
+        x => x.at === m.at &&
+             x.text === m.text &&
+             Math.abs(x.tAudio - m.tAudio) < 0.01
       );
       if (!exists) {
         messages.push(m);
@@ -697,91 +700,15 @@ function startFirebaseListener() {
   });
 }
 
-/* inicializa Firebase */
-function initFirebase() {
-  try {
- const firebaseConfig = {
-  apiKey: "AIzaSyD4tr7eZNSvs3z49ROibvM48mjEZLCImZo",
-  authDomain: "lagosta-fm.firebaseapp.com",
-  databaseURL: "https://lagosta-fm-default-rtdb.firebaseio.com",
-  projectId: "lagosta-fm",
-  storageBucket: "lagosta-fm.firebasestorage.app",
-  messagingSenderId: "1037798589381",
-  appId: "1:1037798589381:web:f9c6b5d7721746994881ac"
-};
-
-// inicializa Firebase (modo clássico)
-window.firebaseInit = function(firebaseConfig) {
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  firebaseApp = app;
-  firebaseDb = db;
-};
-
-// ativa Firebase e listener
-window.firebaseInit(firebaseConfig);
-firebaseEnabled = true;
+/* inicializar firebase e listener */
+firebaseInit(firebaseConfig);
 startFirebaseListener();
-
-  } catch(e) {
-    firebaseEnabled = false;
-  }
-}
-
-/* chama initFirebase pra preparar quando você colar sua config */
-initFirebase();
-
-/* =========================================================
-   Mini "SDK" wrapper pro Firebase
-   ---------------------------------------------------------
-   A ideia aqui:
-   - Você vai incluir os scripts do Firebase Web SDK abaixo
-   - Depois vai ativar firebaseInit(firebaseConfig)
-   - Isso habilita os helpers firebasePushKey, firebaseWriteMessage,
-     firebaseOnMessage etc.
-   ========================================================= */
-
-/*
-IMPORTANTE:
-Quando você criar seu projeto no Firebase:
-1. Ativa Realtime Database em modo teste.
-2. Copia sua config (apiKey etc.) e cola no firebaseConfig acima.
-3. Descomenta as funções abaixo e o script <script src="...firebase..."> que eu vou deixar preparado.
-4. A partir daí, o chat é realmente ao vivo pra todo mundo.
-*/
-
-// window.firebaseInit = function(firebaseConfig) {
-//   const app = firebase.initializeApp(firebaseConfig);
-//   const db = firebase.database();
-//   firebaseApp = app;
-//   firebaseDb = db;
-// };
-
-// window.firebasePushKey = function() {
-//   const ref = firebaseDb.ref("messages");
-//   return ref.push().key;
-// };
-
-// window.firebaseWriteMessage = function(msg, key) {
-//   const ref = firebaseDb.ref("messages/" + key);
-//   ref.set(msg);
-// };
-
-// window.firebaseOnMessage = function(cb) {
-//   const ref = firebaseDb.ref("messages");
-//   ref.on("value", (snapshot) => {
-//     const data = snapshot.val() || {};
-//     // transforma em array
-//     const list = Object.values(data);
-//     cb(list);
-//   });
-// };
 
 </script>
 
+<!-- SDKs Firebase v8 (compatível com <script>) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
-
 
 </body>
 </html>
