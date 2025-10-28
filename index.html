@@ -160,7 +160,6 @@ header .marca img {
   width: 100%;
 }
 
-/* a linha vermelha */
 .progress-wrapper {
   position: relative;
   width: 100%;
@@ -390,7 +389,7 @@ footer b {
 
       <!-- áudio real -->
       <audio id="audioPlayer">
-        <source src="ep-piloto.mp3" type="audio/mpeg">
+        <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
       </audio>
     </div>
 
@@ -418,6 +417,10 @@ footer b {
     <div>insta: <b>@lagosta.filmes</b></div>
   </footer>
 </main>
+
+<!-- SDKs Firebase v8 precisam vir antes do nosso script -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
 /* =========================================================
@@ -705,10 +708,6 @@ firebaseInit(firebaseConfig);
 startFirebaseListener();
 
 </script>
-
-<!-- SDKs Firebase v8 (compatível com <script>) -->
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 </body>
 </html>
