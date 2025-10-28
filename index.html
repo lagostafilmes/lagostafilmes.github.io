@@ -7,8 +7,6 @@
 
 <!-- Favicon Lagosta Filmes -->
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="manifest" href="/site.webmanifest">
@@ -254,6 +252,24 @@ audio{display:none;}
   text-transform:uppercase;
 }
 
+/* nickname row */
+.chat-nick-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:nowrap;
+  color:var(--fm-green);
+  font-size:10px;
+  line-height:1.4;
+}
+.chat-nick-row .clickable-nick{
+  text-decoration:underline;
+  cursor:pointer;
+}
+.chat-nick-row .clickable-nick:hover{
+  color:#fff;
+}
+
 /* log do chat */
 .chat-log{
   max-height:90px;
@@ -279,13 +295,12 @@ audio{display:none;}
   margin-left:4px;
 }
 
-/* área de entrada */
+/* área de mensagem */
 .chat-input-row{
   display:flex;
-  flex-wrap:wrap;
+  flex-wrap:nowrap;
   gap:6px;
 }
-.nick-field,
 .msg-field{
   flex:1;
   background:#000;
@@ -296,7 +311,6 @@ audio{display:none;}
   padding:6px;
   border-radius:2px;
 }
-.nick-save-btn,
 .msg-send-btn{
   background:var(--fm-green);
   color:#000;
@@ -367,7 +381,7 @@ footer b{
           <div class="progress-wrapper">
             <div class="progress-bar-bg" id="progressBar">
               <div class="progress-bar-fill" id="progressFill"></div>
-              <!-- bolha marker -->
+              <!-- tooltip de marcador -->
               <div class="marker-bubble" id="markerBubble"></div>
             </div>
           </div>
@@ -392,16 +406,17 @@ footer b{
         <div class="chat-head-right">live</div>
       </div>
 
-      <div id="chatLog" class="chat-log">
-        <!-- mensagens em tempo real -->
+      <!-- linha do nick -->
+      <div class="chat-nick-row">
+        <span>comentando como: <span id="currentNickLabel" class="clickable-nick"></span></span>
+        <span style="color:#888;font-size:9px;">(toca no nome pra mudar)</span>
       </div>
 
-      <div class="chat-input-row">
-        <!-- nickname -->
-        <input id="nickInput" class="nick-field" type="text" maxlength="20" placeholder="seu nome / apelido...">
-        <button id="nickSaveBtn" class="nick-save-btn">OK</button>
+      <!-- histórico -->
+      <div id="chatLog" class="chat-log"></div>
 
-        <!-- mensagem -->
+      <!-- enviar msg -->
+      <div class="chat-input-row">
         <input id="chatInput" class="msg-field" type="text" maxlength="180" placeholder="digite sua mensagem...">
         <button id="sendBtn" class="msg-send-btn">ENVIAR</button>
       </div>
@@ -415,17 +430,16 @@ footer b{
   </footer>
 </main>
 
-<!-- SDK Firebase v8 (precisa vir antes do script abaixo) -->
+<!-- SDK Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
 /* =========================================================
-   NICKNAME (apelido do usuário)
+   NICKNAME
    ========================================================= */
 const NICK_KEY = "lagostaNick_v1";
-const nickInputEl = document.getElementById("nickInput");
-const nickSaveBtn = document.getElementById("nickSaveBtn");
+const currentNickLabel = document.getElementById("currentNickLabel");
 
 function loadNick(){
   try{
@@ -441,39 +455,35 @@ function saveNick(nick){
   }catch(e){}
 }
 
+// estado atual do apelido
 let myNick = loadNick();
-if (myNick){
-  nickInputEl.value = myNick;
-}
-
-nickSaveBtn.addEventListener("click",()=>{
-  const chosen = nickInputEl.value.trim();
-  if(!chosen) return;
-  myNick = chosen;
+if(!myNick){
+  // gera um apelido temporário tipo OUVINTE_123
+  myNick = "OUVINTE_" + Math.floor(Math.random()*1000);
   saveNick(myNick);
+}
+currentNickLabel.textContent = myNick;
 
-  // se você quiser travar depois que escolheu:
-  nickInputEl.disabled = true;
-  nickSaveBtn.disabled = true;
-});
-
-nickInputEl.addEventListener("keydown",e=>{
-  if(e.key==="Enter"){
-    e.preventDefault();
-    nickSaveBtn.click();
+// clicar no nick pra mudar
+currentNickLabel.addEventListener("click", ()=>{
+  const novo = prompt("Seu nome / apelido?", myNick || "");
+  if(novo && novo.trim()){
+    myNick = novo.trim();
+    saveNick(myNick);
+    currentNickLabel.textContent = myNick;
   }
 });
 
 /* =========================================================
    PLAYER / TIMECODE
    ========================================================= */
-const audioEl         = document.getElementById("audioPlayer");
-const playBtn         = document.getElementById("playBtn");
-const progressFill    = document.getElementById("progressFill");
-const currentTimeEl   = document.getElementById("currentTime");
-const totalTimeEl     = document.getElementById("totalTime");
-const progressBar     = document.getElementById("progressBar");
-const markerBubble    = document.getElementById("markerBubble");
+const audioEl       = document.getElementById("audioPlayer");
+const playBtn       = document.getElementById("playBtn");
+const progressFill  = document.getElementById("progressFill");
+const currentTimeEl = document.getElementById("currentTime");
+const totalTimeEl   = document.getElementById("totalTime");
+const progressBar   = document.getElementById("progressBar");
+const markerBubble  = document.getElementById("markerBubble");
 
 function formatTime(sec){
   if(isNaN(sec)) return "--:--";
@@ -504,13 +514,13 @@ audioEl.addEventListener("timeupdate",()=>{
   }
 });
 
-/* clicar na barra -> pular no áudio */
+// clicar na barra -> pular
 progressBar.addEventListener("click",(e)=>{
   const rect = progressBar.getBoundingClientRect();
   const clickX = e.clientX - rect.left;
-  const ratio = clickX/rect.width;
+  const ratio = clickX / rect.width;
   if(!isNaN(audioEl.duration)){
-    audioEl.currentTime = ratio*audioEl.duration;
+    audioEl.currentTime = ratio * audioEl.duration;
   }
 });
 
@@ -565,7 +575,7 @@ function renderChat(msgs){
 }
 
 function renderMarkers(msgs){
-  // limpa marcadores antigos
+  // limpa antigos
   const olds = progressBar.querySelectorAll(".comment-marker");
   olds.forEach(o=>o.remove());
 
@@ -604,27 +614,14 @@ function hideMarkerBubble(){
   markerBubble.style.display="none";
 }
 
+/* cria e envia msg */
 function addMessage(text){
   if(!text.trim()) return;
 
-  // se o usuário não clicou OK no nick ainda, salva agora com o valor atual do input
-  if(!myNick || !myNick.trim()){
-    const tempNick = nickInputEl.value.trim();
-    if(tempNick){
-      myNick = tempNick;
-      saveNick(myNick);
-      nickInputEl.disabled = true;
-      nickSaveBtn.disabled = true;
-    } else {
-      myNick = "OUVINTE";
-    }
-  }
-
-  const now   = new Date();
-  const at    = now.getTime();
-  const atHour= now.getHours();
-  const atMin = now.getMinutes();
-
+  const now    = new Date();
+  const at     = now.getTime();
+  const atHour = now.getHours();
+  const atMin  = now.getMinutes();
   const tAudio = (!isNaN(audioEl.currentTime)) ? audioEl.currentTime : 0;
 
   const newMsg = {
@@ -713,7 +710,7 @@ function sendToFirebase(msg){
     const newKey = firebasePushKey();
     firebaseWriteMessage(msg,newKey);
   }catch(e){
-    // se falhar, ok
+    // silencioso
   }
 }
 function startFirebaseListener(){
