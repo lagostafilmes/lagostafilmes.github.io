@@ -700,22 +700,28 @@ function startFirebaseListener() {
 /* inicializa Firebase */
 function initFirebase() {
   try {
-    // TODO: COLE SUA CONFIG FIREBASE AQUI DEPOIS QUE CRIAR O PROJETO
-    // Exemplo:
-    //
-    // const firebaseConfig = {
-    //   apiKey: "AIza....",
-    //   authDomain: "lagosta-fm.firebaseapp.com",
-    //   databaseURL: "https://lagosta-fm-default-rtdb.firebaseio.com",
-    //   projectId: "lagosta-fm",
-    //   storageBucket: "lagosta-fm.appspot.com",
-    //   messagingSenderId: "1234567890",
-    //   appId: "1:1234567890:web:abc123"
-    // };
-    //
-    // window.firebaseInit(firebaseConfig);
-    // firebaseEnabled = true;
-    // startFirebaseListener();
+ const firebaseConfig = {
+  apiKey: "AIzaSyD4tr7eZNSvs3z49ROibvM48mjEZLCImZo",
+  authDomain: "lagosta-fm.firebaseapp.com",
+  databaseURL: "https://lagosta-fm-default-rtdb.firebaseio.com",
+  projectId: "lagosta-fm",
+  storageBucket: "lagosta-fm.firebasestorage.app",
+  messagingSenderId: "1037798589381",
+  appId: "1:1037798589381:web:f9c6b5d7721746994881ac"
+};
+
+// inicializa Firebase (modo clássico)
+window.firebaseInit = function(firebaseConfig) {
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  firebaseApp = app;
+  firebaseDb = db;
+};
+
+// ativa Firebase e listener
+window.firebaseInit(firebaseConfig);
+firebaseEnabled = true;
+startFirebaseListener();
 
   } catch(e) {
     firebaseEnabled = false;
@@ -773,22 +779,9 @@ Quando você criar seu projeto no Firebase:
 
 </script>
 
-<!--
-QUANDO FOR ATIVAR O FIREBASE DE VERDADE:
-1. Vá em console.firebase.google.com, cria o projeto.
-2. Em "Build" > "Realtime Database": habilita.
-3. Em "Project Settings" > "Your Apps" (ícone </>): pega a config web e cola em firebaseConfig lá em cima.
-4. Descomenta o bloco das funções firebaseInit / firebaseWriteMessage / etc.
-5. Descomenta as linhas abaixo pra carregar o SDK oficial do Firebase no browser:
-
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
-6. Dentro de initFirebase(), depois de definir firebaseConfig, chama:
-   window.firebaseInit(firebaseConfig);
-   firebaseEnabled = true;
-   startFirebaseListener();
--->
 
 </body>
 </html>
