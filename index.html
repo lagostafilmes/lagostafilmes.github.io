@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>Lagosta Filmes</title>
 
 <style>
@@ -15,11 +15,11 @@
   --fm-green: #00e060;
   --fm-black: #111;
   --mono: "Courier New", monospace;
-  --bodyfont: "Comic Sans MS", "Trebuchet MS", Arial, sans-serif;
+  --bodyfont: "Comic Sans MS","Trebuchet MS",Arial,sans-serif;
   --serif: "Times New Roman", Times, serif;
 }
 
-/* corpo liso com fade-in */
+/* fundo + boot */
 body {
   margin: 0;
   min-height: 100vh;
@@ -28,316 +28,299 @@ body {
   font-family: var(--bodyfont);
   display: flex;
   opacity: 0;
-  animation: boot 0.6s ease-out forwards;
+  animation: boot .6s ease-out forwards;
 }
-
-@keyframes boot {
-  0%   { opacity: 0; filter: brightness(1.8) contrast(1.4) blur(2px); }
-  60%  { opacity: 1; filter: brightness(1.2) contrast(1.1) blur(0.5px); }
-  100% { opacity: 1; filter: none; }
+@keyframes boot{
+  0%{opacity:0;filter:brightness(1.8) contrast(1.4) blur(2px);}
+  60%{opacity:1;filter:brightness(1.2) contrast(1.1) blur(.5px);}
+ 100%{opacity:1;filter:none;}
 }
 
 /* layout geral */
-main {
-  max-width: 720px;
-  width: 100%;
-  margin: auto;
-  padding: 16px;
-  display: grid;
-  grid-template-rows: auto auto auto;
-  row-gap: 20px;
-  box-sizing: border-box;
+main{
+  max-width:720px;
+  width:100%;
+  margin:auto;
+  padding:16px;
+  display:grid;
+  grid-template-rows:auto auto auto;
+  row-gap:20px;
+  box-sizing:border-box;
 }
 
 /* topo / pôster */
-header {
-  text-align: center;
+header{text-align:center;}
+header .marca img{
+  max-width:180px;
+  height:auto;
+  image-rendering:pixelated;
+  margin-bottom:12px;
 }
-header .marca img {
-  max-width: 180px;
-  height: auto;
-  image-rendering: pixelated;
-  margin-bottom: 12px;
+.poster-wrap{
+  background:var(--box-bg);
+  border:1px solid var(--line-dark);
+  box-shadow:2px 2px 0 var(--line-mid);
+  padding:8px;
 }
-.poster-wrap {
-  background: var(--box-bg);
-  border: 1px solid var(--line-dark);
-  box-shadow: 2px 2px 0 var(--line-mid);
-  padding: 8px;
-}
-.poster-wrap img {
-  width: 100%;
-  display: block;
-  border: 1px solid var(--line-dark);
+.poster-wrap img{
+  width:100%;
+  display:block;
+  border:1px solid var(--line-dark);
 }
 
 /* bloco lagosta fm */
-.fm-block {
-  background: var(--box-bg);
-  border: 1px solid var(--line-dark);
-  box-shadow: 2px 2px 0 var(--line-mid);
-  padding: 12px;
-  display: grid;
-  row-gap: 16px;
-  font-size: 14px;
+.fm-block{
+  background:var(--box-bg);
+  border:1px solid var(--line-dark);
+  box-shadow:2px 2px 0 var(--line-mid);
+  padding:12px;
+  display:grid;
+  row-gap:16px;
+  font-size:14px;
 }
 
 /* header da rádio */
-.fm-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
+.fm-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  flex-wrap:wrap;
 }
-.fm-title {
-  font-size: 16px;
-  font-weight: bold;
-  color: var(--fm-head);
-  letter-spacing: 0.03em;
+.fm-title{
+  font-size:16px;
+  font-weight:bold;
+  color:var(--fm-head);
+  letter-spacing:.03em;
 }
-.fm-status {
-  font-family: var(--mono);
-  font-size: 11px;
-  background: #fff4f4;
-  border: 1px solid var(--fm-head);
-  color: var(--fm-head);
-  padding: 2px 4px;
-  border-radius: 2px;
-  text-transform: uppercase;
-  line-height: 1;
+.fm-status{
+  font-family:var(--mono);
+  font-size:11px;
+  background:#fff4f4;
+  border:1px solid var(--fm-head);
+  color:var(--fm-head);
+  padding:2px 4px;
+  border-radius:2px;
+  text-transform:uppercase;
+  line-height:1;
 }
 
 /* player */
-.player-box {
-  border: 1px solid var(--line-dark);
-  background: #f2f2f2;
-  padding: 10px;
-  display: grid;
-  row-gap: 10px;
-  font-family: var(--mono);
-  font-size: 12px;
-  color: #000;
+.player-box{
+  border:1px solid var(--line-dark);
+  background:#f2f2f2;
+  padding:10px;
+  display:grid;
+  row-gap:10px;
+  font-family:var(--mono);
+  font-size:12px;
+  color:#000;
 }
 
 /* título do episódio e label FM */
-.player-row-top {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
+.player-row-top{
+  display:flex;
+  justify-content:space-between;
+  flex-wrap:wrap;
 }
-.player-left { font-weight: bold; }
-.player-right { color: var(--fm-head); font-weight: bold; }
+.player-left{font-weight:bold;}
+.player-right{color:var(--fm-head);font-weight:bold;}
 
 /* controles + barra */
-.player-controls {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  flex-wrap: nowrap;
-  width: 100%;
+.player-controls{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  flex-wrap:nowrap;
+  width:100%;
+}
+.play-btn{
+  background:var(--fm-head);
+  color:#fff;
+  border:0;
+  font-family:var(--mono);
+  font-size:12px;
+  font-weight:bold;
+  padding:6px 12px;
+  cursor:pointer;
+  border-radius:2px;
+  line-height:1;
 }
 
-/* botão play/pause */
-.play-btn {
-  background: var(--fm-head);
-  color: #fff;
-  border: 0;
-  font-family: var(--mono);
-  font-size: 12px;
-  font-weight: bold;
-  padding: 6px 12px;
-  cursor: pointer;
-  border-radius: 2px;
-  line-height: 1;
+/* barra de progresso */
+.progress-area{
+  flex:1;
+  min-width:0;
+  display:grid;
+  row-gap:6px;
+  width:100%;
 }
-
-/* barra de progresso + marcadores */
-.progress-area {
-  flex: 1;
-  min-width: 0;
-  display: grid;
-  row-gap: 6px;
-  width: 100%;
+.progress-wrapper{
+  position:relative;
+  width:100%;
 }
-
-.progress-wrapper {
-  position: relative;
-  width: 100%;
+.progress-bar-bg{
+  width:100%;
+  height:6px;
+  background:#d00;
+  border:1px solid var(--line-dark);
+  border-radius:2px;
+  overflow:hidden;
+  position:relative;
 }
-
-/* fundo vermelho */
-.progress-bar-bg {
-  width: 100%;
-  height: 6px;
-  background: #d00;
-  border: 1px solid var(--line-dark);
-  border-radius: 2px;
-  overflow: hidden;
-  position: relative;
-}
-
-/* preenchimento branco */
-.progress-bar-fill {
-  background: #fff;
-  width: 0%;
-  height: 100%;
+.progress-bar-fill{
+  background:#fff;
+  width:0%;
+  height:100%;
 }
 
 /* marcadores de comentários */
-.comment-marker {
-  position: absolute;
-  top: -3px;
-  width: 6px;
-  height: 12px;
-  background: var(--fm-green);
-  border: 1px solid #000;
-  border-radius: 1px;
-  cursor: pointer;
-  box-sizing: border-box;
+.comment-marker{
+  position:absolute;
+  top:-3px;
+  width:6px;
+  height:12px;
+  background:var(--fm-green);
+  border:1px solid #000;
+  border-radius:1px;
+  cursor:pointer;
+  box-sizing:border-box;
 }
-
-/* balão que aparece quando toca num marcador */
-.marker-bubble {
-  position: absolute;
-  left: 0;
-  bottom: 16px;
-  background: #000;
-  color: var(--fm-green);
-  font-family: var(--mono);
-  font-size: 10px;
-  line-height: 1.3;
-  padding: 4px 6px;
-  border: 1px solid var(--fm-green);
-  white-space: nowrap;
-  display: none;
-  pointer-events: none;
-  max-width: 220px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  z-index: 10;
+.marker-bubble{
+  position:absolute;
+  left:0;
+  bottom:16px;
+  background:#000;
+  color:var(--fm-green);
+  font-family:var(--mono);
+  font-size:10px;
+  line-height:1.3;
+  padding:4px 6px;
+  border:1px solid var(--fm-green);
+  white-space:nowrap;
+  display:none;
+  pointer-events:none;
+  max-width:220px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  z-index:10;
 }
-
-.time-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  line-height: 1;
-  width: 100%;
+.time-row{
+  display:flex;
+  justify-content:space-between;
+  font-size:11px;
+  line-height:1;
+  width:100%;
 }
-
-audio {
-  display: none;
-}
+audio{display:none;}
 
 /* chat */
-.chat-box {
-  border: 1px solid var(--line-dark);
-  background: var(--fm-black);
-  color: var(--fm-green);
-  font-family: var(--mono);
-  font-size: 11px;
-  display: grid;
-  row-gap: 8px;
-  padding: 10px;
-  border-radius: 2px;
+.chat-box{
+  border:1px solid var(--line-dark);
+  background:var(--fm-black);
+  color:var(--fm-green);
+  font-family:var(--mono);
+  font-size:11px;
+  display:grid;
+  row-gap:8px;
+  padding:10px;
+  border-radius:2px;
 }
-
-/* header chat */
-.chat-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
+.chat-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
 }
-.chat-head-left {
-  font-weight: bold;
-  color: var(--fm-green);
+.chat-head-left{
+  font-weight:bold;
+  color:var(--fm-green);
 }
-.chat-head-right {
-  background: #d00;
-  color: #fff;
-  font-weight: bold;
-  font-size: 10px;
-  padding: 1px 4px;
-  border-radius: 2px;
-  line-height: 1;
-  text-transform: uppercase;
+.chat-head-right{
+  background:#d00;
+  color:#fff;
+  font-weight:bold;
+  font-size:10px;
+  padding:1px 4px;
+  border-radius:2px;
+  line-height:1;
+  text-transform:uppercase;
 }
 
 /* log do chat */
-.chat-log {
-  max-height: 90px;
-  overflow-y: auto;
-  border: 1px solid var(--fm-green);
-  padding: 6px;
-  background: #000;
-  line-height: 1.4;
-  scrollbar-width: thin;
+.chat-log{
+  max-height:90px;
+  overflow-y:auto;
+  border:1px solid var(--fm-green);
+  padding:6px;
+  background:#000;
+  line-height:1.4;
+  scrollbar-width:thin;
 }
-.chat-line {
-  white-space: nowrap;
-  margin-bottom: 4px;
+.chat-line{
+  white-space:nowrap;
+  margin-bottom:4px;
 }
-.chat-line .hora {
-  color: #888;
+.chat-line .hora{color:#888;}
+.chat-line .nick{
+  color:var(--fm-green);
+  font-weight:bold;
 }
-.chat-line .nick {
-  color: var(--fm-green);
-  font-weight: bold;
-}
-.chat-line .at-time {
-  color: #888;
-  font-size: 10px;
-  margin-left: 4px;
+.chat-line .at-time{
+  color:#888;
+  font-size:10px;
+  margin-left:4px;
 }
 
-/* input + botão enviar */
-.chat-input-row {
-  display: flex;
-  gap: 6px;
+/* área de entrada */
+.chat-input-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
 }
-.chat-input-row input {
-  flex: 1;
-  background: #000;
-  color: var(--fm-green);
-  border: 1px solid var(--fm-green);
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 6px;
-  border-radius: 2px;
+.nick-field,
+.msg-field{
+  flex:1;
+  background:#000;
+  color:var(--fm-green);
+  border:1px solid var(--fm-green);
+  font-family:var(--mono);
+  font-size:11px;
+  padding:6px;
+  border-radius:2px;
 }
-.chat-input-row button {
-  background: var(--fm-green);
-  color: #000;
-  border: 0;
-  font-family: var(--mono);
-  font-size: 11px;
-  font-weight: bold;
-  padding: 6px 8px;
-  border-radius: 2px;
-  line-height: 1;
-  cursor: pointer;
+.nick-save-btn,
+.msg-send-btn{
+  background:var(--fm-green);
+  color:#000;
+  border:0;
+  font-family:var(--mono);
+  font-size:11px;
+  font-weight:bold;
+  padding:6px 8px;
+  border-radius:2px;
+  line-height:1;
+  cursor:pointer;
 }
 
 /* contato */
-footer {
-  text-align: center;
-  font-family: var(--serif);
-  font-size: 13px;
-  color: #000;
-  background: var(--box-bg);
-  border: 1px solid var(--line-dark);
-  box-shadow: 2px 2px 0 var(--line-mid);
-  padding: 10px;
+footer{
+  text-align:center;
+  font-family:var(--serif);
+  font-size:13px;
+  color:#000;
+  background:var(--box-bg);
+  border:1px solid var(--line-dark);
+  box-shadow:2px 2px 0 var(--line-mid);
+  padding:10px;
 }
-footer b {
-  font-family: var(--mono);
-  font-size: 12px;
+footer b{
+  font-family:var(--mono);
+  font-size:12px;
 }
 
 /* responsivo */
-@media (max-width: 480px) {
-  main { padding: 12px; row-gap: 16px; }
-  .chat-log { max-height: 80px; }
+@media(max-width:480px){
+  main{padding:12px;row-gap:16px;}
+  .chat-log{max-height:80px;}
 }
 </style>
 </head>
@@ -375,7 +358,7 @@ footer b {
           <div class="progress-wrapper">
             <div class="progress-bar-bg" id="progressBar">
               <div class="progress-bar-fill" id="progressFill"></div>
-              <!-- marcadores via JS -->
+              <!-- bolha marker -->
               <div class="marker-bubble" id="markerBubble"></div>
             </div>
           </div>
@@ -387,7 +370,7 @@ footer b {
         </div>
       </div>
 
-      <!-- áudio real -->
+      <!-- áudio real (Firebase Storage) -->
       <audio id="audioPlayer">
         <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
       </audio>
@@ -405,8 +388,13 @@ footer b {
       </div>
 
       <div class="chat-input-row">
-        <input id="chatInput" type="text" maxlength="180" placeholder="digite sua mensagem...">
-        <button id="sendBtn">ENVIAR</button>
+        <!-- nickname -->
+        <input id="nickInput" class="nick-field" type="text" maxlength="20" placeholder="seu nome / apelido...">
+        <button id="nickSaveBtn" class="nick-save-btn">OK</button>
+
+        <!-- mensagem -->
+        <input id="chatInput" class="msg-field" type="text" maxlength="180" placeholder="digite sua mensagem...">
+        <button id="sendBtn" class="msg-send-btn">ENVIAR</button>
       </div>
     </div>
   </section>
@@ -418,127 +406,175 @@ footer b {
   </footer>
 </main>
 
-<!-- SDKs Firebase v8 precisam vir antes do nosso script -->
+<!-- SDK Firebase v8 (precisa vir antes do script abaixo) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
 /* =========================================================
-   PLAYER / TIMECODE
+   NICKNAME (apelido do usuário)
    ========================================================= */
-const audioEl = document.getElementById("audioPlayer");
-const playBtn = document.getElementById("playBtn");
-const progressFill = document.getElementById("progressFill");
-const currentTimeEl = document.getElementById("currentTime");
-const totalTimeEl = document.getElementById("totalTime");
-const progressBar = document.getElementById("progressBar");
-const markerBubble = document.getElementById("markerBubble");
+const NICK_KEY = "lagostaNick_v1";
+const nickInputEl = document.getElementById("nickInput");
+const nickSaveBtn = document.getElementById("nickSaveBtn");
 
-function formatTime(sec) {
-  if (isNaN(sec)) return "--:--";
-  const m = Math.floor(sec / 60);
-  const s = Math.floor(sec % 60);
-  return String(m).padStart(2,"0") + ":" + String(s).padStart(2,"0");
+function loadNick(){
+  try{
+    const n = localStorage.getItem(NICK_KEY);
+    return n || "";
+  }catch(e){
+    return "";
+  }
+}
+function saveNick(nick){
+  try{
+    localStorage.setItem(NICK_KEY, nick);
+  }catch(e){}
 }
 
-playBtn.addEventListener("click", () => {
-  if (audioEl.paused) {
-    audioEl.play();
-    playBtn.textContent = "PAUSE";
-  } else {
-    audioEl.pause();
-    playBtn.textContent = "PLAY";
+let myNick = loadNick();
+if (myNick){
+  nickInputEl.value = myNick;
+}
+
+nickSaveBtn.addEventListener("click",()=>{
+  const chosen = nickInputEl.value.trim();
+  if(!chosen) return;
+  myNick = chosen;
+  saveNick(myNick);
+
+  // se você quiser travar depois que escolheu:
+  nickInputEl.disabled = true;
+  nickSaveBtn.disabled = true;
+});
+
+nickInputEl.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    e.preventDefault();
+    nickSaveBtn.click();
   }
 });
 
-audioEl.addEventListener("loadedmetadata", () => {
+/* =========================================================
+   PLAYER / TIMECODE
+   ========================================================= */
+const audioEl         = document.getElementById("audioPlayer");
+const playBtn         = document.getElementById("playBtn");
+const progressFill    = document.getElementById("progressFill");
+const currentTimeEl   = document.getElementById("currentTime");
+const totalTimeEl     = document.getElementById("totalTime");
+const progressBar     = document.getElementById("progressBar");
+const markerBubble    = document.getElementById("markerBubble");
+
+function formatTime(sec){
+  if(isNaN(sec)) return "--:--";
+  const m = Math.floor(sec/60);
+  const s = Math.floor(sec%60);
+  return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+}
+
+playBtn.addEventListener("click",()=>{
+  if(audioEl.paused){
+    audioEl.play();
+    playBtn.textContent="PAUSE";
+  }else{
+    audioEl.pause();
+    playBtn.textContent="PLAY";
+  }
+});
+
+audioEl.addEventListener("loadedmetadata",()=>{
   totalTimeEl.textContent = formatTime(audioEl.duration);
 });
 
-audioEl.addEventListener("timeupdate", () => {
+audioEl.addEventListener("timeupdate",()=>{
   currentTimeEl.textContent = formatTime(audioEl.currentTime);
-  if (!isNaN(audioEl.duration) && audioEl.duration > 0) {
-    const pct = (audioEl.currentTime / audioEl.duration) * 100;
-    progressFill.style.width = pct + "%";
+  if(!isNaN(audioEl.duration) && audioEl.duration>0){
+    const pct = (audioEl.currentTime/audioEl.duration)*100;
+    progressFill.style.width = pct+"%";
   }
 });
 
-/* permitir clicar na barra pra pular no áudio */
-progressBar.addEventListener("click", (e) => {
+/* clicar na barra -> pular no áudio */
+progressBar.addEventListener("click",(e)=>{
   const rect = progressBar.getBoundingClientRect();
   const clickX = e.clientX - rect.left;
-  const ratio = clickX / rect.width;
-  if (!isNaN(audioEl.duration)) {
-    audioEl.currentTime = ratio * audioEl.duration;
+  const ratio = clickX/rect.width;
+  if(!isNaN(audioEl.duration)){
+    audioEl.currentTime = ratio*audioEl.duration;
   }
 });
 
 /* =========================================================
    CHAT LOCAL + TIMECODE
    ========================================================= */
-
-const chatLogEl = document.getElementById("chatLog");
+const chatLogEl   = document.getElementById("chatLog");
 const chatInputEl = document.getElementById("chatInput");
-const sendBtn = document.getElementById("sendBtn");
+const sendBtn     = document.getElementById("sendBtn");
 
 const STORAGE_KEY = "lagostaChatMessages_v1";
 
-function loadLocalMessages() {
-  try {
+function loadLocalMessages(){
+  try{
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return [];
+    if(!raw) return [];
     return JSON.parse(raw);
-  } catch(e) {
+  }catch(e){
     return [];
   }
 }
-
-function saveLocalMessages(msgs) {
-  try {
+function saveLocalMessages(msgs){
+  try{
     localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
-  } catch(e) {}
+  }catch(e){}
 }
 
-function renderChat(msgs) {
-  chatLogEl.innerHTML = "";
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, s=>({
+    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
+  }[s]));
+}
+
+function renderChat(msgs){
+  chatLogEl.innerHTML="";
   msgs
-    .sort((a,b)=>a.at - b.at)
-    .forEach(m => {
-      const line = document.createElement("div");
-      line.className = "chat-line";
-      const hh = String(m.atHour).padStart(2,"0");
-      const mm = String(m.atMin).padStart(2,"0");
-      line.innerHTML = `
+    .sort((a,b)=>a.at-b.at)
+    .forEach(m=>{
+      const hh=String(m.atHour).padStart(2,"0");
+      const mm=String(m.atMin).padStart(2,"0");
+      const line=document.createElement("div");
+      line.className="chat-line";
+      line.innerHTML=`
         <span class="hora">[${hh}:${mm}]</span>
-        <span class="nick">${m.nick || "OUVINTE"}:</span>
+        <span class="nick">${escapeHtml(m.nick || "OUVINTE")}:</span>
         ${escapeHtml(m.text)}
         <span class="at-time">@${formatTime(m.tAudio)}</span>
       `;
       chatLogEl.appendChild(line);
     });
-
   chatLogEl.scrollTop = chatLogEl.scrollHeight;
 }
 
-function renderMarkers(msgs) {
+function renderMarkers(msgs){
+  // limpa marcadores antigos
   const olds = progressBar.querySelectorAll(".comment-marker");
-  olds.forEach(o => o.remove());
+  olds.forEach(o=>o.remove());
 
-  if (isNaN(audioEl.duration) || audioEl.duration === 0) return;
+  if(isNaN(audioEl.duration) || audioEl.duration===0) return;
 
-  msgs.forEach(m => {
+  msgs.forEach(m=>{
     const pct = (m.tAudio / audioEl.duration) * 100;
     const marker = document.createElement("div");
     marker.className = "comment-marker";
     marker.style.left = `calc(${pct}% - 3px)`;
 
-    marker.addEventListener("mouseenter", () => {
+    marker.addEventListener("mouseenter",()=>{
       showMarkerBubble(m, marker);
     });
-    marker.addEventListener("mouseleave", () => {
+    marker.addEventListener("mouseleave",()=>{
       hideMarkerBubble();
     });
-    marker.addEventListener("click", () => {
+    marker.addEventListener("click",()=>{
       audioEl.currentTime = m.tAudio;
     });
 
@@ -546,26 +582,38 @@ function renderMarkers(msgs) {
   });
 }
 
-function showMarkerBubble(msg, markerEl) {
+function showMarkerBubble(msg, markerEl){
   const rect = progressBar.getBoundingClientRect();
   const markerRect = markerEl.getBoundingClientRect();
 
-  markerBubble.style.display = "block";
+  markerBubble.style.display="block";
   markerBubble.textContent = `${formatTime(msg.tAudio)} — ${msg.text}`;
   const leftPos = markerRect.left - rect.left;
   markerBubble.style.left = leftPos + "px";
 }
-
-function hideMarkerBubble() {
-  markerBubble.style.display = "none";
+function hideMarkerBubble(){
+  markerBubble.style.display="none";
 }
 
-function addMessage(text) {
-  if (!text.trim()) return;
+function addMessage(text){
+  if(!text.trim()) return;
 
-  const now = new Date();
-  const at = now.getTime();
-  const atHour = now.getHours();
+  // se o usuário não clicou OK no nick ainda, salva agora com o valor atual do input
+  if(!myNick || !myNick.trim()){
+    const tempNick = nickInputEl.value.trim();
+    if(tempNick){
+      myNick = tempNick;
+      saveNick(myNick);
+      nickInputEl.disabled = true;
+      nickSaveBtn.disabled = true;
+    } else {
+      myNick = "OUVINTE";
+    }
+  }
+
+  const now   = new Date();
+  const at    = now.getTime();
+  const atHour= now.getHours();
   const atMin = now.getMinutes();
 
   const tAudio = (!isNaN(audioEl.currentTime)) ? audioEl.currentTime : 0;
@@ -576,7 +624,7 @@ function addMessage(text) {
     at,
     atHour,
     atMin,
-    nick: "VOCÊ"
+    nick: myNick || "OUVINTE"
   };
 
   messages.push(newMsg);
@@ -589,32 +637,24 @@ function addMessage(text) {
   renderMarkers(messages);
 }
 
-sendBtn.addEventListener("click", () => {
+sendBtn.addEventListener("click",()=>{
   const v = chatInputEl.value;
-  if (!v.trim()) return;
+  if(!v.trim()) return;
   addMessage(v);
-  chatInputEl.value = "";
+  chatInputEl.value="";
 });
-
-chatInputEl.addEventListener("keydown", e => {
-  if (e.key === "Enter") {
+chatInputEl.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
     e.preventDefault();
     const v = chatInputEl.value;
-    if (!v.trim()) return;
+    if(!v.trim()) return;
     addMessage(v);
-    chatInputEl.value = "";
+    chatInputEl.value="";
   }
 });
 
-function escapeHtml(str) {
-  return str.replace(/[&<>"']/g, s => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
-  }[s]));
-}
-
 let messages = loadLocalMessages();
-
-audioEl.addEventListener("loadedmetadata", () => {
+audioEl.addEventListener("loadedmetadata",()=>{
   renderChat(messages);
   renderMarkers(messages);
 });
@@ -623,12 +663,6 @@ renderChat(messages);
 /* =========================================================
    FIREBASE (tempo real)
    ========================================================= */
-
-let firebaseApp = null;
-let firebaseDb = null;
-let firebaseEnabled = false;
-
-/* CONFIG DO SEU FIREBASE */
 const firebaseConfig = {
   apiKey: "AIzaSyD4tr7eZNSvs3z49ROibvM48mjEZLCImZo",
   authDomain: "lagosta-fm.firebaseapp.com",
@@ -639,63 +673,56 @@ const firebaseConfig = {
   appId: "1:1037798589381:web:f9c6b5d7721746994881ac"
 };
 
-/* inicializa firebase no modo SDK v8 (global) */
-function firebaseInit(cfg) {
-  firebaseApp = firebase.initializeApp(cfg);
-  firebaseDb  = firebase.database();
+let firebaseAppRef = null;
+let firebaseDbRef  = null;
+let firebaseEnabled = false;
+
+function firebaseInit(cfg){
+  firebaseAppRef = firebase.initializeApp(cfg);
+  firebaseDbRef  = firebase.database();
   firebaseEnabled = true;
 }
-
-/* gera chave nova pra mensagem */
-function firebasePushKey() {
-  const ref = firebaseDb.ref("messages");
+function firebasePushKey(){
+  const ref = firebaseDbRef.ref("messages");
   return ref.push().key;
 }
-
-/* escreve mensagem no realtime db */
-function firebaseWriteMessage(msg, key) {
-  const ref = firebaseDb.ref("messages/" + key);
+function firebaseWriteMessage(msg,key){
+  const ref = firebaseDbRef.ref("messages/"+key);
   ref.set(msg);
 }
-
-/* escuta alterações em tempo real */
-function firebaseOnMessage(cb) {
-  const ref = firebaseDb.ref("messages");
-  ref.on("value", (snapshot) => {
-    const data = snapshot.val() || {};
+function firebaseOnMessage(cb){
+  const ref = firebaseDbRef.ref("messages");
+  ref.on("value",(snap)=>{
+    const data = snap.val() || {};
     const list = Object.values(data);
     cb(list);
   });
 }
-
-/* envia pro db */
-function sendToFirebase(msg) {
-  if (!firebaseEnabled || !firebaseDb) return;
-  try {
+function sendToFirebase(msg){
+  if(!firebaseEnabled || !firebaseDbRef) return;
+  try{
     const newKey = firebasePushKey();
-    firebaseWriteMessage(msg, newKey);
-  } catch(e) {
-    // se der pau, tudo bem, fica só local
+    firebaseWriteMessage(msg,newKey);
+  }catch(e){
+    // se falhar, ok
   }
 }
-
-/* quando receber msgs do db, mergeia e rerenderiza */
-function startFirebaseListener() {
-  if (!firebaseEnabled || !firebaseDb) return;
-  firebaseOnMessage((incomingList) => {
-    let changed = false;
-    incomingList.forEach(m => {
+function startFirebaseListener(){
+  if(!firebaseEnabled || !firebaseDbRef) return;
+  firebaseOnMessage((incomingList)=>{
+    let changed=false;
+    incomingList.forEach(m=>{
       const exists = messages.some(
-        x => x.at === m.at &&
-             x.text === m.text &&
+        x => x.at===m.at &&
+             x.text===m.text &&
              Math.abs(x.tAudio - m.tAudio) < 0.01
       );
-      if (!exists) {
+      if(!exists){
         messages.push(m);
-        changed = true;
+        changed=true;
       }
     });
-    if (changed) {
+    if(changed){
       saveLocalMessages(messages);
       renderChat(messages);
       renderMarkers(messages);
@@ -703,10 +730,8 @@ function startFirebaseListener() {
   });
 }
 
-/* inicializar firebase e listener */
 firebaseInit(firebaseConfig);
 startFirebaseListener();
-
 </script>
 
 </body>
