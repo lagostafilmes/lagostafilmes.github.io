@@ -433,6 +433,8 @@ footer b{
 <!-- SDK Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+
 
 <script>
 /* =========================================================
@@ -737,7 +739,18 @@ function startFirebaseListener(){
 }
 
 firebaseInit(firebaseConfig);
-startFirebaseListener();
+
+firebase.auth().signInAnonymously().catch(err=>{
+  console.error("Erro ao autenticar anonimamente:", err);
+});
+
+firebase.auth().onAuthStateChanged((user)=>{
+  if (user) {
+    firebaseEnabled = true;
+    startFirebaseListener();
+  }
+});
+
 </script>
 
 </body>
