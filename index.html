@@ -1,82 +1,88 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lagosta Filmes</title>
 
-<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
-<link rel="icon" type="image/x-icon" href="/favicon.ico">
-<link rel="manifest" href="/site.webmanifest">
-<meta name="theme-color" content="#A5C7F9">
+<link rel="icon" href="/favicon.ico">
 
 <style>
-:root {
-  --bg-blue:#A5C7F9;
-  --line-dark:#000;
-  --line-mid:rgba(0,0,0,0.4);
-  --box-bg:#fff;
-  --fm-head:#7a0000;
-  --fm-green:#00e060;
-  --fm-black:#111;
-  --mono:"Courier New", monospace;
-  --bodyfont:"Comic Sans MS","Trebuchet MS",Arial,sans-serif;
-  --serif:"Times New Roman", Times, serif;
-}
 body{
-  margin:0;min-height:100vh;background:var(--bg-blue);
-  font-family:var(--bodyfont);display:flex;
+  margin:0;
+  background:#A5C7F9;
+  font-family: Arial, sans-serif;
 }
 main{
-  max-width:720px;width:100%;margin:auto;
-  padding:16px;display:grid;row-gap:20px;
+  max-width:720px;
+  margin:40px auto;
+  display:grid;
+  gap:30px;
 }
-header{text-align:center;}
-header img{max-width:180px;margin-bottom:12px;}
-.poster-wrap{
-  background:#fff;border:1px solid #000;padding:8px;
-}
-.poster-wrap img{width:100%;border:1px solid #000;}
-.fm-block{
-  background:#fff;border:1px solid #000;
+.box{
+  background:#fff;
+  border:1px solid #000;
   box-shadow:2px 2px 0 rgba(0,0,0,.4);
-  padding:12px;display:grid;row-gap:16px;
+  padding:14px;
 }
-.fm-header{
-  display:flex;justify-content:space-between;
-  font-weight:bold;color:#7a0000;
+header{
+  text-align:center;
 }
-.player-box{
-  border:1px solid #000;background:#f2f2f2;
-  padding:10px;font-family:var(--mono);
+header img{
+  max-width:300px;
 }
-.player-row-top{
-  display:flex;justify-content:space-between;
+.fm-title{
+  font-weight:bold;
+  color:#7a0000;
 }
-.chat-box{
-  border:1px solid #000;background:#111;
-  color:#00e060;font-family:var(--mono);
-  font-size:11px;padding:10px;
+.status{
+  float:right;
+  font-size:12px;
 }
-.chat-log{
-  max-height:90px;overflow-y:auto;
+.player button{
+  width:100%;
+  padding:10px;
+  background:#7a0000;
+  color:#fff;
+  border:none;
+  font-weight:bold;
+}
+.bar{
+  height:6px;
+  background:#d00;
+  margin-top:6px;
+}
+.fill{
+  height:100%;
+  background:#fff;
+  width:0%;
+}
+.chat{
+  background:#111;
+  color:#00e060;
+  font-family: monospace;
+  padding:10px;
+  margin-top:10px;
+}
+.log{
+  max-height:120px;
+  overflow:auto;
   border:1px solid #00e060;
-  padding:6px;background:#000;
+  padding:6px;
 }
-.msg-field{
-  width:100%;background:#000;color:#00e060;
-  border:1px solid #00e060;padding:6px;
+input,button.send{
+  width:100%;
+  padding:6px;
+  margin-top:6px;
+  font-family: monospace;
 }
-.msg-send-btn{
-  width:100%;margin-top:6px;
-  background:#00e060;border:0;
-  padding:6px;font-family:var(--mono);
+button.send{
+  background:#00e060;
+  border:none;
 }
 footer{
-  text-align:center;font-family:var(--serif);
-  font-size:13px;background:#fff;
-  border:1px solid #000;padding:10px;
+  text-align:center;
+  font-size:13px;
 }
 </style>
 </head>
@@ -84,132 +90,88 @@ footer{
 <body>
 <main>
 
-<!-- BANNER (INALTERADO) -->
-<header>
-  <img src="logo-lagosta-filmes.png" alt="LAGOSTA FILMES">
-  <div class="poster-wrap">
-    <img src="poster-fortown.png" alt="EM BREVE">
-  </div>
+<header class="box">
+  <img src="logo-lagosta-filmes.png"><br>
+  <img src="poster-fortown.png" style="max-width:100%;margin-top:10px">
 </header>
 
-<!-- EPISÓDIO PILOTO 02 (POST NOVO, SIMPLES) -->
-<section class="fm-block">
-  <div class="fm-header">
-    <div>LAGOSTA FM</div>
-    <div>ON AIR</div>
+<!-- EP 02 -->
+<section class="box">
+  <div class="fm-title">LAGOSTA FM — EPISÓDIO PILOTO 02 <span class="status">ON AIR</span></div>
+
+  <div class="player">
+    <button onclick="toggle('ep02')">PLAY / PAUSE</button>
+    <div class="bar"><div class="fill" id="fill_ep02"></div></div>
+    <audio id="audio_ep02" src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-02.mp3?alt=media"></audio>
   </div>
 
-  <div class="player-box">
-    <div class="player-row-top">
-      <div><b>EPISÓDIO PILOTO 02</b></div>
-      <div>LAGOSTA FM</div>
-    </div>
-
-    <audio controls style="width:100%;margin-top:8px;">
-      <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-02.mp3?alt=media&token=c6ad1ade-f420-4c59-9b2a-01ff991669ad" type="audio/mpeg">
-    </audio>
+  <div class="chat">
+    <div class="log" id="log_ep02"></div>
+    <input id="input_ep02" placeholder="digite sua mensagem">
+    <button class="send" onclick="send('ep02')">ENVIAR</button>
   </div>
 </section>
 
-<!-- EPISÓDIO PILOTO (EP 1) — INTACTO -->
-<section class="fm-block">
-  <div class="fm-header">
-    <div>LAGOSTA FM</div>
-    <div>ARQUIVO</div>
+<!-- EP 01 -->
+<section class="box">
+  <div class="fm-title">LAGOSTA FM — EPISÓDIO PILOTO <span class="status">ARQUIVO</span></div>
+
+  <div class="player">
+    <button onclick="toggle('ep01')">PLAY / PAUSE</button>
+    <div class="bar"><div class="fill" id="fill_ep01"></div></div>
+    <audio id="audio_ep01" src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media"></audio>
   </div>
 
-  <div class="player-box">
-    <div class="player-row-top">
-      <div><b>EPISÓDIO PILOTO</b></div>
-      <div>LAGOSTA FM</div>
-    </div>
-
-    <button id="playBtn">PLAY</button>
-
-    <div id="progressBar">
-      <div id="progressFill"></div>
-    </div>
-
-    <div>
-      <span id="currentTime">00:00</span>
-      <span id="totalTime">--:--</span>
-    </div>
-
-    <audio id="audioPlayer">
-      <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
-    </audio>
-  </div>
-
-  <div class="chat-box">
-    <div id="chatLog" class="chat-log"></div>
-    <input id="chatInput" class="msg-field" placeholder="digite sua mensagem">
-    <button id="sendBtn" class="msg-send-btn">ENVIAR</button>
+  <div class="chat">
+    <div class="log" id="log_ep01"></div>
+    <input id="input_ep01" placeholder="digite sua mensagem">
+    <button class="send" onclick="send('ep01')">ENVIAR</button>
   </div>
 </section>
 
-<footer>
-  <b>oi@lagostafilmes.com</b><br>
-  insta: <b>@lagosta.filmes</b>
+<footer class="box">
+  oi@lagostafilmes.com<br>
+  insta: @lagosta.filmes
 </footer>
 
 </main>
 
-<!-- JS ORIGINAL DO EP 1 (INTOCADO) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-const audioEl=document.getElementById("audioPlayer");
-const playBtn=document.getElementById("playBtn");
-const currentTimeEl=document.getElementById("currentTime");
-const totalTimeEl=document.getElementById("totalTime");
-const progressFill=document.getElementById("progressFill");
-
-playBtn.onclick=()=>{
-  audioEl.paused?(audioEl.play(),playBtn.textContent="PAUSE"):
-                  (audioEl.pause(),playBtn.textContent="PLAY");
-};
-
-audioEl.onloadedmetadata=()=>{
-  totalTimeEl.textContent=format(audioEl.duration);
-};
-audioEl.ontimeupdate=()=>{
-  currentTimeEl.textContent=format(audioEl.currentTime);
-  progressFill.style.width=(audioEl.currentTime/audioEl.duration*100)+"%";
-};
-
-function format(s){
-  s=Math.floor(s);
-  return String(Math.floor(s/60)).padStart(2,"0")+":"+
-         String(s%60).padStart(2,"0");
-}
-
 firebase.initializeApp({
-  apiKey:"AIzaSyD4tr7eZNSvs3z49ROibvM48mjEZLCImZo",
-  databaseURL:"https://lagosta-fm-default-rtdb.firebaseio.com"
+  apiKey: "AIzaSyD4tr7eZNSvs3z49ROibvM48mjEZLCImZo",
+  databaseURL: "https://lagosta-fm-default-rtdb.firebaseio.com"
 });
-const db=firebase.database();
+const db = firebase.database();
 
-const log=document.getElementById("chatLog");
-const input=document.getElementById("chatInput");
-const send=document.getElementById("sendBtn");
-
-db.ref("messages").on("value",s=>{
-  log.innerHTML="";
-  Object.values(s.val()||{}).forEach(m=>{
-    log.innerHTML+=`<div>[${m.time}] ${m.text}</div>`;
+function toggle(id){
+  const a=document.getElementById("audio_"+id);
+  a.paused?a.play():a.pause();
+}
+["ep01","ep02"].forEach(id=>{
+  const a=document.getElementById("audio_"+id);
+  const f=document.getElementById("fill_"+id);
+  a.ontimeupdate=()=>f.style.width=(a.currentTime/a.duration*100||0)+"%";
+  db.ref("messages_"+id).on("value",s=>{
+    const log=document.getElementById("log_"+id);
+    log.innerHTML="";
+    Object.values(s.val()||{}).forEach(m=>{
+      log.innerHTML+=`<div>[${m.t}] ${m.text}</div>`;
+    });
+    log.scrollTop=log.scrollHeight;
   });
-  log.scrollTop=9999;
 });
-
-send.onclick=()=>{
-  if(!input.value.trim())return;
-  db.ref("messages").push({
-    text:input.value,
-    time:new Date().toLocaleTimeString()
+function send(id){
+  const i=document.getElementById("input_"+id);
+  if(!i.value.trim())return;
+  db.ref("messages_"+id).push({
+    text:i.value,
+    t:new Date().toLocaleTimeString()
   });
-  input.value="";
-};
+  i.value="";
+}
 </script>
 
 </body>
