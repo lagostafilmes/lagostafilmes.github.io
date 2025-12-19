@@ -1,75 +1,83 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
 <title>Lagosta Filmes</title>
 
-<link rel="icon" href="/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="manifest" href="/site.webmanifest">
 <meta name="theme-color" content="#A5C7F9">
 
 <style>
-:root{
-  --bg:#A5C7F9;--box:#fff;--line:#000;--shadow:rgba(0,0,0,.4);
-  --fm-red:#7a0000;--fm-green:#00e060;--fm-black:#111;
-  --mono:"Courier New",monospace;
+:root {
+  --bg-blue:#A5C7F9;
+  --line-dark:#000;
+  --line-mid:rgba(0,0,0,0.4);
+  --box-bg:#fff;
+  --fm-head:#7a0000;
+  --fm-green:#00e060;
+  --fm-black:#111;
+  --mono:"Courier New", monospace;
+  --bodyfont:"Comic Sans MS","Trebuchet MS",Arial,sans-serif;
+  --serif:"Times New Roman", Times, serif;
 }
 body{
-  margin:0;background:var(--bg);font-family:Arial,Helvetica,sans-serif;
-  display:flex;justify-content:center;
+  margin:0;min-height:100vh;background:var(--bg-blue);
+  font-family:var(--bodyfont);display:flex;
 }
 main{
-  max-width:720px;width:100%;padding:16px;
-  display:grid;row-gap:24px;
+  max-width:720px;width:100%;margin:auto;
+  padding:16px;display:grid;row-gap:20px;
 }
-.box{
-  background:var(--box);border:1px solid var(--line);
-  box-shadow:2px 2px 0 var(--shadow);padding:12px;
+header{text-align:center;}
+header img{max-width:180px;margin-bottom:12px;}
+.poster-wrap{
+  background:#fff;border:1px solid #000;padding:8px;
 }
-header{text-align:center}
-header img{max-width:180px;margin-bottom:12px}
-.poster img{width:100%;border:1px solid #000}
-
+.poster-wrap img{width:100%;border:1px solid #000;}
+.fm-block{
+  background:#fff;border:1px solid #000;
+  box-shadow:2px 2px 0 rgba(0,0,0,.4);
+  padding:12px;display:grid;row-gap:16px;
+}
 .fm-header{
   display:flex;justify-content:space-between;
-  font-weight:bold;color:var(--fm-red);
+  font-weight:bold;color:#7a0000;
 }
-.player{
-  margin-top:10px;font-family:var(--mono);font-size:12px;
+.player-box{
+  border:1px solid #000;background:#f2f2f2;
+  padding:10px;font-family:var(--mono);
 }
-.player button{
-  width:100%;background:var(--fm-red);color:#fff;border:0;
-  padding:8px;cursor:pointer;
+.player-row-top{
+  display:flex;justify-content:space-between;
 }
-.progress{
-  height:6px;background:#d00;border:1px solid #000;margin:6px 0;
-}
-.progress span{
-  display:block;height:100%;background:#fff;width:0%;
-}
-.time{
-  display:flex;justify-content:space-between;font-size:11px;
-}
-
-.chat{
-  margin-top:12px;background:var(--fm-black);color:var(--fm-green);
-  font-family:var(--mono);font-size:11px;padding:8px;
+.chat-box{
+  border:1px solid #000;background:#111;
+  color:#00e060;font-family:var(--mono);
+  font-size:11px;padding:10px;
 }
 .chat-log{
-  max-height:90px;overflow:auto;border:1px solid var(--fm-green);
+  max-height:90px;overflow-y:auto;
+  border:1px solid #00e060;
   padding:6px;background:#000;
 }
-.chat input{
-  width:100%;margin-top:6px;background:#000;color:var(--fm-green);
-  border:1px solid var(--fm-green);padding:6px;
+.msg-field{
+  width:100%;background:#000;color:#00e060;
+  border:1px solid #00e060;padding:6px;
 }
-.chat button{
-  width:100%;margin-top:6px;background:var(--fm-green);
-  border:0;padding:6px;font-family:var(--mono);cursor:pointer;
+.msg-send-btn{
+  width:100%;margin-top:6px;
+  background:#00e060;border:0;
+  padding:6px;font-family:var(--mono);
 }
-.old{opacity:.85}
-
-footer{text-align:center;font-family:var(--mono);font-size:12px}
+footer{
+  text-align:center;font-family:var(--serif);
+  font-size:13px;background:#fff;
+  border:1px solid #000;padding:10px;
+}
 </style>
 </head>
 
@@ -77,122 +85,132 @@ footer{text-align:center;font-family:var(--mono);font-size:12px}
 <main>
 
 <!-- BANNER (INALTERADO) -->
-<header class="box">
-  <img src="logo-lagosta-filmes.png" alt="Lagosta Filmes">
-  <div class="poster">
-    <img src="poster-fortown.png" alt="Em breve">
+<header>
+  <img src="logo-lagosta-filmes.png" alt="LAGOSTA FILMES">
+  <div class="poster-wrap">
+    <img src="poster-fortown.png" alt="EM BREVE">
   </div>
 </header>
 
-<!-- EPISÓDIO PILOTO 02 (POST NOVO) -->
-<section class="box fm-block" data-ep="ep02"
-  data-audio="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-02.mp3?alt=media">
+<!-- EPISÓDIO PILOTO 02 (POST NOVO, SIMPLES) -->
+<section class="fm-block">
   <div class="fm-header">
-    <span>LAGOSTA FM</span><span>ON AIR</span>
+    <div>LAGOSTA FM</div>
+    <div>ON AIR</div>
   </div>
 
-  <strong>EPISÓDIO PILOTO 02</strong>
+  <div class="player-box">
+    <div class="player-row-top">
+      <div><b>EPISÓDIO PILOTO 02</b></div>
+      <div>LAGOSTA FM</div>
+    </div>
 
-  <div class="player">
-    <button>PLAY</button>
-    <div class="progress"><span></span></div>
-    <div class="time"><span>00:00</span><span>--:--</span></div>
-    <audio></audio>
-  </div>
-
-  <div class="chat">
-    <div class="chat-log"></div>
-    <input placeholder="digite sua mensagem">
-    <button>ENVIAR</button>
+    <audio controls style="width:100%;margin-top:8px;">
+      <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-02.mp3?alt=media&token=c6ad1ade-f420-4c59-9b2a-01ff991669ad" type="audio/mpeg">
+    </audio>
   </div>
 </section>
 
-<!-- EPISÓDIO PILOTO 01 (POST ANTIGO) -->
-<section class="box fm-block old" data-ep="ep01"
-  data-audio="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media">
+<!-- EPISÓDIO PILOTO (EP 1) — INTACTO -->
+<section class="fm-block">
   <div class="fm-header">
-    <span>LAGOSTA FM</span><span>ARQUIVO</span>
+    <div>LAGOSTA FM</div>
+    <div>ARQUIVO</div>
   </div>
 
-  <strong>EPISÓDIO PILOTO</strong>
+  <div class="player-box">
+    <div class="player-row-top">
+      <div><b>EPISÓDIO PILOTO</b></div>
+      <div>LAGOSTA FM</div>
+    </div>
 
-  <div class="player">
-    <button>PLAY</button>
-    <div class="progress"><span></span></div>
-    <div class="time"><span>00:00</span><span>--:--</span></div>
-    <audio></audio>
+    <button id="playBtn">PLAY</button>
+
+    <div id="progressBar">
+      <div id="progressFill"></div>
+    </div>
+
+    <div>
+      <span id="currentTime">00:00</span>
+      <span id="totalTime">--:--</span>
+    </div>
+
+    <audio id="audioPlayer">
+      <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
+    </audio>
   </div>
 
-  <div class="chat">
-    <div class="chat-log"></div>
-    <input placeholder="digite sua mensagem">
-    <button>ENVIAR</button>
+  <div class="chat-box">
+    <div id="chatLog" class="chat-log"></div>
+    <input id="chatInput" class="msg-field" placeholder="digite sua mensagem">
+    <button id="sendBtn" class="msg-send-btn">ENVIAR</button>
   </div>
 </section>
 
-<footer class="box">
-  oi@lagostafilmes.com<br>
-  insta: @lagosta.filmes
+<footer>
+  <b>oi@lagostafilmes.com</b><br>
+  insta: <b>@lagosta.filmes</b>
 </footer>
 
 </main>
 
-<!-- FIREBASE -->
+<!-- JS ORIGINAL DO EP 1 (INTOCADO) -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 
 <script>
-firebase.initializeApp({
-  apiKey: "AIzaSyD4tr7eZNSvs3z49ROibvM48mjEZLCImZo",
-  databaseURL: "https://lagosta-fm-default-rtdb.firebaseio.com"
-});
-const db = firebase.database();
+const audioEl=document.getElementById("audioPlayer");
+const playBtn=document.getElementById("playBtn");
+const currentTimeEl=document.getElementById("currentTime");
+const totalTimeEl=document.getElementById("totalTime");
+const progressFill=document.getElementById("progressFill");
 
-document.querySelectorAll(".fm-block").forEach(block=>{
-  const ep = block.dataset.ep;
-  const audio = block.querySelector("audio");
-  audio.src = block.dataset.audio;
+playBtn.onclick=()=>{
+  audioEl.paused?(audioEl.play(),playBtn.textContent="PAUSE"):
+                  (audioEl.pause(),playBtn.textContent="PLAY");
+};
 
-  const btn = block.querySelector(".player button");
-  const bar = block.querySelector(".progress span");
-  const tCur = block.querySelector(".time span:first-child");
-  const tTot = block.querySelector(".time span:last-child");
-
-  btn.onclick = ()=>{
-    if(audio.paused){audio.play();btn.textContent="PAUSE";}
-    else{audio.pause();btn.textContent="PLAY";}
-  };
-
-  audio.onloadedmetadata = ()=>{
-    tTot.textContent = format(audio.duration);
-  };
-  audio.ontimeupdate = ()=>{
-    tCur.textContent = format(audio.currentTime);
-    bar.style.width = (audio.currentTime/audio.duration*100)+"%";
-  };
-
-  const log = block.querySelector(".chat-log");
-  const input = block.querySelector(".chat input");
-  const send = block.querySelector(".chat button");
-
-  db.ref("messages/"+ep).on("value",snap=>{
-    log.innerHTML="";
-    Object.values(snap.val()||{}).forEach(m=>{
-      log.innerHTML += `<div>[${m.time}] ${m.text}</div>`;
-    });
-    log.scrollTop = 9999;
-  });
-
-  send.onclick = ()=>{
-    if(!input.value.trim())return;
-    db.ref("messages/"+ep).push({
-      text: input.value,
-      time: new Date().toLocaleTimeString()
-    });
-    input.value="";
-  };
-});
+audioEl.onloadedmetadata=()=>{
+  totalTimeEl.textContent=format(audioEl.duration);
+};
+audioEl.ontimeupdate=()=>{
+  currentTimeEl.textContent=format(audioEl.currentTime);
+  progressFill.style.width=(audioEl.currentTime/audioEl.duration*100)+"%";
+};
 
 function format(s){
   s=Math.floor(s);
-  return String(Math.floor(s/60)).pa
+  return String(Math.floor(s/60)).padStart(2,"0")+":"+
+         String(s%60).padStart(2,"0");
+}
+
+firebase.initializeApp({
+  apiKey:"AIzaSyD4tr7eZNSvs3z49ROibvM48mjEZLCImZo",
+  databaseURL:"https://lagosta-fm-default-rtdb.firebaseio.com"
+});
+const db=firebase.database();
+
+const log=document.getElementById("chatLog");
+const input=document.getElementById("chatInput");
+const send=document.getElementById("sendBtn");
+
+db.ref("messages").on("value",s=>{
+  log.innerHTML="";
+  Object.values(s.val()||{}).forEach(m=>{
+    log.innerHTML+=`<div>[${m.time}] ${m.text}</div>`;
+  });
+  log.scrollTop=9999;
+});
+
+send.onclick=()=>{
+  if(!input.value.trim())return;
+  db.ref("messages").push({
+    text:input.value,
+    time:new Date().toLocaleTimeString()
+  });
+  input.value="";
+};
+</script>
+
+</body>
+</html>
