@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Lagosta Filmes</title>
+<meta name="description" content="Lagosta Filmes. Fortown!, em breve. Lagosta FM, no ar. Comentários.">
 
 <!-- Favicon Lagosta Filmes -->
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -13,435 +14,316 @@
 <meta name="theme-color" content="#A5C7F9">
 
 <style>
-:root {
---bg-blue: #A5C7F9;
---line-dark: #000;
---line-mid: rgba(0,0,0,0.4);
---box-bg: #ffffff;
---fm-head: #7a0000;
---fm-green: #00e060;
---fm-black: #111;
---mono: "Courier New", monospace;
---bodyfont: "Comic Sans MS","Trebuchet MS",Arial,sans-serif;
---serif: "Times New Roman", Times, serif;
+/* Layout: uma página branca de 660px sobre o azul-céu, como um fotolog de 2005 —
+   o nome com o status (no ar, ouvindo), a foto do dia (uma tira de super 16), a legenda,
+   e os comentários dos amigos, "fulano diz:". Tahoma 11px, links azuis, regras cinza. */
+:root{
+  --ceu:#A5C7F9;       /* o fundo */
+  --branco:#FDEBC6;    /* a página: creme claro */
+  --moldura:#D9B468;   /* a borda da página */
+  --texto:#1C1C1C;
+  --cinza:#7A6A4A;     /* datas, legendas */
+  --regra:#E9D3A3;     /* as linhas */
+  --link:#1F4FBF;
+  --vermelho:#D23B2C;  /* o vermelho do logo */
+  --online:#3DB54A;    /* o verdinho de "online" */
+  --campo:#B59A5E;     /* borda de campo de texto */
+  --faixa:#FBD899;     /* o creme do logo (o mesmo do avatar do insta): cabeçalho e status */
+  --fonte:Tahoma,Verdana,"Segoe UI","DejaVu Sans",sans-serif;
 }
 
-/* fundo + boot */
-body {
-margin: 0;
-min-height: 100vh;
-background: var(--bg-blue);
-color: #000;
-font-family: var(--bodyfont);
-display: flex;
-opacity: 0;
-animation: boot .6s ease-out forwards;
+*{box-sizing:border-box}
+html{background:var(--ceu)}
+body{
+  margin:0;
+  background:var(--ceu);
+  color:var(--texto);
+  font:11px/1.55 var(--fonte);
+  padding-block:26px 30px;
+  padding-left:max(12px,env(safe-area-inset-left,0px));
+  padding-right:max(12px,env(safe-area-inset-right,0px));
 }
-@keyframes boot{
-0%{opacity:0;filter:brightness(1.8) contrast(1.4) blur(2px);}
-60%{opacity:1;filter:brightness(1.2) contrast(1.1) blur(.5px);}
-100%{opacity:1;filter:none;}
+img{max-width:100%}
+a{color:var(--link);text-decoration:none}
+a:hover{text-decoration:underline}
+:focus-visible{outline:1px dotted var(--texto);outline-offset:2px}
+
+/* ---------- a página ---------- */
+.pagina{
+  max-width:660px;
+  margin:0 auto;
+  background:var(--branco);
+  border:1px solid var(--moldura);
 }
 
-/* layout geral */
-main{
-max-width:720px;
-width:100%;
-margin:auto;
-padding:16px;
-display:grid;
-grid-template-rows:auto auto auto;
-row-gap:20px;
-box-sizing:border-box;
+/* o nome */
+.cabeca{
+  background:var(--faixa);
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  gap:12px;
+  padding:14px 16px 10px;
 }
+.cabeca .marca{display:block;width:104px;line-height:0}
+.cabeca .marca img{width:100%;height:auto;display:block}
+.cabeca .lugar{color:var(--cinza);padding-bottom:2px}
 
-/* topo / pôster */
-header{text-align:center;}
-header .marca img{
-max-width:180px;
-height:auto;
-image-rendering:pixelated;
-margin-bottom:12px;
+/* o status: no ar, ouvindo */
+.status{
+  background:var(--faixa);
+  border-top:1px solid rgba(0,0,0,.08);
+  border-bottom:1px solid var(--regra);
+  padding:7px 16px 8px;
 }
-.poster-wrap{
-background:var(--box-bg);
-border:1px solid var(--line-dark);
-box-shadow:2px 2px 0 var(--line-mid);
-padding:8px;
+.status-linha{
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px 14px;
+  align-items:baseline;
 }
-.poster-wrap img{
-width:100%;
-display:block;
-border:1px solid var(--line-dark);
+.no-ar{white-space:nowrap}
+.no-ar::before{
+  content:"";
+  display:inline-block;
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--online);
+  border:1px solid #2E8F3A;
+  margin-right:5px;
+  vertical-align:-1px;
 }
-
-/* bloco lagosta fm */
-.fm-block{
-background:var(--box-bg);
-border:1px solid var(--line-dark);
-box-shadow:2px 2px 0 var(--line-mid);
-padding:12px;
-display:grid;
-row-gap:16px;
-font-size:14px;
+.ouvindo{color:var(--texto)}
+.ouvindo .nota{color:var(--cinza);margin-right:3px}
+.controles{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:6px;
 }
-
-/* header da rádio */
-.fm-header{
-display:flex;
-justify-content:space-between;
-align-items:baseline;
-flex-wrap:wrap;
+.botao{
+  flex:none;
+  font:11px/1 var(--fonte);
+  color:var(--texto);
+  background:linear-gradient(#FDFDFD,#E3E3E3);
+  border:1px solid #7A7A7A;
+  border-radius:3px;
+  padding:4px 10px;
+  min-width:52px;
+  cursor:pointer;
 }
-.fm-title{
-font-size:16px;
-font-weight:bold;
-color:var(--fm-head);
-letter-spacing:.03em;
+.botao:hover{background:linear-gradient(#FFFFFF,#EDEDED)}
+.botao:active{background:#DCDCDC}
+.barra{
+  flex:1;
+  min-width:0;
+  position:relative;
+  height:12px;
+  background:#FFFDF7;
+  border:1px solid var(--campo);
+  cursor:pointer;
 }
-.fm-status{
-font-family:var(--mono);
-font-size:11px;
-background:#fff4f4;
-border:1px solid var(--fm-head);
-color:var(--fm-head);
-padding:2px 4px;
-border-radius:2px;
-text-transform:uppercase;
-line-height:1;
-}
-
-/* player */
-.player-box{
-border:1px solid var(--line-dark);
-background:#f2f2f2;
-padding:10px;
-display:grid;
-row-gap:10px;
-font-family:var(--mono);
-font-size:12px;
-color:#000;
-}
-
-/* título do episódio e label FM */
-.player-row-top{
-display:flex;
-justify-content:space-between;
-flex-wrap:wrap;
-}
-.player-left{font-weight:bold;}
-.player-right{color:var(--fm-head);font-weight:bold;}
-
-/* controles + barra */
-.player-controls{
-display:flex;
-align-items:flex-start;
-gap:12px;
-flex-wrap:nowrap;
-width:100%;
-}
-.play-btn{
-background:var(--fm-head);
-color:#fff;
-border:0;
-font-family:var(--mono);
-font-size:12px;
-font-weight:bold;
-padding:6px 12px;
-cursor:pointer;
-border-radius:2px;
-line-height:1;
-}
-
-/* barra de progresso */
-.progress-area{
-flex:1;
-min-width:0;
-display:grid;
-row-gap:6px;
-width:100%;
-}
-.progress-wrapper{
-position:relative;
-width:100%;
-}
-.progress-bar-bg{
-width:100%;
-height:6px;
-background:#d00;
-border:1px solid var(--line-dark);
-border-radius:2px;
-overflow:hidden;
-position:relative;
-}
-.progress-bar-fill{
-background:#fff;
-width:0%;
-height:100%;
-}
-
-/* marcadores de comentários */
+.progress-bar-fill{height:100%;width:0%;background:var(--vermelho)}
 .comment-marker{
-position:absolute;
-top:-3px;
-width:6px;
-height:12px;
-background:var(--fm-green);
-border:1px solid #000;
-border-radius:1px;
-cursor:pointer;
-box-sizing:border-box;
+  position:absolute;
+  top:-1px;
+  width:3px;
+  height:12px;
+  background:var(--link);
+  cursor:pointer;
 }
+.comment-marker:hover{background:var(--online)}
 .marker-bubble{
-position:absolute;
-left:0;
-bottom:16px;
-background:#000;
-color:var(--fm-green);
-font-family:var(--mono);
-font-size:10px;
-line-height:1.3;
-padding:4px 6px;
-border:1px solid var(--fm-green);
-white-space:nowrap;
-display:none;
-pointer-events:none;
-max-width:220px;
-overflow:hidden;
-text-overflow:ellipsis;
-z-index:10;
+  position:absolute;
+  left:0;
+  bottom:16px;
+  background:#FFFFE1;
+  color:var(--texto);
+  border:1px solid #000;
+  font:10px/1.3 var(--fonte);
+  padding:2px 5px;
+  white-space:nowrap;
+  display:none;
+  pointer-events:none;
+  max-width:240px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  z-index:10;
 }
-.time-row{
-display:flex;
-justify-content:space-between;
-font-size:11px;
-line-height:1;
-width:100%;
+.tempos{
+  flex:none;
+  font-size:10px;
+  color:var(--cinza);
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
 }
-audio{display:none;}
+audio{display:none}
 
-/* chat */
-.chat-box{
-border:1px solid var(--line-dark);
-background:var(--fm-black);
-color:var(--fm-green);
-font-family:var(--mono);
-font-size:11px;
-display:grid;
-row-gap:8px;
-padding:10px;
-border-radius:2px;
+/* ---------- a foto do dia ---------- */
+.foto{padding:16px 16px 0}
+.imagem{
+  display:block;
+  width:100%;
+  height:auto;
+  border:1px solid #CDB27A;
 }
-.chat-head{
-display:flex;
-justify-content:space-between;
-align-items:baseline;
+.legenda{padding:8px 16px 14px}
+.legenda-linha{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:10px;
 }
-.chat-head-left{
-font-weight:bold;
-color:var(--fm-green);
-}
-.chat-head-right{
-background:#d00;
-color:#fff;
-font-weight:bold;
-font-size:10px;
-padding:1px 4px;
-border-radius:2px;
-line-height:1;
-text-transform:uppercase;
-}
+.legenda-linha b{font-size:12px}
+.legenda-linha .data{color:var(--cinza);white-space:nowrap}
+.legenda p{margin:2px 0 0}
+.legenda .meta{color:var(--cinza);margin-top:4px}
 
-/* nickname row */
-.chat-nick-row{
-display:flex;
-justify-content:space-between;
-align-items:center;
-flex-wrap:nowrap;
-color:var(--fm-green);
-font-size:10px;
-line-height:1.4;
+/* ---------- os comentários ---------- */
+.comentarios{
+  border-top:1px solid var(--regra);
+  padding:10px 16px 14px;
 }
-.chat-nick-row .clickable-nick{
-text-decoration:underline;
-cursor:pointer;
+.comentarios-cab{
+  display:flex;
+  justify-content:space-between;
+  align-items:baseline;
+  gap:10px;
+  flex-wrap:wrap;
 }
-.chat-nick-row .clickable-nick:hover{
-color:#fff;
+.comentarios-cab b{font-size:12px}
+.comentarios-cab .quantos{color:var(--cinza)}
+.chat-log{margin-top:6px}
+.diz{
+  padding:7px 0;
+  border-top:1px solid var(--regra);
 }
-
-/* log do chat */
-.chat-log{
-max-height:90px;
-overflow-y:auto;
-border:1px solid var(--fm-green);
-padding:6px;
-background:#000;
-line-height:1.4;
-scrollbar-width:thin;
-}
-.chat-line{
-white-space:nowrap;
-margin-bottom:4px;
-}
-.chat-line .hora{color:#888;}
-.chat-line .nick{
-color:var(--fm-green);
-font-weight:bold;
-}
-.chat-line .at-time{
-color:#888;
-font-size:10px;
-margin-left:4px;
-}
-
-/* área de mensagem */
-.chat-input-row{
-display:flex;
-flex-wrap:nowrap;
-gap:6px;
+.diz:first-child{border-top:0}
+.diz-cab{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.diz-cab .nick{font-weight:bold}
+.diz-cab .hora{color:var(--cinza);font-size:10px;white-space:nowrap}
+.diz-txt{padding-left:10px;overflow-wrap:anywhere}
+.diz-txt .at-time{font-size:10px;color:var(--link);margin-left:5px;cursor:pointer}
+.chat-vazio{color:var(--cinza);padding:6px 0}
+.chat-envio{
+  display:flex;
+  gap:6px;
+  margin-top:8px;
+  padding-top:10px;
+  border-top:1px solid var(--regra);
 }
 .msg-field{
-flex:1;
-background:#000;
-color:var(--fm-green);
-border:1px solid var(--fm-green);
-font-family:var(--mono);
-font-size:11px;
-padding:6px;
-border-radius:2px;
+  flex:1;
+  min-width:0;
+  font:11px/1.4 var(--fonte);
+  color:var(--texto);
+  background:#FFFDF7;
+  border:1px solid var(--campo);
+  border-radius:0;
+  padding:3px 4px;
 }
-.msg-send-btn{
-background:var(--fm-green);
-color:#000;
-border:0;
-font-family:var(--mono);
-font-size:11px;
-font-weight:bold;
-padding:6px 8px;
-border-radius:2px;
-line-height:1;
-cursor:pointer;
-}
+.msg-field:focus{outline:1px solid var(--link);outline-offset:-1px}
+.msg-field.nome{flex:0 0 118px}
 
-/* contato */
-footer{
-text-align:center;
-font-family:var(--serif);
-font-size:13px;
-color:#000;
-background:var(--box-bg);
-border:1px solid var(--line-dark);
-box-shadow:2px 2px 0 var(--line-mid);
-padding:10px;
+/* ---------- o rodapé ---------- */
+.rodape{
+  border-top:1px solid var(--regra);
+  padding:8px 16px 10px;
+  display:flex;
+  justify-content:space-between;
+  gap:8px 16px;
+  flex-wrap:wrap;
+  color:var(--cinza);
+  font-size:10px;
 }
-footer b{
-font-family:var(--mono);
-font-size:12px;
-}
+.rodape span{white-space:nowrap}
 
-/* responsivo */
-@media(max-width:480px){
-main{padding:12px;row-gap:16px;}
-.chat-log{max-height:80px;}
+@media (max-width:480px){
+  body{padding-block:14px 20px;font-size:12px}
+  .cabeca{padding:12px 12px 8px}
+  .status{padding:7px 12px 8px}
+  .foto{padding:12px 12px 0}
+  .legenda,.comentarios,.rodape{padding-left:12px;padding-right:12px}
+  .chat-envio{flex-wrap:wrap}
+  .msg-field.nome{flex:1 1 100%}
+}
+@media (prefers-reduced-motion:reduce){
+  .no-ar::before{animation:none}
 }
 </style>
 </head>
 
 <body>
-<main>
-<!-- topo / pôster -->
-<header>
-<div class="marca">
-<img src="logo-lagosta-filmes.png" alt="LAGOSTA FILMES">
-</div>
-<div class="poster-wrap">
-<img src="poster-fortown.png" alt="EM BREVE">
-</div>
-</header>
+<div class="pagina">
 
-<!-- lagosta fm -->
-<section class="fm-block">
-<div class="fm-header">
-<div class="fm-title">LAGOSTA FM</div>
-<div class="fm-status">ON AIR</div>
-</div>
+  <header class="cabeca">
+    <a class="marca" href="/" aria-label="Lagosta Filmes">
+      <img src="logo-lagosta-filmes-tight.png" alt="Lagosta Filmes" width="336" height="158">
+    </a>
+    <span class="lugar">fortaleza, ce</span>
+  </header>
 
-<!-- player -->
-<div class="player-box">
-<div class="player-row-top">
-<div class="player-left">EP PILOTO</div>
-<div class="player-right">LAGOSTA FM</div>
-</div>
+  <section class="status" aria-label="status">
+    <div class="status-linha">
+      <span class="no-ar">no ar</span>
+      <span class="ouvindo"><span class="nota">♪</span>ouvindo: <b>lagosta fm – ep. piloto</b></span>
+    </div>
+    <div class="controles">
+      <button id="playBtn" class="botao" type="button">play</button>
+      <div class="barra" id="progressBar" role="slider" aria-label="posição do episódio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+        <div class="progress-bar-fill" id="progressFill"></div>
+        <div class="marker-bubble" id="markerBubble"></div>
+      </div>
+      <span class="tempos"><span id="currentTime">00:00</span> / <span id="totalTime">--:--</span></span>
+    </div>
+    <!-- áudio (Firebase Storage) -->
+    <audio id="audioPlayer" preload="metadata">
+      <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
+    </audio>
+  </section>
 
-<div class="player-controls">
-<button id="playBtn" class="play-btn">PLAY</button>
+  <main>
+    <figure class="foto" style="margin:0">
+      <img class="imagem" src="poster-fortown.jpg" alt="Fortown! — em breve. Um filme de (nome coberto com fita)" width="1320" height="743">
+    </figure>
+    <div class="legenda">
+      <div class="legenda-linha"><b>fortown!</b><span class="data"><span id="ultimaAtt">—</span></span></div>
+      <p>em breve.</p>
+      <div class="meta">1 foto · <a href="#comentarios"><span id="recadosCount">0</span> comentários</a></div>
+    </div>
 
-<div class="progress-area">
-<div class="progress-wrapper">
-<div class="progress-bar-bg" id="progressBar">
-<div class="progress-bar-fill" id="progressFill"></div>
-<!-- tooltip de marcador -->
-<div class="marker-bubble" id="markerBubble"></div>
-</div>
-</div>
+    <section class="comentarios" id="comentarios">
+      <div class="comentarios-cab">
+        <b>comentários</b>
+        <span class="quantos" id="recadosCount2"></span>
+      </div>
+      <div id="chatLog" class="chat-log" aria-live="polite"></div>
+      <div class="chat-envio">
+        <input id="nickInput" class="msg-field nome" type="text" maxlength="24" placeholder="nome" autocomplete="nickname" aria-label="seu nome">
+        <input id="chatInput" class="msg-field" type="text" maxlength="180" placeholder="comentário" autocomplete="off" aria-label="comentário">
+        <button id="sendBtn" class="botao" type="button">enviar</button>
+      </div>
+    </section>
+  </main>
 
-<div class="time-row">
-<div id="currentTime">00:00</div>
-<div id="totalTime">--:--</div>
-</div>
-</div>
-</div>
+  <footer class="rodape">
+    <span><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a> · <a href="https://instagram.com/lagosta.filmes">@lagosta.filmes</a></span>
+    <span>lagostafilmes.com</span>
+  </footer>
 
-<!-- áudio real (Firebase Storage) -->
-<audio id="audioPlayer">
-<source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
-</audio>
 </div>
-
-<!-- chat -->
-<div class="chat-box">
-<div class="chat-head">
-<div class="chat-head-left">chat</div>
-<div class="chat-head-right">live</div>
-</div>
-
-<!-- linha do nick -->
-<div class="chat-nick-row">
-<span>comentando como: <span id="currentNickLabel" class="clickable-nick"></span></span>
-<span style="color:#888;font-size:9px;">(toca no nome pra mudar)</span>
-</div>
-
-<!-- histórico -->
-<div id="chatLog" class="chat-log"></div>
-
-<!-- enviar msg -->
-<div class="chat-input-row">
-<input id="chatInput" class="msg-field" type="text" maxlength="180" placeholder="digite sua mensagem...">
-<button id="sendBtn" class="msg-send-btn">ENVIAR</button>
-</div>
-</div>
-</section>
-
-<!-- contato -->
-<footer>
-<div><b>oi.lagostafilmes@gmail.com</b></div>
-<div>insta: <b>@lagosta.filmes</b></div>
-</footer>
-</main>
 
 <!-- SDK Firebase v8 -->
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 
-
 <script>
 /* =========================================================
-  NICKNAME
+  NOME (campo do formulário; fica guardado no navegador)
   ========================================================= */
 const NICK_KEY = "lagostaNick_v1";
-const currentNickLabel = document.getElementById("currentNickLabel");
+const nickInput = document.getElementById("nickInput");
 
 function loadNick(){
 try{
@@ -457,23 +339,18 @@ localStorage.setItem(NICK_KEY, nick);
 }catch(e){}
 }
 
-// estado atual do apelido
 let myNick = loadNick();
-if(!myNick){
-// gera um apelido temporário tipo OUVINTE_123
-myNick = "OUVINTE_" + Math.floor(Math.random()*1000);
-saveNick(myNick);
-}
-currentNickLabel.textContent = myNick;
+if(myNick && !/^OUVINTE_\d+$/i.test(myNick)) nickInput.value = myNick;
 
-// clicar no nick pra mudar
-currentNickLabel.addEventListener("click", ()=>{
-const novo = prompt("Seu nome / apelido?", myNick || "");
-if(novo && novo.trim()){
-myNick = novo.trim();
-saveNick(myNick);
-currentNickLabel.textContent = myNick;
+// o nome que vai no comentário: o do campo; vazio, vira ouvinte_123 (e fica)
+function nomeAtual(){
+const digitado = nickInput.value.trim();
+if(digitado){ myNick = digitado; saveNick(myNick); return myNick; }
+if(!myNick){ myNick = "ouvinte_" + Math.floor(Math.random()*1000); saveNick(myNick); }
+return myNick;
 }
+nickInput.addEventListener("keydown",e=>{
+if(e.key==="Enter"){ e.preventDefault(); chatInputEl.focus(); }
 });
 
 /* =========================================================
@@ -497,12 +374,13 @@ return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
 playBtn.addEventListener("click",()=>{
 if(audioEl.paused){
 audioEl.play();
-playBtn.textContent="PAUSE";
+playBtn.textContent="pause";
 }else{
 audioEl.pause();
-playBtn.textContent="PLAY";
+playBtn.textContent="play";
 }
 });
+audioEl.addEventListener("ended",()=>{ playBtn.textContent="play"; });
 
 audioEl.addEventListener("loadedmetadata",()=>{
 totalTimeEl.textContent = formatTime(audioEl.duration);
@@ -513,11 +391,13 @@ currentTimeEl.textContent = formatTime(audioEl.currentTime);
 if(!isNaN(audioEl.duration) && audioEl.duration>0){
 const pct = (audioEl.currentTime/audioEl.duration)*100;
 progressFill.style.width = pct+"%";
+progressBar.setAttribute("aria-valuenow", Math.round(pct));
 }
 });
 
-// clicar na barra -> pular
+// clicar na barra: pular
 progressBar.addEventListener("click",(e)=>{
+if(e.target.classList.contains("comment-marker")) return;
 const rect = progressBar.getBoundingClientRect();
 const clickX = e.clientX - rect.left;
 const ratio = clickX / rect.width;
@@ -525,13 +405,20 @@ if(!isNaN(audioEl.duration)){
 audioEl.currentTime = ratio * audioEl.duration;
 }
 });
+// setas: pular 10 s
+progressBar.addEventListener("keydown",(e)=>{
+if(isNaN(audioEl.duration)) return;
+if(e.key==="ArrowRight"){ e.preventDefault(); audioEl.currentTime = Math.min(audioEl.duration, audioEl.currentTime+10); }
+if(e.key==="ArrowLeft"){ e.preventDefault(); audioEl.currentTime = Math.max(0, audioEl.currentTime-10); }
+});
 
 /* =========================================================
-  CHAT LOCAL + TIMECODE
+  COMENTÁRIOS (local + timecode)
   ========================================================= */
 const chatLogEl   = document.getElementById("chatLog");
 const chatInputEl = document.getElementById("chatInput");
 const sendBtn     = document.getElementById("sendBtn");
+const contadores  = ["recadosCount","recadosCount2"].map(id=>document.getElementById(id));
 
 const STORAGE_KEY = "lagostaChatMessages_v1";
 
@@ -551,43 +438,67 @@ localStorage.setItem(STORAGE_KEY, JSON.stringify(msgs));
 }
 
 function escapeHtml(str){
-return str.replace(/[&<>"']/g, s=>({
+return String(str).replace(/[&<>"']/g, s=>({
 "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"
 }[s]));
 }
 
+function dataCurta(m){
+const d = new Date(m.at);
+const hh=String(m.atHour).padStart(2,"0");
+const mm=String(m.atMin).padStart(2,"0");
+if(isNaN(d.getTime())) return hh+":"+mm;
+const dd=String(d.getDate()).padStart(2,"0");
+const mo=String(d.getMonth()+1).padStart(2,"0");
+return `${dd}/${mo}/${d.getFullYear()} ${hh}:${mm}`;
+}
+
 function renderChat(msgs){
 chatLogEl.innerHTML="";
+if(contadores[0]) contadores[0].textContent = msgs.length;
+if(contadores[1]) contadores[1].textContent = "(" + msgs.length + ")";
+if(!msgs.length){
+const v=document.createElement("div");
+v.className="chat-vazio";
+v.textContent="ninguém comentou ainda.";
+chatLogEl.appendChild(v);
+return;
+}
 msgs
 .sort((a,b)=>a.at-b.at)
 .forEach(m=>{
-const hh=String(m.atHour).padStart(2,"0");
-const mm=String(m.atMin).padStart(2,"0");
-const line=document.createElement("div");
-line.className="chat-line";
-line.innerHTML=`
-       <span class="hora">[${hh}:${mm}]</span>
-       <span class="nick">${escapeHtml(m.nick || "OUVINTE")}:</span>
-       ${escapeHtml(m.text)}
-       <span class="at-time">@${formatTime(m.tAudio)}</span>
-     `;
-chatLogEl.appendChild(line);
+const el=document.createElement("div");
+el.className="diz";
+el.innerHTML=`<div class="diz-cab"><span><span class="nick">${escapeHtml(m.nick || "ouvinte")}</span> diz:</span><span class="hora">${dataCurta(m)}</span></div><div class="diz-txt">${escapeHtml(m.text)}<span class="at-time" title="ouvir desse ponto" data-t="${Number(m.tAudio)||0}">@${formatTime(m.tAudio)}</span></div>`;
+chatLogEl.appendChild(el);
 });
 chatLogEl.scrollTop = chatLogEl.scrollHeight;
 }
 
+// clicar no @tempo de um comentário: pular pra esse ponto do episódio
+chatLogEl.addEventListener("click",(e)=>{
+const t = e.target.closest(".at-time");
+if(!t) return;
+const sec = parseFloat(t.dataset.t);
+if(!isNaN(sec) && !isNaN(audioEl.duration)){
+audioEl.currentTime = sec;
+if(audioEl.paused){ audioEl.play(); playBtn.textContent="pause"; }
+}
+});
+
 function renderMarkers(msgs){
-// limpa antigos
 const olds = progressBar.querySelectorAll(".comment-marker");
 olds.forEach(o=>o.remove());
 
 if(isNaN(audioEl.duration) || audioEl.duration===0) return;
 
 msgs.forEach(m=>{
+if(!(m.tAudio > 0.5)) return; // comentário deixado antes de dar play: fica na lista, sem marca na barra
 const pct = (m.tAudio / audioEl.duration) * 100;
 const marker = document.createElement("div");
 marker.className = "comment-marker";
-marker.style.left = `calc(${pct}% - 3px)`;
+marker.style.left = `calc(${pct}% - 1px)`;
+marker.title = `${formatTime(m.tAudio)} — ${m.text}`;
 
 marker.addEventListener("mouseenter",()=>{
 showMarkerBubble(m, marker);
@@ -606,17 +517,17 @@ progressBar.appendChild(marker);
 function showMarkerBubble(msg, markerEl){
 const rect = progressBar.getBoundingClientRect();
 const markerRect = markerEl.getBoundingClientRect();
-
 markerBubble.style.display="block";
-markerBubble.textContent = `${formatTime(msg.tAudio)} — ${msg.text}`;
-const leftPos = markerRect.left - rect.left;
-markerBubble.style.left = leftPos + "px";
+markerBubble.textContent = `${formatTime(msg.tAudio)} ${msg.nick ? msg.nick + " diz: " : ""}${msg.text}`;
+let leftPos = markerRect.left - rect.left;
+const maxLeft = Math.max(0, rect.width - 240);
+markerBubble.style.left = Math.min(leftPos, maxLeft) + "px";
 }
 function hideMarkerBubble(){
 markerBubble.style.display="none";
 }
 
-/* cria e envia msg */
+/* cria e envia um comentário */
 function addMessage(text){
 if(!text.trim()) return;
 
@@ -632,13 +543,11 @@ tAudio,
 at,
 atHour,
 atMin,
-nick: myNick || "OUVINTE"
+nick: nomeAtual()
 };
 
 messages.push(newMsg);
 saveLocalMessages(messages);
-
-// manda pro Firebase também
 sendToFirebase(newMsg);
 
 renderChat(messages);
@@ -650,6 +559,7 @@ const v = chatInputEl.value;
 if(!v.trim()) return;
 addMessage(v);
 chatInputEl.value="";
+chatInputEl.focus();
 });
 chatInputEl.addEventListener("keydown",e=>{
 if(e.key==="Enter"){
@@ -684,6 +594,7 @@ appId: "1:1037798589381:web:f9c6b5d7721746994881ac"
 let firebaseAppRef = null;
 let firebaseDbRef  = null;
 let firebaseEnabled = false;
+let firebaseListening = false;
 
 function firebaseInit(cfg){
 firebaseAppRef = firebase.initializeApp(cfg);
@@ -716,7 +627,8 @@ firebaseWriteMessage(msg,newKey);
 }
 }
 function startFirebaseListener(){
-if(!firebaseEnabled || !firebaseDbRef) return;
+if(!firebaseEnabled || !firebaseDbRef || firebaseListening) return;
+firebaseListening = true;
 firebaseOnMessage((incomingList)=>{
 let changed=false;
 incomingList.forEach(m=>{
@@ -738,6 +650,7 @@ renderMarkers(messages);
 });
 }
 
+if(typeof firebase !== "undefined"){
 firebaseInit(firebaseConfig);
 startFirebaseListener();
 
@@ -751,7 +664,19 @@ firebase.auth().onAuthStateChanged((user)=>{
     startFirebaseListener();
   }
 });
+}
 
+/* =========================================================
+  DATA DA FOTO (data do arquivo no servidor)
+  ========================================================= */
+(function(){
+const el = document.getElementById("ultimaAtt");
+const d = new Date(document.lastModified);
+if(isNaN(d.getTime())){ el.textContent = "2026"; return; }
+const dd = String(d.getDate()).padStart(2,"0");
+const mm = String(d.getMonth()+1).padStart(2,"0");
+el.textContent = `${dd}/${mm}/${d.getFullYear()}`;
+})();
 </script>
 
 </body>
