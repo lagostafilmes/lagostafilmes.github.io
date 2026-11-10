@@ -73,8 +73,6 @@ a:hover{text-decoration:underline}
 .cabeca .marca{display:block;width:150px;line-height:0;transform:rotate(-2deg)}
 .cabeca .marca img{width:100%;height:auto;display:block}
 .cabeca .lugar{color:var(--cinza);padding-bottom:2px;text-align:right}
-/* o subnick, como no msn: uma frase solta embaixo do lugar */
-.cabeca .subnick{display:block;font-style:italic;color:var(--texto);margin-top:2px}
 
 /* o status: no ar, ouvindo */
 .status{
@@ -367,7 +365,7 @@ audio{display:none}
     <a class="marca" href="/" aria-label="Lagosta Filmes">
       <img src="logo-lagosta-filmes-tight.png" alt="Lagosta Filmes" width="336" height="158">
     </a>
-    <span class="lugar">fortaleza, ce<span class="subnick">(sem pressa)</span></span>
+    <span class="lugar">fortaleza, ce</span>
   </header>
 
   <section class="status" aria-label="status">
@@ -976,7 +974,7 @@ mostrar();
   RECEBER POR E-MAIL
   Quando a conta no Buttondown existir, ponha o nome de usuário aqui.
   ========================================================= */
-const NEWSLETTER_USUARIO = "";
+const NEWSLETTER_USUARIO = "lagostafilmes";
 (function(){
 const form = document.getElementById("assinaForm");
 if(NEWSLETTER_USUARIO){
