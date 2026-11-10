@@ -55,7 +55,7 @@ a:hover{text-decoration:underline}
 
 /* ---------- a página ---------- */
 .pagina{
-  max-width:660px;
+  max-width:880px;
   margin:0 auto;
   background:var(--branco);
   border:1px solid var(--moldura);
@@ -222,42 +222,49 @@ audio{display:none}
 .legenda #postTexto p+p{margin-top:8px}
 .rascunho{color:var(--vermelho);font-weight:bold;margin-left:6px}
 
-/* ---------- fotos anteriores: miniaturas pequenas, como no fotolog ---------- */
-.anteriores{
-  border-top:1px solid var(--regra);
-  padding:10px 16px 12px;
+/* ---------- corpo: feed à esquerda, a produtora à direita ---------- */
+.corpo{display:grid;grid-template-columns:minmax(0,1fr) 210px}
+.lado{border-left:1px solid var(--regra);padding:6px 0 0}
+.bloco{padding:8px 14px 10px;border-bottom:1px solid var(--regra)}
+.bloco b{font-size:12px}
+.bloco p{margin:4px 0 0}
+.bloco ul{margin:4px 0 0;padding:0;list-style:none}
+.bloco li{margin:3px 0}
+.obs{color:var(--cinza);font-size:10px}
+.assina{display:flex;flex-direction:column;gap:5px;margin-top:6px}
+.assina .botao{align-self:flex-start}
+.lado .selos{padding:10px 14px 12px}
+
+/* ---------- o feed: cada post do seu jeito ---------- */
+.item{border-bottom:1px solid var(--regra);padding-bottom:4px}
+.tipo{
+  display:inline-block;
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:var(--faixa);
+  background:var(--texto);
+  padding:1px 4px;
+  margin-right:6px;
+  vertical-align:1px;
 }
-.anteriores b{font-size:12px}
-.anteriores-lista{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  margin-top:6px;
-}
-.anterior{
+.tipo.t-episodio{background:var(--vermelho)}
+.tipo.t-texto{background:var(--link)}
+.item .titulo-texto{
   display:block;
-  width:96px;
+  font:bold 17px/1.25 Georgia,"Times New Roman",serif;
   color:var(--texto);
-  font-size:10px;
-  line-height:1.3;
+  margin:4px 0 2px;
 }
-.anterior:hover{text-decoration:none}
-.anterior .mini{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:96px;
-  height:54px;
-  border:1px solid #CDB27A;
-  background:var(--faixa);
-  color:var(--cinza);
-  overflow:hidden;
-  margin-bottom:3px;
-}
-.anterior .mini img{width:100%;height:100%;object-fit:cover;display:block}
-.anterior:hover .mini{border-color:var(--link)}
-.anterior .quando{color:var(--cinza)}
-.anterior[aria-current="page"] .mini{border:2px solid var(--vermelho)}
+.item .ler{font-weight:bold}
+.voltar{padding:10px 16px 0}
+
+/* ---------- modo leitura: letra grande, coluna estreita ---------- */
+.leitura{padding:6px 16px 18px}
+.leitura h1{font:bold 26px/1.2 Georgia,"Times New Roman",serif;margin:8px 0 4px;color:var(--texto)}
+.leitura .data{color:var(--cinza)}
+.leitura .prosa{max-width:34em;margin-top:14px}
+.leitura .prosa p{font:16px/1.7 Georgia,"Times New Roman",serif;margin:0 0 1em}
 
 /* ---------- os comentários ---------- */
 .comentarios{
@@ -332,12 +339,18 @@ audio{display:none}
 .selo.s3{background:var(--ceu);color:var(--link)}
 .selo.s4{background:var(--faixa);color:var(--texto);font-weight:normal;font-style:italic;text-transform:none}
 
+/* em tela estreita a lateral desce pro fim */
+@media (max-width:700px){
+  .corpo{display:block}
+  .lado{border-left:0;border-top:1px solid var(--regra)}
+}
 @media (max-width:480px){
+  .bloco,.leitura,.voltar{padding-left:12px;padding-right:12px}
   body{padding-block:14px 20px;font-size:12px}
   .cabeca{padding:12px 12px 8px}
   .status{padding:7px 12px 8px}
   .foto{padding:12px 12px 0}
-  .legenda,.anteriores,.comentarios,.rodape{padding-left:12px;padding-right:12px}
+  .legenda,.comentarios,.rodape{padding-left:12px;padding-right:12px}
   .chat-envio{flex-wrap:wrap}
   .msg-field.nome{flex:1 1 100%}
 }
@@ -380,28 +393,21 @@ audio{display:none}
     </audio>
   </section>
 
+  <div class="corpo">
   <main>
-    <!-- o post da vez: preenchido pelo script a partir da lista POSTS -->
-    <article id="post">
-      <figure class="foto" id="postFoto" style="margin:0">
-        <img class="imagem" id="postImg" src="poster-fortown.jpg" alt="Fortown! — em breve. Um filme de (nome coberto com fita)" width="1320" height="743">
-      </figure>
-      <div class="legenda">
-        <div class="legenda-linha"><b id="postTitulo">fortown!</b><span class="data" id="postData">—</span></div>
-        <div id="postTexto"><p>em breve.</p></div>
-        <div class="meta"><span id="postConta">1 foto</span> · <a href="#comentarios"><span id="recadosCount">0</span> comentários</a></div>
-      </div>
+    <!-- o feed: todos os posts, do mais novo pro mais velho (preenchido pelo script) -->
+    <section id="feed" aria-label="posts"></section>
+
+    <!-- um post aberto sozinho (lagostafilmes.com/#id); textos abrem em modo leitura -->
+    <article id="post" hidden>
+      <div class="voltar"><a href="#">← início</a></div>
+      <div id="postCorpo"></div>
     </article>
 
-    <!-- fotos anteriores: aparece quando houver mais de um post -->
-    <nav class="anteriores" id="anteriores" aria-label="posts anteriores" hidden>
-      <b>fotos anteriores</b>
-      <div class="anteriores-lista" id="anterioresLista"></div>
-    </nav>
-
+    <!-- o mural da rádio: os recados ficam presos ao minuto do episódio -->
     <section class="comentarios" id="comentarios">
       <div class="comentarios-cab">
-        <b>comentários</b>
+        <b>recados da rádio</b>
         <span class="quantos" id="recadosCount2"></span>
       </div>
       <div id="chatLog" class="chat-log" aria-live="polite"></div>
@@ -413,16 +419,46 @@ audio{display:none}
     </section>
   </main>
 
+  <!-- a lateral: a produtora, como a coluna de perfil dos fotologs -->
+  <aside class="lado">
+    <div class="bloco">
+      <b>quem somos</b>
+      <p>a lagosta filmes é uma produtora de fortaleza. a gente faz filme, rádio e o que der vontade.</p>
+      <p class="obs">(texto de exemplo — trocar)</p>
+    </div>
+    <div class="bloco">
+      <b>projetos</b>
+      <ul>
+        <li><a href="#fortown">fortown!</a> <span class="obs">longa · em breve</span></li>
+        <li><a href="#lagosta-fm-piloto">lagosta fm</a> <span class="obs">rádio · no ar</span></li>
+      </ul>
+    </div>
+    <div class="bloco" id="newsletter">
+      <b>receber por e-mail</b>
+      <p>quando sair texto ou episódio novo, chega na sua caixa.</p>
+      <form class="assina" id="assinaForm" method="post" target="_blank">
+        <input class="msg-field" type="email" name="email" placeholder="seu e-mail" required aria-label="seu e-mail">
+        <button class="botao" type="submit">assinar</button>
+      </form>
+      <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
+    </div>
+    <div class="bloco">
+      <b>contato</b>
+      <p><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a><br><a href="https://instagram.com/lagosta.filmes">@lagosta.filmes</a></p>
+    </div>
+    <div class="selos" aria-hidden="true">
+      <span class="selo s1">lagosta<br>filmes</span>
+      <span class="selo s2">lagosta fm<br>no ar</span>
+      <span class="selo s3">feito em<br>fortaleza</span>
+      <span class="selo s4">melhor visto<br>em 800x600</span>
+    </div>
+  </aside>
+  </div>
+
   <footer class="rodape">
     <span><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a> · <a href="https://instagram.com/lagosta.filmes">@lagosta.filmes</a></span>
     <span>lagostafilmes.com</span>
   </footer>
-  <div class="selos" aria-hidden="true">
-    <span class="selo s1">lagosta<br>filmes</span>
-    <span class="selo s2">lagosta fm<br>no ar</span>
-    <span class="selo s3">feito em<br>fortaleza</span>
-    <span class="selo s4">melhor visto<br>em 800x600</span>
-  </div>
 
 </div>
 
@@ -780,116 +816,175 @@ firebase.auth().onAuthStateChanged((user)=>{
 }
 
 /* =========================================================
-  POSTS (a foto do dia e as anteriores)
+  POSTS (o feed: foto, episódio, texto)
   Pra postar: acrescente um objeto no topo da lista.
   - id: curto, sem espaço (vira o endereço: lagostafilmes.com/#ep-2)
+  - tipo: "foto", "episodio" ou "texto"
   - data: "aaaa-mm-dd"
-  - imagem: arquivo na raiz (opcional)
-  - texto: lista de parágrafos (texto puro, sem html)
-  - rascunho: true esconde o post do site; ele só aparece com ?rascunho no endereço
-  O primeiro da lista que não for rascunho é o que abre na página.
+  - titulo; imagem (arquivo na raiz, opcional)
+  - resumo: a frase que aparece no feed
+  - texto: lista de parágrafos (texto puro, sem html); num "texto" é o artigo inteiro
+  - rascunho: true esconde o post; ele só aparece com ?rascunho no endereço
   ========================================================= */
 const POSTS = [
 {
 id: "ep-2",
+tipo: "episodio",
 data: "2026-12-01",
 titulo: "lagosta fm – ep. 2",
-texto: ["(rascunho: texto do episódio 2 aqui.)"],
+resumo: "(rascunho: do que fala o episódio 2.)",
+rascunho: true
+},
+{
+id: "primeiro-texto",
+tipo: "texto",
+data: "2026-11-20",
+titulo: "por que uma rádio",
+resumo: "(rascunho: uma frase que puxa pro texto.)",
+texto: [
+"(texto de exemplo. aqui entra o primeiro texto do blog — pode ser longo, com vários parágrafos.)",
+"cada item da lista vira um parágrafo."
+],
 rascunho: true
 },
 {
 id: "fortown",
+tipo: "foto",
 data: "2026-11-10",
 titulo: "fortown!",
 imagem: "poster-fortown.jpg",
 alt: "Fortown! — em breve. Um filme de (nome coberto com fita)",
-texto: ["em breve."]
+resumo: "em breve."
+},
+{
+id: "lagosta-fm-piloto",
+tipo: "episodio",
+data: "2025-10-27",
+titulo: "lagosta fm – ep. piloto",
+resumo: "o primeiro episódio da rádio. aperta o play lá em cima e deixa um recado no minuto que quiser."
 }
 ];
 
 (function(){
 const verRascunhos = new URLSearchParams(location.search).has("rascunho");
 const posts = POSTS.filter(p => verRascunhos || !p.rascunho);
-if(!posts.length) return;
+const feed = document.getElementById("feed");
+const postEl = document.getElementById("post");
+const postCorpo = document.getElementById("postCorpo");
+const NOMES = {foto:"foto", episodio:"rádio", texto:"texto"};
 
-const $ = id => document.getElementById(id);
-
+function el(tag, cls, txt){
+const e = document.createElement(tag);
+if(cls) e.className = cls;
+if(txt != null) e.textContent = txt;
+return e;
+}
 function dataBr(s){
 const [a,m,d] = String(s).split("-");
 return (a && m && d) ? `${d}/${m}/${a}` : "";
 }
-
-function mostrar(post){
-// foto
-if(post.imagem){
-$("postImg").src = post.imagem;
-$("postImg").alt = post.alt || post.titulo;
-$("postImg").removeAttribute("width");
-$("postImg").removeAttribute("height");
-$("postFoto").hidden = false;
-$("postConta").textContent = "1 foto";
-}else{
-$("postFoto").hidden = true;
-$("postConta").textContent = "texto";
+function cabecalho(p){
+const linha = el("div","legenda-linha");
+const esq = el("span");
+esq.append(el("span","tipo t-"+p.tipo, NOMES[p.tipo] || p.tipo));
+if(p.tipo !== "texto"){
+const b = el("b", null, p.titulo);
+esq.append(b);
 }
-// título, data, texto (sempre como texto puro)
-$("postTitulo").textContent = post.titulo;
-if(post.rascunho){
-const r = document.createElement("span");
-r.className = "rascunho";
-r.textContent = "rascunho";
-$("postTitulo").appendChild(r);
+if(p.rascunho) esq.append(el("span","rascunho","rascunho"));
+linha.append(esq, el("span","data", dataBr(p.data)));
+return linha;
 }
-$("postData").textContent = dataBr(post.data);
-const caixa = $("postTexto");
-caixa.innerHTML = "";
-(post.texto || []).forEach(par=>{
-const p = document.createElement("p");
-p.textContent = par;
-caixa.appendChild(p);
-});
-document.title = post === posts[0] ? "Lagosta Filmes" : `${post.titulo} · Lagosta Filmes`;
-montarAnteriores(post);
+function foto(p){
+if(!p.imagem) return null;
+const f = el("figure","foto");
+f.style.margin = "0";
+const img = el("img","imagem");
+img.src = p.imagem; img.alt = p.alt || p.titulo; img.loading = "lazy";
+f.append(img);
+return f;
 }
 
-function montarAnteriores(atual){
-const lista = $("anterioresLista");
-lista.innerHTML = "";
-$("anteriores").hidden = posts.length < 2;
-posts.forEach(p=>{
-const a = document.createElement("a");
-a.className = "anterior";
+// um post no feed
+function itemDoFeed(p){
+const item = el("div","item");
+const f = foto(p);
+if(f) item.append(f);
+const leg = el("div","legenda");
+leg.append(cabecalho(p));
+if(p.tipo === "texto"){
+const a = el("a","titulo-texto", p.titulo);
 a.href = "#" + p.id;
-if(p === atual) a.setAttribute("aria-current","page");
-const mini = document.createElement("span");
-mini.className = "mini";
-if(p.imagem){
-const img = document.createElement("img");
-img.src = p.imagem; img.alt = ""; img.loading = "lazy";
-mini.appendChild(img);
-}else{
-mini.textContent = "texto";
+leg.append(a);
 }
-const t = document.createElement("span");
-t.textContent = p.titulo;
-const q = document.createElement("span");
-q.className = "quando";
-q.textContent = " " + dataBr(p.data);
-a.append(mini, t, document.createElement("br"), q);
-lista.appendChild(a);
+if(p.resumo) leg.append(el("p", null, p.resumo));
+const meta = el("div","meta");
+if(p.tipo === "texto"){
+const ler = el("a","ler","ler →"); ler.href = "#" + p.id; meta.append(ler);
+}else if(p.tipo === "episodio" && p.id === "lagosta-fm-piloto"){
+const ouvir = el("a","ler","▶ ouvir"); ouvir.href = "#";
+ouvir.addEventListener("click",e=>{
+e.preventDefault();
+window.scrollTo(0,0);
+if(audioEl.paused){ audioEl.play(); playBtn.textContent="pause"; }
 });
+meta.append(ouvir);
+}else{
+const link = el("a",null,"abrir →"); link.href = "#" + p.id; meta.append(link);
+}
+leg.append(meta);
+item.append(leg);
+return item;
 }
 
-function pelaHash(){
-const id = decodeURIComponent(location.hash.slice(1));
-return posts.find(p => p.id === id) || posts[0];
+// um post aberto sozinho; texto em modo leitura
+function abrir(p){
+postCorpo.innerHTML = "";
+if(p.tipo === "texto"){
+const art = el("div","leitura");
+art.append(cabecalho(p), el("h1", null, p.titulo));
+if(p.resumo) art.append(el("p","data", p.resumo));
+const prosa = el("div","prosa");
+(p.texto || []).forEach(par => prosa.append(el("p", null, par)));
+art.append(prosa);
+postCorpo.append(art);
+}else{
+postCorpo.append(itemDoFeed(p));
 }
-window.addEventListener("hashchange",()=>{
-if(location.hash === "#comentarios") return;
-mostrar(pelaHash());
+document.title = `${p.titulo} · Lagosta Filmes`;
+}
+
+function mostrar(){
+const id = decodeURIComponent(location.hash.slice(1));
+const p = posts.find(x => x.id === id);
+if(p){
+abrir(p);
+feed.hidden = true; postEl.hidden = false;
 window.scrollTo(0,0);
-});
-mostrar(pelaHash());
+}else{
+feed.hidden = false; postEl.hidden = true;
+document.title = "Lagosta Filmes";
+}
+}
+
+posts.forEach(p => feed.append(itemDoFeed(p)));
+window.addEventListener("hashchange", mostrar);
+mostrar();
+})();
+
+/* =========================================================
+  RECEBER POR E-MAIL
+  Quando a conta no Buttondown existir, ponha o nome de usuário aqui.
+  ========================================================= */
+const NEWSLETTER_USUARIO = "";
+(function(){
+const form = document.getElementById("assinaForm");
+if(NEWSLETTER_USUARIO){
+form.action = "https://buttondown.com/api/emails/embed-subscribe/" + encodeURIComponent(NEWSLETTER_USUARIO);
+}else{
+document.getElementById("assinaAviso").hidden = false;
+form.addEventListener("submit", e => e.preventDefault());
+}
 })();
 </script>
 
