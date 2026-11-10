@@ -70,9 +70,11 @@ a:hover{text-decoration:underline}
   gap:12px;
   padding:14px 16px 10px;
 }
-.cabeca .marca{display:block;width:104px;line-height:0}
+.cabeca .marca{display:block;width:150px;line-height:0;transform:rotate(-2deg)}
 .cabeca .marca img{width:100%;height:auto;display:block}
-.cabeca .lugar{color:var(--cinza);padding-bottom:2px}
+.cabeca .lugar{color:var(--cinza);padding-bottom:2px;text-align:right}
+/* o subnick, como no msn: uma frase solta embaixo do lugar */
+.cabeca .subnick{display:block;font-style:italic;color:var(--texto);margin-top:2px}
 
 /* o status: no ar, ouvindo */
 .status{
@@ -101,6 +103,22 @@ a:hover{text-decoration:underline}
 }
 @keyframes pisca{50%{opacity:.25}}
 .ouvindo{color:var(--texto)}
+.visor{
+  margin-top:6px;
+  background:#10140C;
+  border:2px inset #8A8A8A;
+  overflow:hidden;
+  white-space:nowrap;
+  font:bold 12px/1 "Courier New",monospace;
+  color:#7CFF4F;
+  text-shadow:0 0 3px #3DB54A;
+  padding:5px 0;
+  text-transform:uppercase;
+  letter-spacing:1px;
+}
+.visor-rola{display:inline-block;animation:rola 18s linear infinite}
+.visor-rola span{padding-right:0}
+@keyframes rola{to{transform:translateX(-50%)}}
 .ouvindo .nota{color:var(--cinza);margin-right:3px}
 .controles{
   display:flex;
@@ -167,12 +185,26 @@ a:hover{text-decoration:underline}
 audio{display:none}
 
 /* ---------- a foto do dia ---------- */
-.foto{padding:16px 16px 0}
+.foto{padding:20px 16px 4px;position:relative}
+/* a foto colada meio torta, com um pedaço de fita crepe em cima */
 .imagem{
   display:block;
   width:100%;
   height:auto;
-  border:1px solid #CDB27A;
+  border:6px solid #FFFDF7;
+  box-shadow:1px 2px 4px rgba(0,0,0,.25);
+  transform:rotate(-.7deg);
+}
+.foto::before{
+  content:"";
+  position:absolute;
+  top:10px;left:50%;
+  width:90px;height:22px;
+  margin-left:-45px;
+  background:rgba(240,228,190,.85);
+  box-shadow:0 1px 1px rgba(0,0,0,.12);
+  transform:rotate(2.5deg);
+  z-index:1;
 }
 .legenda{padding:8px 16px 14px}
 .legenda-linha{
@@ -285,6 +317,20 @@ audio{display:none}
   font-size:10px;
 }
 .rodape span{white-space:nowrap}
+/* selinhos 88x31, como os botões dos sites de 2005 */
+.selos{display:flex;flex-wrap:wrap;gap:4px;padding:0 16px 12px}
+.selo{
+  width:88px;height:31px;
+  display:flex;align-items:center;justify-content:center;
+  text-align:center;
+  font:bold 9px/1.05 var(--fonte);
+  border:1px solid #000;
+  text-transform:uppercase;
+}
+.selo.s1{background:var(--vermelho);color:var(--faixa)}
+.selo.s2{background:#10140C;color:#7CFF4F;font-family:"Courier New",monospace}
+.selo.s3{background:var(--ceu);color:var(--link)}
+.selo.s4{background:var(--faixa);color:var(--texto);font-weight:normal;font-style:italic;text-transform:none}
 
 @media (max-width:480px){
   body{padding-block:14px 20px;font-size:12px}
@@ -296,7 +342,7 @@ audio{display:none}
   .msg-field.nome{flex:1 1 100%}
 }
 @media (prefers-reduced-motion:reduce){
-  .no-ar::before{animation:none}
+  .no-ar::before,.visor-rola{animation:none}
 }
 </style>
 </head>
@@ -308,13 +354,17 @@ audio{display:none}
     <a class="marca" href="/" aria-label="Lagosta Filmes">
       <img src="logo-lagosta-filmes-tight.png" alt="Lagosta Filmes" width="336" height="158">
     </a>
-    <span class="lugar">fortaleza, ce</span>
+    <span class="lugar">fortaleza, ce<span class="subnick">(sem pressa)</span></span>
   </header>
 
   <section class="status" aria-label="status">
     <div class="status-linha">
       <span class="no-ar">no ar</span>
-      <span class="ouvindo"><span class="nota">♪</span>ouvindo: <b>lagosta fm – ep. piloto</b></span>
+      <span class="ouvindo"><span class="nota">♪</span>ouvindo:</span>
+    </div>
+    <!-- o visor: letreiro verde rolando, como um som de carro velho -->
+    <div class="visor" aria-label="lagosta fm – ep. piloto">
+      <div class="visor-rola" aria-hidden="true"><span>lagosta fm ··· ep. piloto ··· direto de fortaleza ··· </span><span>lagosta fm ··· ep. piloto ··· direto de fortaleza ··· </span></div>
     </div>
     <div class="controles">
       <button id="playBtn" class="botao" type="button">play</button>
@@ -367,6 +417,12 @@ audio{display:none}
     <span><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a> · <a href="https://instagram.com/lagosta.filmes">@lagosta.filmes</a></span>
     <span>lagostafilmes.com</span>
   </footer>
+  <div class="selos" aria-hidden="true">
+    <span class="selo s1">lagosta<br>filmes</span>
+    <span class="selo s2">lagosta fm<br>no ar</span>
+    <span class="selo s3">feito em<br>fortaleza</span>
+    <span class="selo s4">melhor visto<br>em 800x600</span>
+  </div>
 
 </div>
 
