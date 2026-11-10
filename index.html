@@ -138,33 +138,30 @@ a:hover{text-decoration:underline}
   min-width:0;
   position:relative;
   height:26px;
-  margin-bottom:16px;          /* espaço pros selinhos de recado embaixo */
   cursor:pointer;
 }
 .progress-bar-fill{display:none}
 .onda{display:flex;align-items:flex-end;gap:1px;height:100%}
 .onda i{flex:1;background:var(--campo);opacity:.55;min-width:1px}
 .onda i.tocou{background:var(--vermelho);opacity:1}
-/* cada recado é um selinho com a inicial de quem escreveu, embaixo da onda */
+/* cada recado é um risquinho na onda: só aparece quando o recado está em foco
+   (passando o mouse no comentário, ou quando o áudio passa por ele) */
 .comment-marker{
   position:absolute;
-  top:29px;
-  width:12px;height:12px;
-  margin-left:-6px;
-  background:var(--faixa);
-  border:1px solid var(--moldura);
-  color:var(--vermelho);
-  font:bold 8px/10px var(--fonte);
-  text-align:center;
-  text-transform:uppercase;
-  cursor:pointer;
-  overflow:hidden;
+  top:-3px;
+  width:2px;height:32px;
+  margin-left:-1px;
+  background:var(--texto);
+  display:none;
+  pointer-events:none;
 }
-.comment-marker:hover,.comment-marker.agora{background:var(--vermelho);color:var(--faixa);border-color:var(--vermelho);z-index:2}
+.comment-marker.agora{display:block}
+.diz{cursor:default}
+.diz:hover .nick{color:var(--vermelho)}
 .marker-bubble{
   position:absolute;
   left:0;
-  bottom:30px;
+  bottom:34px;
   background:var(--branco);
   color:var(--texto);
   border:1px solid var(--moldura);
@@ -637,6 +634,7 @@ msgs
 .forEach(m=>{
 const el=document.createElement("div");
 el.className="diz";
+el.dataset.at = m.at;
 el.innerHTML=`<div class="diz-cab"><span><span class="nick">${escapeHtml(m.nick || "ouvinte")}</span> diz:</span><span class="hora">${dataCurta(m)}</span></div><div class="diz-txt">${escapeHtml(m.text)}<span class="at-time" title="ouvir desse ponto" data-t="${Number(m.tAudio)||0}">@${formatTime(m.tAudio)}</span></div>`;
 chatLogEl.appendChild(el);
 });
@@ -666,20 +664,9 @@ const pct = (m.tAudio / audioEl.duration) * 100;
 const marker = document.createElement("div");
 marker.className = "comment-marker";
 marker.style.left = pct + "%";
-marker.textContent = (m.nick || "?").trim().charAt(0) || "?";
+marker.dataset.at = m.at;
 marker.setAttribute("aria-label", `${formatTime(m.tAudio)} ${m.nick || ""}: ${m.text}`);
 
-marker.addEventListener("mouseenter",()=>{
-showMarkerBubble(m, marker);
-});
-marker.addEventListener("mouseleave",()=>{
-hideMarkerBubble();
-});
-marker.addEventListener("click",(e)=>{
-e.stopPropagation();
-audioEl.currentTime = m.tAudio;
-showMarkerBubble(m, marker);
-});
 marker._msg = m;
 
 progressBar.appendChild(marker);
@@ -695,6 +682,20 @@ let leftPos = markerRect.left - rect.left;
 const maxLeft = Math.max(0, rect.width - 240);
 markerBubble.style.left = Math.min(leftPos, maxLeft) + "px";
 }
+// passar o mouse num comentário: mostra onde ele cai na onda
+function focarRecado(at){
+progressBar.querySelectorAll(".agora").forEach(x=>x.classList.remove("agora"));
+const mk = at ? progressBar.querySelector(`.comment-marker[data-at="${at}"]`) : null;
+if(!mk){ hideMarkerBubble(); return; }
+mk.classList.add("agora");
+showMarkerBubble(mk._msg, mk);
+}
+chatLogEl.addEventListener("mouseover",e=>{
+const d = e.target.closest(".diz");
+if(d) focarRecado(d.dataset.at);
+});
+chatLogEl.addEventListener("mouseleave",()=>focarRecado(null));
+
 // como no soundcloud: quando o áudio passa por um recado, ele aparece por uns segundos
 let ultimoT = 0, timerRecado = null;
 audioEl.addEventListener("timeupdate",()=>{
