@@ -22,16 +22,16 @@
    o nome com o status (no ar, ouvindo), a foto do dia (uma tira de super 16), a legenda,
    e os comentários dos amigos, "fulano diz:". Tahoma 11px, links azuis, regras cinza. */
 :root{
-  --ceu:#A5C7F9;       /* o fundo */
-  --branco:#FDEBC6;    /* a página: creme claro */
-  --moldura:#D9B468;   /* a borda da página */
-  --texto:#1C1C1C;
-  --cinza:#7A6A4A;     /* datas, legendas */
-  --regra:#E9D3A3;     /* as linhas */
-  --link:#1F4FBF;
+  --ceu:#BCD4EE;       /* o fundo: um céu mais calmo */
+  --branco:#FBF4E4;    /* a página: papel */
+  --moldura:#D6C39A;   /* a borda da página */
+  --texto:#222018;
+  --cinza:#867A62;     /* datas, legendas */
+  --regra:#E8DBBE;     /* as linhas */
+  --link:#2B4FA8;
   --vermelho:#D23B2C;  /* o vermelho do logo */
   --online:#3DB54A;    /* o verdinho de "online" */
-  --campo:#B59A5E;     /* borda de campo de texto */
+  --campo:#C4B08A;     /* borda de campo de texto */
   --faixa:#FBD899;     /* o creme do logo (o mesmo do avatar do insta): cabeçalho e status */
   --fonte:Tahoma,Verdana,"Segoe UI","DejaVu Sans",sans-serif;
   color-scheme:light;
@@ -73,6 +73,10 @@ a:hover{text-decoration:underline}
 .cabeca .marca{display:block;width:150px;line-height:0;transform:rotate(-2deg)}
 .cabeca .marca img{width:100%;height:auto;display:block}
 .cabeca .lugar{color:var(--cinza);padding-bottom:2px;text-align:right}
+/* o mascote: a cara da lagosta, um selinho meio torto */
+.mascote{display:block;margin:0 0 6px auto;border:1px solid var(--moldura);transform:rotate(6deg)}
+.fim{padding:16px 16px 18px;text-align:center;color:var(--cinza)}
+.fim img{display:block;margin:0 auto 6px;transform:rotate(-8deg);border:1px solid var(--moldura)}
 
 /* o status: no ar, ouvindo */
 .status{
@@ -102,21 +106,11 @@ a:hover{text-decoration:underline}
 @keyframes pisca{50%{opacity:.25}}
 .ouvindo{color:var(--texto)}
 .visor{
-  margin-top:6px;
-  background:#10140C;
-  border:2px inset #8A8A8A;
-  overflow:hidden;
-  white-space:nowrap;
-  font:bold 12px/1 "Courier New",monospace;
-  color:#7CFF4F;
-  text-shadow:0 0 3px #3DB54A;
-  padding:5px 0;
-  text-transform:uppercase;
-  letter-spacing:1px;
+  margin-top:3px;
+  font:bold 13px/1.3 Georgia,"Times New Roman",serif;
+  color:var(--vermelho);
 }
-.visor-rola{display:inline-block;animation:rola 18s linear infinite}
-.visor-rola span{padding-right:0}
-@keyframes rola{to{transform:translateX(-50%)}}
+.visor .obs{font:11px var(--fonte);color:var(--cinza);margin-left:4px}
 .ouvindo .nota{color:var(--cinza);margin-right:3px}
 .controles{
   display:flex;
@@ -255,6 +249,10 @@ audio{display:none}
   margin:4px 0 2px;
 }
 .item .ler{font-weight:bold}
+.legenda-linha a.data{color:var(--cinza)}
+.nota-txt p{margin:4px 0 0;font-size:12px}
+.tipo.t-nota{background:var(--cinza)}
+.tipo.t-indica{background:#3E7A4F}
 .voltar{padding:10px 16px 0}
 
 /* ---------- modo leitura: letra grande, coluna estreita ---------- */
@@ -277,6 +275,9 @@ audio{display:none}
   flex-wrap:wrap;
 }
 .comentarios-cab b{font-size:12px}
+summary.comentarios-cab{display:list-item;cursor:pointer;color:var(--link)}
+summary.comentarios-cab b{font-size:11px}
+details.comentarios{border-top:0;padding:4px 0 6px}
 .comentarios-cab .quantos{color:var(--cinza)}
 .chat-log{margin-top:6px}
 .diz{
@@ -333,8 +334,8 @@ audio{display:none}
   text-transform:uppercase;
 }
 .selo.s1{background:var(--vermelho);color:var(--faixa)}
-.selo.s2{background:#10140C;color:#7CFF4F;font-family:"Courier New",monospace}
-.selo.s3{background:var(--ceu);color:var(--link)}
+.selo.s2{background:var(--texto);color:var(--faixa)}
+.selo.s3{background:var(--ceu);color:var(--texto)}
 .selo.s4{background:var(--faixa);color:var(--texto);font-weight:normal;font-style:italic;text-transform:none}
 
 /* em tela estreita a lateral desce pro fim */
@@ -353,7 +354,7 @@ audio{display:none}
   .msg-field.nome{flex:1 1 100%}
 }
 @media (prefers-reduced-motion:reduce){
-  .no-ar::before,.visor-rola{animation:none}
+  .no-ar::before{animation:none}
 }
 </style>
 </head>
@@ -365,7 +366,7 @@ audio{display:none}
     <a class="marca" href="/" aria-label="Lagosta Filmes">
       <img src="logo-lagosta-filmes-tight.png" alt="Lagosta Filmes" width="336" height="158">
     </a>
-    <span class="lugar">fortaleza, ce</span>
+    <span class="lugar"><img class="mascote" src="favicon.svg" alt="" width="40" height="40">fortaleza, ce</span>
   </header>
 
   <section class="status" aria-label="status">
@@ -373,10 +374,7 @@ audio{display:none}
       <span class="no-ar">no ar</span>
       <span class="ouvindo"><span class="nota">♪</span>ouvindo:</span>
     </div>
-    <!-- o visor: letreiro verde rolando, como um som de carro velho -->
-    <div class="visor" aria-label="lagosta fm – ep. piloto">
-      <div class="visor-rola" aria-hidden="true"><span>lagosta fm ··· ep. piloto ··· direto de fortaleza ··· </span><span>lagosta fm ··· ep. piloto ··· direto de fortaleza ··· </span></div>
-    </div>
+    <div class="visor">lagosta fm — ep. piloto <span class="obs">direto de fortaleza</span></div>
     <div class="controles">
       <button id="playBtn" class="botao" type="button">play</button>
       <div class="barra" id="progressBar" role="slider" aria-label="posição do episódio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
@@ -402,34 +400,27 @@ audio{display:none}
       <div id="postCorpo"></div>
     </article>
 
-    <!-- o mural da rádio: os recados ficam presos ao minuto do episódio -->
-    <section class="comentarios" id="comentarios">
-      <div class="comentarios-cab">
-        <b>recados da rádio</b>
-        <span class="quantos" id="recadosCount2"></span>
-      </div>
+    <!-- os recados do piloto: o script muda essa caixa pra dentro do post do episódio -->
+    <details class="comentarios" id="comentarios">
+      <summary class="comentarios-cab"><b>recados</b> <span class="quantos" id="recadosCount2"></span></summary>
       <div id="chatLog" class="chat-log" aria-live="polite"></div>
       <div class="chat-envio">
         <input id="nickInput" class="msg-field nome" type="text" maxlength="24" placeholder="nome" autocomplete="nickname" aria-label="seu nome">
         <input id="chatInput" class="msg-field" type="text" maxlength="180" placeholder="comentário" autocomplete="off" aria-label="comentário">
         <button id="sendBtn" class="botao" type="button">enviar</button>
       </div>
-    </section>
+    </details>
   </main>
 
   <!-- a lateral: a produtora, como a coluna de perfil dos fotologs -->
   <aside class="lado">
     <div class="bloco">
       <b>quem somos</b>
-      <p>a lagosta filmes é uma produtora de fortaleza. a gente faz filme, rádio e o que der vontade.</p>
-      <p class="obs">(texto de exemplo — trocar)</p>
+      <p>a lagosta filmes é uma produtora de filmes e o que der na telha.</p>
     </div>
     <div class="bloco">
       <b>projetos</b>
-      <ul>
-        <li><a href="#fortown">fortown!</a> <span class="obs">longa · em breve</span></li>
-        <li><a href="#lagosta-fm-piloto">lagosta fm</a> <span class="obs">rádio · no ar</span></li>
-      </ul>
+      <p>em breve.</p>
     </div>
     <div class="bloco" id="newsletter">
       <b>receber por e-mail</b>
@@ -814,14 +805,21 @@ firebase.auth().onAuthStateChanged((user)=>{
 }
 
 /* =========================================================
-  POSTS (o feed: foto, episódio, texto)
+  POSTS (o feed: em ordem de chegada, sem algoritmo)
   Pra postar: acrescente um objeto no topo da lista.
   - id: curto, sem espaço (vira o endereço: lagostafilmes.com/#ep-2)
-  - tipo: "foto", "episodio" ou "texto"
+  - tipo: "foto", "episodio", "texto", "nota" ou "indica"
+      foto     → imagem com legenda
+      episodio → rádio
+      texto    → artigo: aparece a chamada no feed e abre em modo leitura
+      nota     → texto curto, aparece inteiro no feed (como legenda de insta)
+      indica   → uma indicação: link pra fora + o que você achou
   - data: "aaaa-mm-dd"
   - titulo; imagem (arquivo na raiz, opcional)
   - resumo: a frase que aparece no feed
-  - texto: lista de parágrafos (texto puro, sem html); num "texto" é o artigo inteiro
+  - texto: lista de parágrafos (texto puro, sem html)
+  - link, fonte: só no "indica" (o endereço e de onde é)
+  - recados: true põe os recados da rádio dentro desse post
   - rascunho: true esconde o post; ele só aparece com ?rascunho no endereço
   ========================================================= */
 const POSTS = [
@@ -846,6 +844,23 @@ texto: [
 rascunho: true
 },
 {
+id: "indica-exemplo",
+tipo: "indica",
+data: "2026-11-15",
+titulo: "(nome do filme, disco, livro, site…)",
+fonte: "(de onde é)",
+link: "https://example.com",
+texto: ["(rascunho: por que vale a pena.)"],
+rascunho: true
+},
+{
+id: "nota-exemplo",
+tipo: "nota",
+data: "2026-11-12",
+texto: ["(rascunho: uma nota curta, do jeito que viria numa legenda.)"],
+rascunho: true
+},
+{
 id: "fortown",
 tipo: "foto",
 data: "2026-11-10",
@@ -859,7 +874,8 @@ id: "lagosta-fm-piloto",
 tipo: "episodio",
 data: "2025-10-27",
 titulo: "lagosta fm – ep. piloto",
-resumo: "o primeiro episódio da rádio. aperta o play lá em cima e deixa um recado no minuto que quiser."
+resumo: "o primeiro episódio da rádio. aperta o play lá em cima e deixa um recado no minuto que quiser.",
+recados: true
 }
 ];
 
@@ -869,7 +885,8 @@ const posts = POSTS.filter(p => verRascunhos || !p.rascunho);
 const feed = document.getElementById("feed");
 const postEl = document.getElementById("post");
 const postCorpo = document.getElementById("postCorpo");
-const NOMES = {foto:"foto", episodio:"rádio", texto:"texto"};
+const recados = document.getElementById("comentarios");
+const NOMES = {foto:"foto", episodio:"rádio", texto:"texto", nota:"nota", indica:"indica"};
 
 function el(tag, cls, txt){
 const e = document.createElement(tag);
@@ -881,16 +898,19 @@ function dataBr(s){
 const [a,m,d] = String(s).split("-");
 return (a && m && d) ? `${d}/${m}/${a}` : "";
 }
+function linkProPost(p, txt, cls){
+const a = el("a", cls || null, txt);
+a.href = "#" + p.id;
+return a;
+}
 function cabecalho(p){
 const linha = el("div","legenda-linha");
 const esq = el("span");
 esq.append(el("span","tipo t-"+p.tipo, NOMES[p.tipo] || p.tipo));
-if(p.tipo !== "texto"){
-const b = el("b", null, p.titulo);
-esq.append(b);
-}
+if(p.titulo && (p.tipo === "foto" || p.tipo === "episodio")) esq.append(el("b", null, p.titulo));
 if(p.rascunho) esq.append(el("span","rascunho","rascunho"));
-linha.append(esq, el("span","data", dataBr(p.data)));
+// a data é o link permanente do post
+linha.append(esq, linkProPost(p, dataBr(p.data), "data"));
 return linha;
 }
 function foto(p){
@@ -898,9 +918,12 @@ if(!p.imagem) return null;
 const f = el("figure","foto");
 f.style.margin = "0";
 const img = el("img","imagem");
-img.src = p.imagem; img.alt = p.alt || p.titulo; img.loading = "lazy";
+img.src = p.imagem; img.alt = p.alt || p.titulo || ""; img.loading = "lazy";
 f.append(img);
 return f;
+}
+function paragrafos(lista, caixa){
+(lista || []).forEach(par => caixa.append(el("p", null, par)));
 }
 
 // um post no feed
@@ -910,16 +933,27 @@ const f = foto(p);
 if(f) item.append(f);
 const leg = el("div","legenda");
 leg.append(cabecalho(p));
+
 if(p.tipo === "texto"){
-const a = el("a","titulo-texto", p.titulo);
-a.href = "#" + p.id;
+leg.append(linkProPost(p, p.titulo, "titulo-texto"));
+}
+if(p.tipo === "indica"){
+const a = el("a","titulo-texto", p.titulo + " ↗");
+a.href = p.link; a.target = "_blank"; a.rel = "noopener";
 leg.append(a);
+if(p.fonte) leg.append(el("div","obs", p.fonte));
 }
 if(p.resumo) leg.append(el("p", null, p.resumo));
+if(p.tipo === "nota" || p.tipo === "indica"){
+const caixa = el("div","nota-txt");
+paragrafos(p.texto, caixa);
+leg.append(caixa);
+}
+
 const meta = el("div","meta");
 if(p.tipo === "texto"){
-const ler = el("a","ler","ler →"); ler.href = "#" + p.id; meta.append(ler);
-}else if(p.tipo === "episodio" && p.id === "lagosta-fm-piloto"){
+meta.append(linkProPost(p, "ler →", "ler"));
+}else if(p.recados){
 const ouvir = el("a","ler","▶ ouvir"); ouvir.href = "#";
 ouvir.addEventListener("click",e=>{
 e.preventDefault();
@@ -927,12 +961,18 @@ window.scrollTo(0,0);
 if(audioEl.paused){ audioEl.play(); playBtn.textContent="pause"; }
 });
 meta.append(ouvir);
-}else{
-const link = el("a",null,"abrir →"); link.href = "#" + p.id; meta.append(link);
 }
-leg.append(meta);
+if(meta.childNodes.length) leg.append(meta);
+if(p.recados) leg.dataset.recados = "1";
 item.append(leg);
 return item;
+}
+
+// os recados moram dentro do post que tem recados: true (o que estiver à vista)
+function moverRecados(){
+const vis = (postEl.hidden ? feed : postCorpo).querySelector("[data-recados]");
+if(vis){ vis.append(recados); recados.hidden = false; }
+else recados.hidden = true;
 }
 
 // um post aberto sozinho; texto em modo leitura
@@ -943,13 +983,13 @@ const art = el("div","leitura");
 art.append(cabecalho(p), el("h1", null, p.titulo));
 if(p.resumo) art.append(el("p","data", p.resumo));
 const prosa = el("div","prosa");
-(p.texto || []).forEach(par => prosa.append(el("p", null, par)));
+paragrafos(p.texto, prosa);
 art.append(prosa);
 postCorpo.append(art);
 }else{
 postCorpo.append(itemDoFeed(p));
 }
-document.title = `${p.titulo} · Lagosta Filmes`;
+document.title = `${p.titulo || NOMES[p.tipo]} · Lagosta Filmes`;
 }
 
 function mostrar(){
@@ -963,9 +1003,16 @@ window.scrollTo(0,0);
 feed.hidden = false; postEl.hidden = true;
 document.title = "Lagosta Filmes";
 }
+moverRecados();
 }
 
 posts.forEach(p => feed.append(itemDoFeed(p)));
+// o fim do feed: não tem mais nada, e tudo bem
+const fim = el("div","fim");
+const masc = el("img"); masc.src = "favicon.svg"; masc.alt = ""; masc.width = 36; masc.height = 36;
+fim.append(masc, el("span", null, "é isso. em ordem de chegada, sem algoritmo."));
+feed.append(fim);
+
 window.addEventListener("hashchange", mostrar);
 mostrar();
 })();
