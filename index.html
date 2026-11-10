@@ -64,17 +64,18 @@ a:hover{text-decoration:underline}
 /* o nome */
 .cabeca{
   background:var(--faixa);
+  position:relative;
   display:flex;
-  justify-content:space-between;
-  align-items:flex-end;
+  flex-direction:column;
+  align-items:center;
   gap:12px;
   padding:14px 16px 10px;
 }
 .cabeca .marca{display:block;width:150px;line-height:0;transform:rotate(-2deg)}
 .cabeca .marca img{width:100%;height:auto;display:block}
-.cabeca .lugar{color:var(--cinza);padding-bottom:2px;text-align:right}
+.cabeca .lugar{color:var(--cinza);padding-bottom:2px;text-align:center}
 /* o mascote: a cara da lagosta, um selinho meio torto */
-.mascote{display:block;margin:0 0 6px auto;border:1px solid var(--moldura);transform:rotate(6deg)}
+.mascote{position:absolute;top:12px;right:14px;border:1px solid var(--moldura);transform:rotate(6deg)}
 .fim{padding:16px 16px 18px;text-align:center;color:var(--cinza)}
 .fim img{display:block;margin:0 auto 6px;transform:rotate(-8deg);border:1px solid var(--moldura)}
 
@@ -114,7 +115,7 @@ a:hover{text-decoration:underline}
 .ouvindo .nota{color:var(--cinza);margin-right:3px}
 .controles{
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   gap:8px;
   margin-top:6px;
 }
@@ -131,32 +132,43 @@ a:hover{text-decoration:underline}
 }
 .botao:hover{background:linear-gradient(#FFFFFF,#EDEDED)}
 .botao:active{background:#DCDCDC}
+/* a barra é uma onda (como no soundcloud): barrinhas cinza, vermelhas onde já tocou */
 .barra{
   flex:1;
   min-width:0;
   position:relative;
-  height:12px;
-  background:#FFFDF7;
-  border:1px solid var(--campo);
+  height:26px;
+  margin-bottom:16px;          /* espaço pros selinhos de recado embaixo */
   cursor:pointer;
 }
-.progress-bar-fill{height:100%;width:0%;background:var(--vermelho)}
+.progress-bar-fill{display:none}
+.onda{display:flex;align-items:flex-end;gap:1px;height:100%}
+.onda i{flex:1;background:var(--campo);opacity:.55;min-width:1px}
+.onda i.tocou{background:var(--vermelho);opacity:1}
+/* cada recado é um selinho com a inicial de quem escreveu, embaixo da onda */
 .comment-marker{
   position:absolute;
-  top:-1px;
-  width:3px;
-  height:12px;
-  background:var(--link);
+  top:29px;
+  width:12px;height:12px;
+  margin-left:-6px;
+  background:var(--faixa);
+  border:1px solid var(--moldura);
+  color:var(--vermelho);
+  font:bold 8px/10px var(--fonte);
+  text-align:center;
+  text-transform:uppercase;
   cursor:pointer;
+  overflow:hidden;
 }
-.comment-marker:hover{background:var(--online)}
+.comment-marker:hover,.comment-marker.agora{background:var(--vermelho);color:var(--faixa);border-color:var(--vermelho);z-index:2}
 .marker-bubble{
   position:absolute;
   left:0;
-  bottom:16px;
-  background:#FFFFE1;
+  bottom:30px;
+  background:var(--branco);
   color:var(--texto);
-  border:1px solid #000;
+  border:1px solid var(--moldura);
+  box-shadow:1px 1px 0 var(--moldura);
   font:10px/1.3 var(--fonte);
   padding:2px 5px;
   white-space:nowrap;
@@ -366,7 +378,8 @@ details.comentarios{border-top:0;padding:4px 0 6px}
     <a class="marca" href="/" aria-label="Lagosta Filmes">
       <img src="logo-lagosta-filmes-tight.png" alt="Lagosta Filmes" width="336" height="158">
     </a>
-    <span class="lugar"><img class="mascote" src="favicon.svg" alt="" width="40" height="40">fortaleza, ce</span>
+    <img class="mascote" src="favicon.svg" alt="" width="40" height="40">
+    <span class="lugar">fortaleza, ce</span>
   </header>
 
   <section class="status" aria-label="status">
@@ -502,6 +515,22 @@ const totalTimeEl   = document.getElementById("totalTime");
 const progressBar   = document.getElementById("progressBar");
 const markerBubble  = document.getElementById("markerBubble");
 
+// a onda: barrinhas de alturas variadas (desenho fixo, não é o áudio de verdade)
+const onda = document.createElement("div");
+onda.className = "onda";
+const N_BARRAS = 110;
+for(let i=0;i<N_BARRAS;i++){
+const b = document.createElement("i");
+const h = 0.35 + 0.35*Math.abs(Math.sin(i*0.37)) + 0.3*Math.abs(Math.sin(i*1.91+1));
+b.style.height = Math.round(Math.min(1,h)*100) + "%";
+onda.appendChild(b);
+}
+progressBar.prepend(onda);
+function pintarOnda(pct){
+const ate = Math.floor(pct/100*N_BARRAS);
+onda.childNodes.forEach((b,i)=>b.classList.toggle("tocou", i < ate));
+}
+
 function formatTime(sec){
 if(isNaN(sec)) return "--:--";
 const m = Math.floor(sec/60);
@@ -529,6 +558,7 @@ currentTimeEl.textContent = formatTime(audioEl.currentTime);
 if(!isNaN(audioEl.duration) && audioEl.duration>0){
 const pct = (audioEl.currentTime/audioEl.duration)*100;
 progressFill.style.width = pct+"%";
+pintarOnda(pct);
 progressBar.setAttribute("aria-valuenow", Math.round(pct));
 }
 });
@@ -635,8 +665,9 @@ if(!(m.tAudio > 0.5)) return; // comentário deixado antes de dar play: fica na 
 const pct = (m.tAudio / audioEl.duration) * 100;
 const marker = document.createElement("div");
 marker.className = "comment-marker";
-marker.style.left = `calc(${pct}% - 1px)`;
-marker.title = `${formatTime(m.tAudio)} — ${m.text}`;
+marker.style.left = pct + "%";
+marker.textContent = (m.nick || "?").trim().charAt(0) || "?";
+marker.setAttribute("aria-label", `${formatTime(m.tAudio)} ${m.nick || ""}: ${m.text}`);
 
 marker.addEventListener("mouseenter",()=>{
 showMarkerBubble(m, marker);
@@ -644,9 +675,12 @@ showMarkerBubble(m, marker);
 marker.addEventListener("mouseleave",()=>{
 hideMarkerBubble();
 });
-marker.addEventListener("click",()=>{
+marker.addEventListener("click",(e)=>{
+e.stopPropagation();
 audioEl.currentTime = m.tAudio;
+showMarkerBubble(m, marker);
 });
+marker._msg = m;
 
 progressBar.appendChild(marker);
 });
@@ -661,6 +695,23 @@ let leftPos = markerRect.left - rect.left;
 const maxLeft = Math.max(0, rect.width - 240);
 markerBubble.style.left = Math.min(leftPos, maxLeft) + "px";
 }
+// como no soundcloud: quando o áudio passa por um recado, ele aparece por uns segundos
+let ultimoT = 0, timerRecado = null;
+audioEl.addEventListener("timeupdate",()=>{
+const t = audioEl.currentTime;
+if(t > ultimoT && t - ultimoT < 2){
+const mk = [...progressBar.querySelectorAll(".comment-marker")]
+.find(el => el._msg.tAudio > ultimoT && el._msg.tAudio <= t);
+if(mk){
+progressBar.querySelectorAll(".agora").forEach(x=>x.classList.remove("agora"));
+mk.classList.add("agora");
+showMarkerBubble(mk._msg, mk);
+clearTimeout(timerRecado);
+timerRecado = setTimeout(()=>{ mk.classList.remove("agora"); hideMarkerBubble(); }, 4000);
+}
+}
+ultimoT = t;
+});
 function hideMarkerBubble(){
 markerBubble.style.display="none";
 }
