@@ -97,7 +97,9 @@ a:hover{text-decoration:underline}
   border:1px solid #2E8F3A;
   margin-right:5px;
   vertical-align:-1px;
+  animation:pisca 2.4s steps(1) infinite;  /* a bolinha de "online" pisca devagar */
 }
+@keyframes pisca{50%{opacity:.25}}
 .ouvindo{color:var(--texto)}
 .ouvindo .nota{color:var(--cinza);margin-right:3px}
 .controles{
@@ -184,6 +186,47 @@ audio{display:none}
 .legenda p{margin:2px 0 0}
 .legenda .meta{color:var(--cinza);margin-top:4px}
 
+.legenda #postTexto p{margin:2px 0 0}
+.legenda #postTexto p+p{margin-top:8px}
+.rascunho{color:var(--vermelho);font-weight:bold;margin-left:6px}
+
+/* ---------- fotos anteriores: miniaturas pequenas, como no fotolog ---------- */
+.anteriores{
+  border-top:1px solid var(--regra);
+  padding:10px 16px 12px;
+}
+.anteriores b{font-size:12px}
+.anteriores-lista{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:6px;
+}
+.anterior{
+  display:block;
+  width:96px;
+  color:var(--texto);
+  font-size:10px;
+  line-height:1.3;
+}
+.anterior:hover{text-decoration:none}
+.anterior .mini{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:96px;
+  height:54px;
+  border:1px solid #CDB27A;
+  background:var(--faixa);
+  color:var(--cinza);
+  overflow:hidden;
+  margin-bottom:3px;
+}
+.anterior .mini img{width:100%;height:100%;object-fit:cover;display:block}
+.anterior:hover .mini{border-color:var(--link)}
+.anterior .quando{color:var(--cinza)}
+.anterior[aria-current="page"] .mini{border:2px solid var(--vermelho)}
+
 /* ---------- os comentários ---------- */
 .comentarios{
   border-top:1px solid var(--regra);
@@ -248,7 +291,7 @@ audio{display:none}
   .cabeca{padding:12px 12px 8px}
   .status{padding:7px 12px 8px}
   .foto{padding:12px 12px 0}
-  .legenda,.comentarios,.rodape{padding-left:12px;padding-right:12px}
+  .legenda,.anteriores,.comentarios,.rodape{padding-left:12px;padding-right:12px}
   .chat-envio{flex-wrap:wrap}
   .msg-field.nome{flex:1 1 100%}
 }
@@ -288,14 +331,23 @@ audio{display:none}
   </section>
 
   <main>
-    <figure class="foto" style="margin:0">
-      <img class="imagem" src="poster-fortown.jpg" alt="Fortown! — em breve. Um filme de (nome coberto com fita)" width="1320" height="743">
-    </figure>
-    <div class="legenda">
-      <div class="legenda-linha"><b>fortown!</b><span class="data"><span id="ultimaAtt">—</span></span></div>
-      <p>em breve.</p>
-      <div class="meta">1 foto · <a href="#comentarios"><span id="recadosCount">0</span> comentários</a></div>
-    </div>
+    <!-- o post da vez: preenchido pelo script a partir da lista POSTS -->
+    <article id="post">
+      <figure class="foto" id="postFoto" style="margin:0">
+        <img class="imagem" id="postImg" src="poster-fortown.jpg" alt="Fortown! — em breve. Um filme de (nome coberto com fita)" width="1320" height="743">
+      </figure>
+      <div class="legenda">
+        <div class="legenda-linha"><b id="postTitulo">fortown!</b><span class="data" id="postData">—</span></div>
+        <div id="postTexto"><p>em breve.</p></div>
+        <div class="meta"><span id="postConta">1 foto</span> · <a href="#comentarios"><span id="recadosCount">0</span> comentários</a></div>
+      </div>
+    </article>
+
+    <!-- fotos anteriores: aparece quando houver mais de um post -->
+    <nav class="anteriores" id="anteriores" aria-label="posts anteriores" hidden>
+      <b>fotos anteriores</b>
+      <div class="anteriores-lista" id="anterioresLista"></div>
+    </nav>
 
     <section class="comentarios" id="comentarios">
       <div class="comentarios-cab">
@@ -672,15 +724,116 @@ firebase.auth().onAuthStateChanged((user)=>{
 }
 
 /* =========================================================
-  DATA DA FOTO (data do arquivo no servidor)
+  POSTS (a foto do dia e as anteriores)
+  Pra postar: acrescente um objeto no topo da lista.
+  - id: curto, sem espaço (vira o endereço: lagostafilmes.com/#ep-2)
+  - data: "aaaa-mm-dd"
+  - imagem: arquivo na raiz (opcional)
+  - texto: lista de parágrafos (texto puro, sem html)
+  - rascunho: true esconde o post do site; ele só aparece com ?rascunho no endereço
+  O primeiro da lista que não for rascunho é o que abre na página.
   ========================================================= */
+const POSTS = [
+{
+id: "ep-2",
+data: "2026-12-01",
+titulo: "lagosta fm – ep. 2",
+texto: ["(rascunho: texto do episódio 2 aqui.)"],
+rascunho: true
+},
+{
+id: "fortown",
+data: "2026-11-10",
+titulo: "fortown!",
+imagem: "poster-fortown.jpg",
+alt: "Fortown! — em breve. Um filme de (nome coberto com fita)",
+texto: ["em breve."]
+}
+];
+
 (function(){
-const el = document.getElementById("ultimaAtt");
-const d = new Date(document.lastModified);
-if(isNaN(d.getTime())){ el.textContent = "2026"; return; }
-const dd = String(d.getDate()).padStart(2,"0");
-const mm = String(d.getMonth()+1).padStart(2,"0");
-el.textContent = `${dd}/${mm}/${d.getFullYear()}`;
+const verRascunhos = new URLSearchParams(location.search).has("rascunho");
+const posts = POSTS.filter(p => verRascunhos || !p.rascunho);
+if(!posts.length) return;
+
+const $ = id => document.getElementById(id);
+
+function dataBr(s){
+const [a,m,d] = String(s).split("-");
+return (a && m && d) ? `${d}/${m}/${a}` : "";
+}
+
+function mostrar(post){
+// foto
+if(post.imagem){
+$("postImg").src = post.imagem;
+$("postImg").alt = post.alt || post.titulo;
+$("postImg").removeAttribute("width");
+$("postImg").removeAttribute("height");
+$("postFoto").hidden = false;
+$("postConta").textContent = "1 foto";
+}else{
+$("postFoto").hidden = true;
+$("postConta").textContent = "texto";
+}
+// título, data, texto (sempre como texto puro)
+$("postTitulo").textContent = post.titulo;
+if(post.rascunho){
+const r = document.createElement("span");
+r.className = "rascunho";
+r.textContent = "rascunho";
+$("postTitulo").appendChild(r);
+}
+$("postData").textContent = dataBr(post.data);
+const caixa = $("postTexto");
+caixa.innerHTML = "";
+(post.texto || []).forEach(par=>{
+const p = document.createElement("p");
+p.textContent = par;
+caixa.appendChild(p);
+});
+document.title = post === posts[0] ? "Lagosta Filmes" : `${post.titulo} · Lagosta Filmes`;
+montarAnteriores(post);
+}
+
+function montarAnteriores(atual){
+const lista = $("anterioresLista");
+lista.innerHTML = "";
+$("anteriores").hidden = posts.length < 2;
+posts.forEach(p=>{
+const a = document.createElement("a");
+a.className = "anterior";
+a.href = "#" + p.id;
+if(p === atual) a.setAttribute("aria-current","page");
+const mini = document.createElement("span");
+mini.className = "mini";
+if(p.imagem){
+const img = document.createElement("img");
+img.src = p.imagem; img.alt = ""; img.loading = "lazy";
+mini.appendChild(img);
+}else{
+mini.textContent = "texto";
+}
+const t = document.createElement("span");
+t.textContent = p.titulo;
+const q = document.createElement("span");
+q.className = "quando";
+q.textContent = " " + dataBr(p.data);
+a.append(mini, t, document.createElement("br"), q);
+lista.appendChild(a);
+});
+}
+
+function pelaHash(){
+const id = decodeURIComponent(location.hash.slice(1));
+return posts.find(p => p.id === id) || posts[0];
+}
+window.addEventListener("hashchange",()=>{
+if(location.hash === "#comentarios") return;
+mostrar(pelaHash());
+window.scrollTo(0,0);
+});
+mostrar(pelaHash());
 })();
 </script>
 
