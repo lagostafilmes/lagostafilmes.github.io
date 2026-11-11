@@ -54,8 +54,9 @@ a:hover{text-decoration:underline}
 /* ---------- a página ---------- */
 .pagina{background:var(--branco)}
 /* o miolo fica numa coluna central; o papel vai até a borda */
-.corpo,.rodape{max-width:1040px;margin:0 auto}
-.corpo{border-left:1px solid var(--regra);border-right:1px solid var(--regra)}
+/* tudo numa coluna só: a tv, o feed com a lateral e o rodapé têm as mesmas bordas */
+.tv-palco,.corpo,.rodape{max-width:1072px;margin:0 auto}
+.corpo{margin-top:18px;border-top:1px solid var(--regra)}
 
 /* o nome */
 .cabeca{
@@ -66,14 +67,14 @@ a:hover{text-decoration:underline}
   flex-direction:column;
   align-items:center;
   gap:6px;
-  padding:28px 16px 24px;
+  padding:22px 16px 18px;
 }
 .cabeca .marca{display:block;width:150px;background:var(--faixa);padding:10px 14px;border:1px solid var(--moldura);box-shadow:2px 2px 0 var(--moldura);box-sizing:content-box;line-height:0;transform:rotate(-2deg)}
 .cabeca .marca img{width:100%;height:auto;display:block}
 .cabeca .lugar{color:var(--cinza);padding-bottom:2px;text-align:center}
 /* o mascote: a cara da lagosta, um selinho meio torto */
 .mascote{position:absolute;top:12px;right:14px;border:1px solid var(--moldura);transform:rotate(6deg)}
-.fim{padding:16px 16px 18px;text-align:center;color:var(--cinza)}
+.fim{padding:12px 16px;text-align:center;color:var(--cinza)}
 .fim img{display:block;margin:0 auto 6px;transform:rotate(-8deg);border:1px solid var(--moldura)}
 
 /* a rádio: bloco da lateral, irmão da tv */
@@ -263,14 +264,14 @@ audio{display:none}
 .lado .selos{padding:10px 14px 12px}
 
 /* ---------- lagosta tv: o palco da home, uma faixa escura com a tela grande ---------- */
-.tv-palco{background:#14120E;padding:20px 16px 14px;border-bottom:1px solid var(--moldura)}
+.tv-palco{padding:22px 16px 0}
 .tv{
   position:relative;
-  max-width:1040px;
-  margin:0 auto;
   aspect-ratio:16/9;
   background:#000;
   overflow:hidden;
+  border:1px solid var(--texto);
+  box-shadow:3px 3px 0 var(--moldura);
 }
 .tv video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
 .tv::after{  /* as linhas da tela, bem de leve */
@@ -286,19 +287,18 @@ audio{display:none}
 .sem-sinal span{background:#111;color:#EEE;font:bold 11px/1 var(--fonte);letter-spacing:1px;padding:4px 8px;text-transform:uppercase}
 .tv [hidden]{display:none}
 .tv-barra{
-  max-width:1040px;margin:9px auto 0;
+  margin:10px 0 0;
   display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
-  color:var(--branco);
+  color:var(--texto);
 }
 .tv-nome{font-size:12px}
-.tv-nome b{color:var(--branco)}
-.tv-palco .no-ar{color:var(--branco);opacity:.7;font-size:10px;margin-right:4px}
+.tv-palco .no-ar{color:var(--cinza);font-size:10px;margin-right:4px}
 .tv-botoes{display:flex;gap:6px}
 .tv-botao{
-  font:11px/1 var(--fonte);color:var(--branco);background:transparent;
-  border:1px solid rgba(251,244,228,.35);padding:5px 9px;cursor:pointer;
+  font:11px/1 var(--fonte);color:var(--texto);background:transparent;
+  border:1px solid var(--campo);padding:5px 9px;cursor:pointer;
 }
-.tv-botao:hover{border-color:var(--branco)}
+.tv-botao:hover{border-color:var(--texto)}
 
 /* ---------- o feed: cada post do seu jeito ---------- */
 .item{border-bottom:1px solid var(--regra);padding-bottom:4px}
@@ -538,7 +538,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
   </div>
 
   <footer class="rodape">
-    <span><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a> · <a href="https://instagram.com/lagosta.filmes">@lagosta.filmes</a></span>
+    <span>lagosta filmes · fortaleza, ce</span>
     <span>lagostafilmes.com</span>
   </footer>
 
