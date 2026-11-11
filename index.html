@@ -68,16 +68,46 @@ a:hover{text-decoration:underline}
   display:flex;
   flex-direction:column;
   align-items:center;
-  gap:12px;
-  padding:14px 16px 10px;
+  gap:6px;
+  padding:16px 16px 10px;
 }
-.cabeca .marca{display:block;width:150px;line-height:0;transform:rotate(-2deg)}
+.cabeca .marca{display:block;width:130px;line-height:0;transform:rotate(-2deg)}
 .cabeca .marca img{width:100%;height:auto;display:block}
 .cabeca .lugar{color:var(--cinza);padding-bottom:2px;text-align:center}
 /* o mascote: a cara da lagosta, um selinho meio torto */
 .mascote{position:absolute;top:12px;right:14px;border:1px solid var(--moldura);transform:rotate(6deg)}
 .fim{padding:16px 16px 18px;text-align:center;color:var(--cinza)}
 .fim img{display:block;margin:0 auto 6px;transform:rotate(-8deg);border:1px solid var(--moldura)}
+
+/* a rádio: uma faixa só, no papel, entre o cabeçalho e o feed */
+.radio{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px 16px 10px;
+  background:var(--branco);
+  border-top:1px solid var(--moldura);
+  border-bottom:1px solid var(--regra);
+}
+.play{
+  flex:none;
+  width:38px;height:38px;
+  border-radius:50%;
+  border:0;
+  background:var(--vermelho);
+  color:var(--faixa);
+  font:13px/1 var(--fonte);
+  cursor:pointer;
+  padding:0 0 0 2px;
+}
+.play:hover{filter:brightness(1.08)}
+.radio-meio{flex:1;min-width:0}
+.radio-linha{display:flex;align-items:baseline;gap:8px;margin-bottom:5px;white-space:nowrap}
+.radio-nome{color:var(--vermelho);font-size:12px}
+.radio-ep{overflow:hidden;text-overflow:ellipsis}
+.radio .tempos{margin-left:auto}
+.radio .no-ar{color:var(--cinza);font-size:10px}
+.radio .no-ar::before{width:6px;height:6px;margin-right:4px;vertical-align:0}
 
 /* o status: no ar, ouvindo */
 .status{
@@ -259,7 +289,7 @@ audio{display:none}
 .sem-sinal span{background:#111;color:#EEE;font:bold 11px/1 var(--fonte);letter-spacing:1px;padding:4px 8px;text-transform:uppercase}
 .tv-som{margin-top:6px}
 .tv-caixa{padding:16px 16px 4px}
-.item .tv{border-width:10px;margin:0}
+.item .tv{border-width:10px;margin:0;max-width:440px;aspect-ratio:16/10}
 .tipo.t-tv{background:#3B352D}
 
 /* ---------- o feed: cada post do seu jeito ---------- */
@@ -388,6 +418,7 @@ details.comentarios{border-top:0;padding:4px 0 6px}
   .bloco,.leitura,.voltar{padding-left:12px;padding-right:12px}
   body{padding-block:14px 20px;font-size:12px}
   .cabeca{padding:12px 12px 8px}
+  .radio{padding-left:12px;padding-right:12px}
   .status{padding:7px 12px 8px}
   .foto{padding:12px 12px 0}
   .legenda,.comentarios,.rodape{padding-left:12px;padding-right:12px}
@@ -407,23 +438,23 @@ details.comentarios{border-top:0;padding:4px 0 6px}
     <a class="marca" href="/" aria-label="Lagosta Filmes">
       <img src="logo-lagosta-filmes-tight.png" alt="Lagosta Filmes" width="336" height="158">
     </a>
-    <img class="mascote" src="favicon.svg" alt="" width="40" height="40">
     <span class="lugar">fortaleza, ce</span>
   </header>
 
-  <section class="status" aria-label="status">
-    <div class="status-linha">
-      <span class="no-ar">no ar</span>
-      <span class="ouvindo"><span class="nota">♪</span>ouvindo:</span>
-    </div>
-    <div class="visor">lagosta fm — ep. piloto <span class="obs">direto de fortaleza</span></div>
-    <div class="controles">
-      <button id="playBtn" class="botao" type="button">play</button>
+  <!-- a rádio: play, nome do episódio, onda -->
+  <section class="radio" aria-label="lagosta fm">
+    <button id="playBtn" class="play" type="button" aria-label="tocar / pausar">▶</button>
+    <div class="radio-meio">
+      <div class="radio-linha">
+        <b class="radio-nome">lagosta fm</b>
+        <span class="radio-ep">ep. piloto</span>
+        <span class="no-ar">no ar</span>
+        <span class="tempos"><span id="currentTime">00:00</span> / <span id="totalTime">--:--</span></span>
+      </div>
       <div class="barra" id="progressBar" role="slider" aria-label="posição do episódio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
         <div class="progress-bar-fill" id="progressFill"></div>
         <div class="marker-bubble" id="markerBubble"></div>
       </div>
-      <span class="tempos"><span id="currentTime">00:00</span> / <span id="totalTime">--:--</span></span>
     </div>
     <!-- áudio (Firebase Storage) -->
     <audio id="audioPlayer" preload="metadata">
@@ -579,13 +610,13 @@ return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
 playBtn.addEventListener("click",()=>{
 if(audioEl.paused){
 audioEl.play();
-playBtn.textContent="pause";
+playBtn.textContent="❚❚";
 }else{
 audioEl.pause();
-playBtn.textContent="play";
+playBtn.textContent="▶";
 }
 });
-audioEl.addEventListener("ended",()=>{ playBtn.textContent="play"; });
+audioEl.addEventListener("ended",()=>{ playBtn.textContent="▶"; });
 
 audioEl.addEventListener("loadedmetadata",()=>{
 totalTimeEl.textContent = formatTime(audioEl.duration);
@@ -689,7 +720,7 @@ if(!t) return;
 const sec = parseFloat(t.dataset.t);
 if(!isNaN(sec) && !isNaN(audioEl.duration)){
 audioEl.currentTime = sec;
-if(audioEl.paused){ audioEl.play(); playBtn.textContent="pause"; }
+if(audioEl.paused){ audioEl.play(); playBtn.textContent="❚❚"; }
 }
 });
 
@@ -919,14 +950,6 @@ firebase.auth().onAuthStateChanged((user)=>{
   ========================================================= */
 const POSTS = [
 {
-id: "ep-2",
-tipo: "episodio",
-data: "2026-12-01",
-titulo: "lagosta fm – ep. 2",
-resumo: "(rascunho: do que fala o episódio 2.)",
-rascunho: true
-},
-{
 id: "tv-fragmento-1",
 tipo: "tv",
 data: "2026-11-26",
@@ -934,15 +957,15 @@ titulo: "fragmento #1",
 fragmento: 1,
 local: "(lugar)",
 camera: "(câmera)",
-resumo: "(rascunho: o primeiro fragmento da lagosta tv. falta o vídeo.)",
+resumo: "(exemplo: aqui entra o primeiro fragmento da tv.)",
 video: "",
 rascunho: true
 },
 {
-id: "coisas-que-eu-mandaria-no-zap",
+id: "zap-1",
 tipo: "links",
 data: "2026-11-24",
-titulo: "coisas que eu mandaria no zap se a gente fosse amigo #1",
+titulo: "coisas que eu te mandaria no zap #1",
 resumo: "uma vez por mês, ou quando der. sem patrocínio, sem afiliado.",
 itens: [
 {titulo: "radio garden", link: "https://radio.garden", fonte: "radio.garden", nota: "um globo girando com rádio ao vivo do mundo inteiro. achei uma rádio de pescador no maranhão às 3 da manhã."},
@@ -966,25 +989,8 @@ texto: [
 "> uma rádio é o contrário de um algoritmo: alguém escolheu aquilo, naquela ordem, pra você.",
 "## então",
 "esse site é isso: um puxadinho. tem rádio, tem filme vindo, tem texto quando der vontade e tem coisa boa que eu achei por aí. em ordem de chegada. se quiser receber por e-mail, tem o campinho ali do lado. se não, tudo bem também.",
-"(texto simulado, só pra ver como fica.)"
+"(texto de exemplo, escrito por mim só pra ver o formato.)"
 ],
-rascunho: true
-},
-{
-id: "indica-exemplo",
-tipo: "indica",
-data: "2026-11-16",
-titulo: "(exemplo de indicação)",
-fonte: "internet",
-link: "https://example.com",
-texto: ["(rascunho: um exemplo de indicação solta, com um comentário seu de uma ou duas linhas. troque pelo link de verdade.)"],
-rascunho: true
-},
-{
-id: "nota-exemplo",
-tipo: "nota",
-data: "2026-11-12",
-texto: ["choveu em fortaleza hoje. três minutos. a cidade inteira parou pra olhar. (nota simulada)"],
 rascunho: true
 },
 {
@@ -1123,7 +1129,7 @@ const ouvir = el("a","ler","▶ ouvir"); ouvir.href = "#";
 ouvir.addEventListener("click",e=>{
 e.preventDefault();
 window.scrollTo(0,0);
-if(audioEl.paused){ audioEl.play(); playBtn.textContent="pause"; }
+if(audioEl.paused){ audioEl.play(); playBtn.textContent="❚❚"; }
 });
 meta.append(ouvir);
 }
@@ -1232,7 +1238,7 @@ if(!tv.muted) calarRadio();
 
 // quem começa a tocar com som cala os outros
 function calarRadio(){
-if(!audioEl.paused){ audioEl.pause(); playBtn.textContent = "play"; }
+if(!audioEl.paused){ audioEl.pause(); playBtn.textContent="▶"; }
 }
 function calarTv(){
 const tv = document.getElementById("tvVideo");
