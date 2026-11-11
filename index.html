@@ -99,7 +99,8 @@ a:hover{text-decoration:underline}
 .play:hover{filter:brightness(1.08)}
 .radio-ep{font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .radio .tempos{margin-left:auto}
-.radio .barra{height:30px}
+.radio .barra{height:30px;touch-action:none}
+.barra.buscando .onda i.tocou{opacity:.6}
 .radio .marker-bubble{max-width:190px;white-space:normal}
 
 /* o status: no ar, ouvindo */
@@ -609,6 +610,7 @@ audioEl.addEventListener("loadedmetadata", mostrarTotal);
 audioEl.addEventListener("durationchange", mostrarTotal);
 
 audioEl.addEventListener("timeupdate",()=>{
+if(alvo !== null) return;   // ainda indo pro ponto escolhido
 currentTimeEl.textContent = formatTime(audioEl.currentTime);
 mostrarTotal();
 if(!isNaN(audioEl.duration) && audioEl.duration>0){
@@ -619,21 +621,51 @@ progressBar.setAttribute("aria-valuenow", Math.round(pct));
 }
 });
 
-// clicar na barra: pular
-progressBar.addEventListener("click",(e)=>{
-if(e.target.classList.contains("comment-marker")) return;
-const rect = progressBar.getBoundingClientRect();
-const clickX = e.clientX - rect.left;
-const ratio = clickX / rect.width;
-if(!isNaN(audioEl.duration)){
-audioEl.currentTime = ratio * audioEl.duration;
+// clicar ou arrastar na onda: pula pro ponto (e começa a tocar, como no soundcloud)
+function duracaoAudio(){
+if(isFinite(audioEl.duration) && audioEl.duration > 0) return audioEl.duration;
+try{ if(audioEl.seekable.length) return audioEl.seekable.end(audioEl.seekable.length-1); }catch(e){}
+return 0;
 }
+let alvo = null;   // pra onde o usuário mandou ir, enquanto o áudio ainda está chegando lá
+function irPara(ratio){
+const d = duracaoAudio();
+if(!d) return;
+ratio = Math.max(0, Math.min(1, ratio));
+alvo = ratio * d;
+// mostra na hora, sem esperar o áudio carregar
+pintarOnda(ratio*100);
+currentTimeEl.textContent = formatTime(alvo);
+progressBar.classList.add("buscando");
+audioEl.currentTime = alvo;
+}
+audioEl.addEventListener("seeked", ()=>{ alvo = null; progressBar.classList.remove("buscando"); });
+function ratioDoPonteiro(e){
+const r = progressBar.getBoundingClientRect();
+return (e.clientX - r.left) / r.width;
+}
+progressBar.addEventListener("pointerdown", e=>{
+if(e.button !== 0) return;
+e.preventDefault();
+progressBar.setPointerCapture(e.pointerId);
+irPara(ratioDoPonteiro(e));
+const mover = ev=> irPara(ratioDoPonteiro(ev));
+const soltar = ()=>{
+progressBar.removeEventListener("pointermove", mover);
+progressBar.removeEventListener("pointerup", soltar);
+progressBar.removeEventListener("pointercancel", soltar);
+if(audioEl.paused){ audioEl.play(); playBtn.textContent="❚❚"; }
+};
+progressBar.addEventListener("pointermove", mover);
+progressBar.addEventListener("pointerup", soltar);
+progressBar.addEventListener("pointercancel", soltar);
 });
 // setas: pular 10 s
 progressBar.addEventListener("keydown",(e)=>{
-if(isNaN(audioEl.duration)) return;
-if(e.key==="ArrowRight"){ e.preventDefault(); audioEl.currentTime = Math.min(audioEl.duration, audioEl.currentTime+10); }
-if(e.key==="ArrowLeft"){ e.preventDefault(); audioEl.currentTime = Math.max(0, audioEl.currentTime-10); }
+const d = duracaoAudio(); if(!d) return;
+const agora = alvo ?? audioEl.currentTime;
+if(e.key==="ArrowRight"){ e.preventDefault(); irPara((agora+10)/d); }
+if(e.key==="ArrowLeft"){ e.preventDefault(); irPara((agora-10)/d); }
 });
 
 /* =========================================================
