@@ -1123,25 +1123,35 @@ form.addEventListener("submit", e => e.preventDefault());
          (ex.: o vhs de 1991 e a ruína de hoje do mesmo cômodo)
   ========================================================= */
 const TV_PROGRAMACAO = [
-// casa maranguape: o mesmo lugar em 1991 e hoje, um se dissolvendo no outro
-{fonte: "casa", video: "tv/casa-convite.mp4", duracao: 30.54},
+// gerado pelo atualizador a partir da pasta no-ar (não editar à mão)
+{fonte: "carro", video: "tv/carro-42.mp4", duracao: 13.1},
+{fonte: "carro", video: "tv/carro-43.mp4", duracao: 9.72},
+{fonte: "carro", video: "tv/carro-44.mp4", duracao: 4.71},
+{fonte: "carro", video: "tv/carro-45.mp4", duracao: 10.23},
+{fonte: "carro", video: "tv/carro-46.mp4", duracao: 15.07},
+{fonte: "carro", video: "tv/carro-47.mp4", duracao: 19.13},
+{fonte: "carro", video: "tv/carro-48.mp4", duracao: 54.29},
+{fonte: "carro", video: "tv/carro-49.mp4", duracao: 22.17},
+{fonte: "carro", video: "tv/carro-50.mp4", duracao: 140.73},
+{fonte: "carro", video: "tv/carro-51.mp4", duracao: 15.03},
+{fonte: "carro", video: "tv/carro-52.mp4", duracao: 77.96},
+{fonte: "carro", video: "tv/carro-53.mp4", duracao: 61.53},
+{fonte: "casa", video: "tv/casa-beiral.mp4", duracao: 22.21},
+{fonte: "casa", video: "tv/casa-bolo.mp4", duracao: 31.08},
 {fonte: "casa", video: "tv/casa-chegada.mp4", duracao: 25.83},
+{fonte: "casa", video: "tv/casa-cobogo.mp4", duracao: 25.3},
+{fonte: "casa", video: "tv/casa-convite.mp4", duracao: 30.54},
+{fonte: "casa", video: "tv/casa-jardim.mp4", duracao: 26.71},
+{fonte: "casa", video: "tv/casa-pilar.mp4", duracao: 23.46},
+{fonte: "casa", video: "tv/casa-piscina.mp4", duracao: 25.62},
 {fonte: "casa", video: "tv/casa-sala.mp4", duracao: 25.96},
 {fonte: "casa", video: "tv/casa-tijolos.mp4", duracao: 23.5},
-{fonte: "casa", video: "tv/casa-piscina.mp4", duracao: 25.62},
-{fonte: "casa", video: "tv/casa-beiral.mp4", duracao: 22.21},
-{fonte: "casa", video: "tv/casa-pilar.mp4", duracao: 23.46},
-{fonte: "casa", video: "tv/casa-jardim.mp4", duracao: 26.71},
-{fonte: "casa", video: "tv/casa-bolo.mp4", duracao: 31.08},
-{fonte: "casa", video: "tv/casa-cobogo.mp4", duracao: 25.3},
-// curtas da lagosta
 {fonte: "curtas", video: "tv/curta-cinema-novo.mp4", duracao: 345.23},
 {fonte: "curtas", video: "tv/curta-lockdown.mp4", duracao: 385.78},
 {fonte: "curtas", video: "tv/curta-palavras-cruzadas.mp4", duracao: 213.75},
 {fonte: "curtas", video: "tv/curta-rebu.mp4", duracao: 248.42},
-{fonte: "curtas", video: "tv/curta-working-class-hero.mp4", duracao: 96.75},
 {fonte: "curtas", video: "tv/curta-viagem-europa-liszt.mp4", duracao: 351.18},
-// do celular: rua, viagem, noite (zap) e pelo para-brisa (carro)
+{fonte: "curtas", video: "tv/curta-working-class-hero.mp4", duracao: 96.75},
 {fonte: "zap", video: "tv/zap-01.mp4", duracao: 15.67},
 {fonte: "zap", video: "tv/zap-02.mp4", duracao: 10.22},
 {fonte: "zap", video: "tv/zap-03.mp4", duracao: 12.77},
@@ -1182,19 +1192,7 @@ const TV_PROGRAMACAO = [
 {fonte: "zap", video: "tv/zap-38.mp4", duracao: 129.19},
 {fonte: "zap", video: "tv/zap-39.mp4", duracao: 26.59},
 {fonte: "zap", video: "tv/zap-40.mp4", duracao: 59.28},
-{fonte: "zap", video: "tv/zap-41.mp4", duracao: 25.36},
-{fonte: "carro", video: "tv/carro-42.mp4", duracao: 13.1},
-{fonte: "carro", video: "tv/carro-43.mp4", duracao: 9.72},
-{fonte: "carro", video: "tv/carro-44.mp4", duracao: 4.71},
-{fonte: "carro", video: "tv/carro-45.mp4", duracao: 10.23},
-{fonte: "carro", video: "tv/carro-46.mp4", duracao: 15.07},
-{fonte: "carro", video: "tv/carro-47.mp4", duracao: 19.13},
-{fonte: "carro", video: "tv/carro-48.mp4", duracao: 54.29},
-{fonte: "carro", video: "tv/carro-49.mp4", duracao: 22.2},
-{fonte: "carro", video: "tv/carro-50.mp4", duracao: 140.73},
-{fonte: "carro", video: "tv/carro-51.mp4", duracao: 15.03},
-{fonte: "carro", video: "tv/carro-52.mp4", duracao: 77.96},
-{fonte: "carro", video: "tv/carro-53.mp4", duracao: 61.53}
+{fonte: "zap", video: "tv/zap-41.mp4", duracao: 25.36}
 ];
 const TV_INICIO = Date.parse("2026-11-01T00:00:00-03:00");  // a hora em que o canal "entrou no ar"
 
