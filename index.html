@@ -65,7 +65,7 @@ a:hover{text-decoration:underline}
 .coluna{grid-column:2;grid-row:2;align-self:start;position:sticky;top:20px;padding:30px 0}
 .coluna p{margin:8px 0 0;color:var(--cinza)}
 .coluna-marca{display:block;transform:rotate(-8deg)}
-.coluna-nome{font:bold 20px/1.2 Georgia,"Times New Roman",serif;margin:8px 0 0;color:var(--texto)}
+.coluna-nome{font:bold 20px/1.2 Georgia,"Times New Roman",serif;margin:0;color:var(--texto)}
 .coluna .assina{display:flex;flex-direction:column;gap:8px;margin:16px 0 4px}
 .coluna .msg-field{padding:8px 10px;font-size:12px;width:100%}
 .inscrever{
@@ -79,7 +79,7 @@ a:hover{text-decoration:underline}
 .miniatura{grid-column:2;grid-row:1;align-self:start;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000}
 .miniatura img{width:100%;height:100%;object-fit:cover;display:block}
 .miniatura.t-episodio,.miniatura.t-texto,.miniatura.t-nota,.miniatura.t-links,.miniatura.t-indica{background:var(--faixa);border:1px solid var(--moldura);box-shadow:2px 2px 0 var(--moldura)}
-.miniatura .mini-lagosta{width:46%;height:auto;object-fit:contain;transform:rotate(-8deg)}
+.mini-nome{font:bold 18px/1.1 Georgia,"Times New Roman",serif;color:var(--vermelho);text-align:center;padding:0 10px;transform:rotate(-4deg)}
 
 /* o nome */
 .cabeca{
@@ -502,7 +502,6 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
 
     <!-- a coluna: quem é, e a inscrição na newsletter -->
     <aside class="coluna">
-      <img class="coluna-marca" src="lagosta.svg" alt="" width="46" height="46">
       <h2 class="coluna-nome">lagosta filmes</h2>
       <p>produtora de filmes e outras coisas. fortaleza, ce.</p>
       <form class="assina" id="assinaForm" method="post" target="_blank">
@@ -1069,7 +1068,7 @@ const item = el("div","item");
 const mini = el(p.id ? "a" : "div","miniatura t-"+p.tipo);
 if(p.id) mini.href = "#" + p.id;
 if(p.imagem){ const im = el("img"); im.src = p.imagem; im.alt = p.alt || p.titulo || ""; im.loading = "lazy"; mini.append(im); }
-else{ const im = el("img","mini-lagosta"); im.src = "lagosta-cheia.svg"; im.alt = ""; mini.append(im); }
+else{ mini.append(el("span","mini-nome", p.tipo === "episodio" ? "lagosta fm" : (NOMES[p.tipo] || p.tipo))); }
 item.append(mini);
 const leg = el("div","legenda");
 leg.append(cabecalho(p));
