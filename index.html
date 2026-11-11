@@ -43,7 +43,7 @@ body{
   margin:0;
   background:transparent;
   color:var(--texto);
-  font:11px/1.55 var(--fonte);
+  font:12px/1.55 var(--fonte);
   padding:0 clamp(10px,3vw,40px);
 }
 img{max-width:100%}
@@ -58,7 +58,7 @@ a:hover{text-decoration:underline}
 /* a lâmina: papel largo, o céu só emoldura */
 .corpo,.rodape{background:var(--branco);border-left:1px solid var(--moldura);border-right:1px solid var(--moldura)}
 .corpo{border-top:1px solid var(--moldura)}
-.corpo > main{max-width:920px;margin:0 auto}
+.corpo > main{max-width:1080px;margin:0 auto}
 
 /* o nome */
 .cabeca{
@@ -75,8 +75,8 @@ a:hover{text-decoration:underline}
 .cabeca .lugar{color:var(--cinza);padding-bottom:2px;text-align:center}
 /* o mascote: a cara da lagosta, um selinho meio torto */
 .mascote{position:absolute;top:12px;right:14px;border:1px solid var(--moldura);transform:rotate(6deg)}
-.fim{padding:12px 16px;text-align:center;color:var(--cinza)}
-.fim img{display:block;margin:0 auto;transform:rotate(-14deg)}
+.fim{padding:22px 16px 26px;text-align:center;color:var(--cinza)}
+.fim img{display:block;margin:0 auto;width:78px;height:auto;transform:rotate(-14deg)}
 
 /* a rádio: bloco da lateral, irmão da tv */
 .radio-topo{display:flex;align-items:baseline;justify-content:space-between}
@@ -87,19 +87,19 @@ a:hover{text-decoration:underline}
 .radio-linha{display:flex;align-items:center;gap:10px;margin:0 0 6px}
 .play{
   flex:none;
-  width:28px;height:28px;
+  width:36px;height:36px;
   border-radius:50%;
   border:0;
   background:var(--vermelho);
   color:var(--branco);
-  font:11px/1 var(--fonte);
+  font:13px/1 var(--fonte);
   cursor:pointer;
   padding:0 0 0 2px;
 }
 .play:hover{filter:brightness(1.08)}
 .radio-ep{font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .radio .tempos{margin-left:auto}
-.radio .barra{height:22px}
+.radio .barra{height:30px}
 .radio .marker-bubble{max-width:190px;white-space:normal}
 
 /* o status: no ar, ouvindo */
@@ -230,7 +230,7 @@ audio{display:none}
   transform:rotate(2.5deg);
   z-index:1;
 }
-.legenda{padding:8px 16px 14px}
+.legenda{padding:16px 26px 20px}  /* mesma margem da tv, pra alinhar */
 .legenda-linha{
   display:flex;
   justify-content:space-between;
@@ -330,7 +330,7 @@ audio{display:none}
 }
 .item .ler{font-weight:bold}
 .legenda-linha a.data{color:var(--cinza)}
-.legenda-linha a.nome-data{color:var(--texto);font-weight:bold;font-size:12px}
+.legenda-linha a.nome-data{color:var(--texto);font-weight:bold;font-size:14px}
 .nota-txt p{margin:4px 0 0;font-size:12px}
 .tipo.t-nota{background:var(--cinza)}
 .tipo.t-indica{background:#3E7A4F}
@@ -401,7 +401,7 @@ details.comentarios{border-top:0;padding:4px 0 6px}
 /* ---------- o rodapé ---------- */
 .rodape{
   margin:0 0 clamp(10px,3vw,40px);border-bottom:1px solid var(--moldura);
-  padding-left:max(16px,calc((100% - 920px)/2 + 16px));padding-right:max(16px,calc((100% - 920px)/2 + 16px));
+  padding-left:max(16px,calc((100% - 1080px)/2 + 26px));padding-right:max(16px,calc((100% - 1080px)/2 + 26px));
   padding-top:18px;padding-bottom:30px;
   border-top:1px solid var(--regra);
   display:flex;justify-content:space-between;align-items:flex-end;gap:14px 24px;flex-wrap:wrap;
@@ -495,7 +495,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     </audio>
     </section>
     <details class="comentarios" id="comentarios">
-      <summary class="comentarios-cab"><b>recados</b> <span class="quantos" id="recadosCount2"></span></summary>
+      <summary class="comentarios-cab"><b>comentários</b> <span class="quantos" id="recadosCount2"></span></summary>
       <div id="chatLog" class="chat-log" aria-live="polite"></div>
       <div class="chat-envio">
         <input id="nickInput" class="msg-field nome" type="text" maxlength="24" placeholder="nome" autocomplete="nickname" aria-label="seu nome">
@@ -603,12 +603,14 @@ playBtn.textContent="▶";
 });
 audioEl.addEventListener("ended",()=>{ playBtn.textContent="▶"; });
 
-audioEl.addEventListener("loadedmetadata",()=>{
-totalTimeEl.textContent = formatTime(audioEl.duration);
-});
+// a duração às vezes só chega depois (e o safari às vezes dá "infinito" no começo)
+function mostrarTotal(){ if(isFinite(audioEl.duration) && audioEl.duration > 0) totalTimeEl.textContent = formatTime(audioEl.duration); }
+audioEl.addEventListener("loadedmetadata", mostrarTotal);
+audioEl.addEventListener("durationchange", mostrarTotal);
 
 audioEl.addEventListener("timeupdate",()=>{
 currentTimeEl.textContent = formatTime(audioEl.currentTime);
+mostrarTotal();
 if(!isNaN(audioEl.duration) && audioEl.duration>0){
 const pct = (audioEl.currentTime/audioEl.duration)*100;
 progressFill.style.width = pct+"%";
