@@ -55,8 +55,7 @@ a:hover{text-decoration:underline}
 .pagina{background:var(--branco)}
 /* o miolo fica numa coluna central; o papel vai até a borda */
 /* tudo numa coluna só: a tv, o feed com a lateral e o rodapé têm as mesmas bordas */
-.tv-palco,.corpo,.rodape{max-width:1072px;margin:0 auto}
-.corpo{margin-top:18px;border-top:1px solid var(--regra)}
+.corpo{max-width:1120px;margin:0 auto}
 
 /* o nome */
 .cabeca{
@@ -251,8 +250,8 @@ audio{display:none}
 .rascunho{color:var(--vermelho);font-weight:bold;margin-left:6px}
 
 /* ---------- corpo: feed à esquerda, a produtora à direita ---------- */
-.corpo{display:grid;grid-template-columns:minmax(0,1fr) 210px}
-.lado{border-left:1px solid var(--regra);padding:6px 0 0}
+.corpo{display:grid;grid-template-columns:minmax(0,1fr) 230px}
+.lado{border-left:1px solid var(--regra);padding:12px 0 0}
 .bloco{padding:8px 14px 10px;border-bottom:1px solid var(--regra)}
 .bloco b{font-size:12px}
 .bloco p{margin:4px 0 0}
@@ -264,7 +263,7 @@ audio{display:none}
 .lado .selos{padding:10px 14px 12px}
 
 /* ---------- lagosta tv: o palco da home, uma faixa escura com a tela grande ---------- */
-.tv-palco{padding:22px 16px 0}
+.tv-palco{padding:20px 16px 14px;border-bottom:1px solid var(--regra)}
 .tv{
   position:relative;
   aspect-ratio:16/9;
@@ -448,24 +447,24 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     </a>
   </header>
 
-  <!-- lagosta tv: canal 24/7, o palco da home (só aparece quando houver programação) -->
-  <section class="tv-palco" id="tvCanto" aria-label="lagosta tv" hidden>
-    <div class="tv" id="tvTela">
-      <video id="tvVideo" muted playsinline preload="metadata" hidden></video>
-      <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
-    </div>
-    <div class="tv-barra">
-      <span class="tv-nome"><span class="no-ar">no ar</span> <b>lagosta tv</b> 24h</span>
-      <span class="tv-botoes">
-        <button class="tv-botao" id="tvSom" type="button" hidden>🔈 ligar som</button>
-        <button class="tv-botao" id="tvCheia" type="button">⤢ tela cheia</button>
-      </span>
-    </div>
-  </section>
 
 
   <div class="corpo">
   <main>
+    <!-- lagosta tv: canal 24/7, o palco da home (só aparece quando houver programação) -->
+    <section class="tv-palco" id="tvCanto" aria-label="lagosta tv" hidden>
+      <div class="tv" id="tvTela">
+        <video id="tvVideo" muted playsinline preload="metadata" hidden></video>
+        <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
+      </div>
+      <div class="tv-barra">
+        <b class="tv-nome">lagosta tv</b>
+        <span class="tv-botoes">
+          <button class="tv-botao" id="tvSom" type="button" aria-label="som" title="som" hidden>🔈</button>
+          <button class="tv-botao" id="tvCheia" type="button" aria-label="tela cheia" title="tela cheia">⤢</button>
+        </span>
+      </div>
+    </section>
     <!-- o feed: todos os posts, do mais novo pro mais velho (preenchido pelo script) -->
     <section id="feed" aria-label="posts"></section>
 
@@ -491,7 +490,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
   <aside class="lado">
     <!-- lagosta fm: o primeiro bloco da lateral (no celular o script põe logo depois do cabeçalho) -->
     <section class="radio bloco" id="radio" aria-label="lagosta fm">
-      <div class="radio-topo"><b>lagosta fm</b><span class="no-ar">no ar</span></div>
+      <div class="radio-topo"><b>lagosta fm</b></div>
       <div class="radio-linha">
         <button id="playBtn" class="play" type="button" aria-label="tocar / pausar">▶</button>
         <span class="radio-ep">ep. piloto</span>
@@ -507,40 +506,23 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     </audio>
     </section>
     <div class="bloco">
-      <b>quem somos</b>
       <p>produtora de filmes e outras coisas.<br>fortaleza, ce.</p>
     </div>
-    <div class="bloco">
-      <b>projetos</b>
-      <p>em breve.</p>
-    </div>
     <div class="bloco" id="newsletter">
-      <b>receber por e-mail</b>
-      <p>quando sair texto ou episódio novo, chega na sua caixa.</p>
       <form class="assina" id="assinaForm" method="post" target="_blank">
-        <input class="msg-field" type="email" name="email" placeholder="seu e-mail" required aria-label="seu e-mail">
-        <button class="botao" type="submit">assinar</button>
+        <input class="msg-field" type="email" name="email" placeholder="e-mail" required aria-label="seu e-mail">
+        <button class="botao" type="submit">receber</button>
       </form>
       <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
     </div>
-    <div class="bloco">
-      <b>contato</b>
-      <p><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a><br><a href="https://instagram.com/lagosta.filmes">@lagosta.filmes</a></p>
-    </div>
     <!-- selinhos: cada um faz alguma coisa -->
     <div class="selos">
-      <a class="selo s1" href="#" id="seloFm">ouvir<br>lagosta fm</a>
       <a class="selo s2" href="https://instagram.com/lagosta.filmes">instagram</a>
-      <a class="selo s3" href="#newsletter" id="seloEmail">receber<br>por e-mail</a>
-      <a class="selo s4" href="mailto:oi.lagostafilmes@gmail.com">mandar<br>e-mail</a>
+      <a class="selo s1" href="mailto:oi.lagostafilmes@gmail.com">e-mail</a>
     </div>
   </aside>
   </div>
 
-  <footer class="rodape">
-    <span>lagosta filmes · fortaleza, ce</span>
-    <span>lagostafilmes.com</span>
-  </footer>
 
 </div>
 
@@ -963,8 +945,7 @@ const POSTS = [
 id: "lagosta-fm-piloto",
 tipo: "episodio",
 data: "2025-10-27",
-titulo: "lagosta fm – ep. piloto",
-resumo: "primeiro episódio. dá pra deixar recado em qualquer minuto.",
+titulo: "ep. piloto",
 recados: true
 }
 ];
@@ -1064,13 +1045,6 @@ leg.append(caixa);
 const meta = el("div","meta");
 if(p.tipo === "texto"){
 meta.append(linkProPost(p, "ler →", "ler"));
-}else if(p.recados){
-const ouvir = el("a","ler","▶ ouvir"); ouvir.href = "#";
-ouvir.addEventListener("click",e=>{
-e.preventDefault();
-if(audioEl.paused){ audioEl.play(); playBtn.textContent="❚❚"; }
-});
-meta.append(ouvir);
 }
 if(meta.childNodes.length) leg.append(meta);
 if(p.recados) leg.dataset.recados = "1";
@@ -1127,13 +1101,6 @@ window.addEventListener("hashchange", mostrar);
 mostrar();
 })();
 
-document.getElementById("seloFm").addEventListener("click",e=>{
-e.preventDefault();
-if(audioEl.paused){ audioEl.play(); playBtn.textContent="❚❚"; }
-});
-document.getElementById("seloEmail").addEventListener("click",()=>{
-setTimeout(()=>document.querySelector("#assinaForm input").focus(),50);
-});
 
 // no celular a lateral desce pro fim; a rádio sobe pra logo depois do cabeçalho
 (function(){
@@ -1142,7 +1109,7 @@ const lado = document.querySelector(".lado");
 const corpo = document.querySelector(".corpo");
 const estreito = matchMedia("(max-width:700px)");
 function arrumar(){
-if(estreito.matches){ corpo.before(radio); radio.classList.add("radio-solta"); }
+if(estreito.matches){ document.getElementById("tvCanto").after(radio); radio.classList.add("radio-solta"); }
 else{ lado.prepend(radio); radio.classList.remove("radio-solta"); }
 }
 estreito.addEventListener("change", arrumar);
@@ -1356,7 +1323,7 @@ else if(tv.webkitEnterFullscreen) tv.webkitEnterFullscreen();
 
 botaoSom.addEventListener("click",()=>{
 tv.muted = !tv.muted;
-botaoSom.textContent = tv.muted ? "🔈 ligar som" : "🔊 som ligado";
+botaoSom.textContent = tv.muted ? "🔈" : "🔊";
 if(!tv.muted) calarRadio();
 });
 })();
@@ -1367,7 +1334,7 @@ if(!audioEl.paused){ audioEl.pause(); playBtn.textContent = "▶"; }
 }
 audioEl.addEventListener("play", ()=>{
 const tv = document.getElementById("tvVideo");
-if(tv && !tv.muted){ tv.muted = true; document.getElementById("tvSom").textContent = "🔈 ligar som"; }
+if(tv && !tv.muted){ tv.muted = true; document.getElementById("tvSom").textContent = "🔈"; }
 });
 </script>
 
