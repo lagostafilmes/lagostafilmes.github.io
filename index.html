@@ -79,8 +79,8 @@ a:hover{text-decoration:underline}
 /* a rádio: bloco da lateral, irmão da tv */
 .radio-topo{display:flex;align-items:baseline;justify-content:space-between}
 .radio-topo b{font-size:12px}
-.radio .no-ar,#tvCanto .no-ar{color:var(--cinza);font-size:10px}
-.radio .no-ar::before,#tvCanto .no-ar::before{width:6px;height:6px;margin-right:4px;vertical-align:0}
+.radio .no-ar{color:var(--cinza);font-size:10px}
+.radio .no-ar::before,.tv-palco .no-ar::before{width:6px;height:6px;margin-right:4px;vertical-align:0}
 .radio-linha{display:flex;align-items:center;gap:8px;margin:7px 0 6px}
 .play{
   flex:none;
@@ -262,21 +262,22 @@ audio{display:none}
 .assina .botao{align-self:flex-start}
 .lado .selos{padding:10px 14px 12px}
 
-/* ---------- lagosta tv: uma tv de tubo pequena ---------- */
+/* ---------- lagosta tv: o palco da home, uma faixa escura com a tela grande ---------- */
+.tv-palco{background:#14120E;padding:20px 16px 14px;border-bottom:1px solid var(--moldura)}
 .tv{
   position:relative;
-  aspect-ratio:4/3;
-  background:#111;
-  border:7px solid #3B352D;
-  border-radius:14px/11px;
+  max-width:1040px;
+  margin:0 auto;
+  aspect-ratio:16/9;
+  background:#000;
   overflow:hidden;
-  margin-top:6px;
 }
-.tv video{display:block;width:100%;height:100%;object-fit:cover;background:#111}
-.tv::after{  /* as linhas da tela */
+.tv video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.tv::after{  /* as linhas da tela, bem de leve */
   content:"";position:absolute;inset:0;pointer-events:none;
-  background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 3px);
 }
+.tv:fullscreen::after{display:none}
 .sem-sinal{
   position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
@@ -284,19 +285,20 @@ audio{display:none}
 }
 .sem-sinal span{background:#111;color:#EEE;font:bold 11px/1 var(--fonte);letter-spacing:1px;padding:4px 8px;text-transform:uppercase}
 .tv [hidden]{display:none}
-.tv{cursor:zoom-in}
-.tv-botoes{display:flex;gap:6px;margin-top:6px}
-.tv-grande{
-  position:fixed;inset:0;z-index:50;
-  background:rgba(20,18,14,.92);
-  display:flex;align-items:center;justify-content:center;
-  padding:16px;
+.tv-barra{
+  max-width:1040px;margin:9px auto 0;
+  display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
+  color:var(--branco);
 }
-.tv-grande[hidden]{display:none}
-.tv-grande-miolo{width:min(100%,1100px)}
-.tv-grande .tv{aspect-ratio:16/9;border-width:12px;border-radius:22px/18px;cursor:default}
-.tv-grande .tv video{object-fit:contain}
-.tv-grande .tv-botoes{justify-content:center;margin-top:10px}
+.tv-nome{font-size:12px}
+.tv-nome b{color:var(--branco)}
+.tv-palco .no-ar{color:var(--branco);opacity:.7;font-size:10px;margin-right:4px}
+.tv-botoes{display:flex;gap:6px}
+.tv-botao{
+  font:11px/1 var(--fonte);color:var(--branco);background:transparent;
+  border:1px solid rgba(251,244,228,.35);padding:5px 9px;cursor:pointer;
+}
+.tv-botao:hover{border-color:var(--branco)}
 
 /* ---------- o feed: cada post do seu jeito ---------- */
 .item{border-bottom:1px solid var(--regra);padding-bottom:4px}
@@ -446,6 +448,21 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     </a>
   </header>
 
+  <!-- lagosta tv: canal 24/7, o palco da home (só aparece quando houver programação) -->
+  <section class="tv-palco" id="tvCanto" aria-label="lagosta tv" hidden>
+    <div class="tv" id="tvTela">
+      <video id="tvVideo" muted playsinline preload="metadata" hidden></video>
+      <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
+    </div>
+    <div class="tv-barra">
+      <span class="tv-nome"><span class="no-ar">no ar</span> <b>lagosta tv</b> 24h</span>
+      <span class="tv-botoes">
+        <button class="tv-botao" id="tvSom" type="button" hidden>🔈 ligar som</button>
+        <button class="tv-botao" id="tvCheia" type="button">⤢ tela cheia</button>
+      </span>
+    </div>
+  </section>
+
 
   <div class="corpo">
   <main>
@@ -489,17 +506,6 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
       <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
     </audio>
     </section>
-    <!-- lagosta tv: canal 24/7 (só aparece quando houver programação) -->
-    <div class="bloco" id="tvCanto" hidden>
-      <div class="radio-topo"><b>lagosta tv</b><span class="no-ar">no ar</span></div>
-      <div class="tv" id="tvTela">
-        <video id="tvVideo" muted playsinline preload="metadata" hidden></video>
-        <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
-      </div>
-      <div class="tv-botoes" id="tvBotoes">
-        <button class="botao" id="tvSom" type="button" hidden>🔈 ligar som</button>
-        <button class="botao" id="tvExpandir" type="button">⤢ expandir</button>
-      </div>
     </div>
     <div class="bloco">
       <b>quem somos</b>
@@ -530,11 +536,6 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
       <a class="selo s4" href="mailto:oi.lagostafilmes@gmail.com">mandar<br>e-mail</a>
     </div>
   </aside>
-  </div>
-
-  <!-- tv expandida: a mesma tv, só que grande, no meio da tela -->
-  <div class="tv-grande" id="tvGrande" hidden>
-    <div class="tv-grande-miolo" id="tvGrandeMiolo"></div>
   </div>
 
   <footer class="rodape">
@@ -1346,30 +1347,13 @@ document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) sintoni
 setInterval(sintonizar, 15000);
 sintonizar();
 
-// expandir: leva a mesma tv (sem cortar o vídeo) pro meio da tela
-const grande = document.getElementById("tvGrande");
-const miolo = document.getElementById("tvGrandeMiolo");
+// tela cheia: a tela da tv ocupa o monitor (no iphone, o player do próprio sistema)
 const tela = document.getElementById("tvTela");
-const botoes = document.getElementById("tvBotoes");
-const expandir = document.getElementById("tvExpandir");
-function abrirGrande(){
-miolo.append(tela, botoes);
-grande.hidden = false;
-expandir.textContent = "✕ fechar";
-document.body.style.overflow = "hidden";
-tv.play().catch(()=>{});
-}
-function fecharGrande(){
-canto.append(tela, botoes);
-grande.hidden = true;
-expandir.textContent = "⤢ expandir";
-document.body.style.overflow = "";
-tv.play().catch(()=>{});
-}
-expandir.addEventListener("click", ()=> grande.hidden ? abrirGrande() : fecharGrande());
-tela.addEventListener("click", ()=>{ if(grande.hidden) abrirGrande(); });
-grande.addEventListener("click", e=>{ if(e.target === grande) fecharGrande(); });
-document.addEventListener("keydown", e=>{ if(e.key === "Escape" && !grande.hidden) fecharGrande(); });
+document.getElementById("tvCheia").addEventListener("click",()=>{
+if(document.fullscreenElement){ document.exitFullscreen(); return; }
+if(tela.requestFullscreen) tela.requestFullscreen().catch(()=>{});
+else if(tv.webkitEnterFullscreen) tv.webkitEnterFullscreen();
+});
 
 botaoSom.addEventListener("click",()=>{
 tv.muted = !tv.muted;
