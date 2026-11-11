@@ -74,7 +74,7 @@ a:hover{text-decoration:underline}
 /* o mascote: a cara da lagosta, um selinho meio torto */
 .mascote{position:absolute;top:12px;right:14px;border:1px solid var(--moldura);transform:rotate(6deg)}
 .fim{padding:12px 16px;text-align:center;color:var(--cinza)}
-.fim img{display:block;margin:0 auto 6px;transform:rotate(-8deg);border:1px solid var(--moldura)}
+.fim img{display:block;margin:0 auto;transform:rotate(-14deg)}
 
 /* a rádio: bloco da lateral, irmão da tv */
 .radio-topo{display:flex;align-items:baseline;justify-content:space-between}
@@ -278,6 +278,8 @@ audio{display:none}
 }
 .sem-sinal span{background:#111;color:#EEE;font:bold 11px/1 var(--fonte);letter-spacing:1px;padding:4px 8px;text-transform:uppercase}
 .tv [hidden]{display:none}
+/* a marca da lagosta no canto da tela, como selo de emissora */
+.tv-marca{position:absolute;top:3%;left:2.5%;width:7%;min-width:28px;z-index:2;opacity:.9;pointer-events:none;filter:drop-shadow(0 0 2px rgba(0,0,0,.6))}
 .tv-barra{
   margin:10px 0 0;
   display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;
@@ -447,6 +449,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     <!-- lagosta tv: canal 24/7, o palco da home (só aparece quando houver programação) -->
     <section class="tv-palco" id="tvCanto" aria-label="lagosta tv" hidden>
       <div class="tv" id="tvTela">
+        <img class="tv-marca" src="lagosta.svg" alt="" aria-hidden="true">
         <video id="tvVideo" muted playsinline preload="metadata" hidden></video>
         <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
       </div>
@@ -1077,7 +1080,7 @@ moverRecados();
 posts.forEach(p => feed.append(itemDoFeed(p)));
 // o fim do feed: não tem mais nada, e tudo bem
 const fim = el("div","fim");
-const masc = el("img"); masc.src = "favicon.svg"; masc.alt = ""; masc.width = 36; masc.height = 36;
+const masc = el("img"); masc.src = "lagosta.svg"; masc.alt = ""; masc.width = 110; masc.height = 110;
 fim.append(masc);
 feed.append(fim);
 
