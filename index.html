@@ -76,6 +76,7 @@ a:hover{text-decoration:underline}
 /* cada post numa linha: texto à esquerda, miniatura à direita */
 #feed .item,#post .item{display:grid;grid-template-columns:minmax(0,1fr) 170px;column-gap:24px;padding:26px 0;border-bottom:1px solid var(--regra)}
 .item .legenda{padding:0;grid-column:1;grid-row:1}
+#feed .item.sem-mini,#post .item.sem-mini{grid-template-columns:minmax(0,1fr)}
 .miniatura{grid-column:2;grid-row:1;align-self:start;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000}
 .miniatura img{width:100%;height:100%;object-fit:cover;display:block}
 .miniatura.t-episodio,.miniatura.t-texto,.miniatura.t-nota,.miniatura.t-links,.miniatura.t-indica{background:var(--faixa);border:1px solid var(--moldura);box-shadow:2px 2px 0 var(--moldura)}
@@ -1064,12 +1065,12 @@ else caixa.append(el("p", null, par));
 // um post no feed
 function itemDoFeed(p){
 const item = el("div","item");
-// a miniatura do post, à direita (a foto do post; episódio sem foto ganha o cartão da lagosta)
-const mini = el(p.id ? "a" : "div","miniatura t-"+p.tipo);
-if(p.id) mini.href = "#" + p.id;
-if(p.imagem){ const im = el("img"); im.src = p.imagem; im.alt = p.alt || p.titulo || ""; im.loading = "lazy"; mini.append(im); }
-else{ mini.append(el("span","mini-nome", p.tipo === "episodio" ? "lagosta fm" : (NOMES[p.tipo] || p.tipo))); }
+// a miniatura à direita só existe quando o post tem imagem
+if(p.imagem){
+const mini = el("a","miniatura"); mini.href = "#" + p.id;
+const im = el("img"); im.src = p.imagem; im.alt = p.alt || p.titulo || ""; im.loading = "lazy"; mini.append(im);
 item.append(mini);
+}else item.classList.add("sem-mini");
 const leg = el("div","legenda");
 leg.append(cabecalho(p));
 
