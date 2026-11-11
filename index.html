@@ -55,7 +55,7 @@ a:hover{text-decoration:underline}
 .pagina{background:var(--branco)}
 /* o miolo fica numa coluna central; o papel vai até a borda */
 /* tudo numa coluna só: a tv, o feed com a lateral e o rodapé têm as mesmas bordas */
-.corpo{max-width:1120px;margin:0 auto}
+.corpo{max-width:920px;margin:0 auto}
 
 /* o nome */
 .cabeca{
@@ -81,7 +81,8 @@ a:hover{text-decoration:underline}
 .radio-topo b{font-size:12px}
 .radio .no-ar{color:var(--cinza);font-size:10px}
 .radio .no-ar::before,.tv-palco .no-ar::before{width:6px;height:6px;margin-right:4px;vertical-align:0}
-.radio-linha{display:flex;align-items:center;gap:8px;margin:7px 0 6px}
+.radio{margin:8px 0 2px}
+.radio-linha{display:flex;align-items:center;gap:10px;margin:0 0 6px}
 .play{
   flex:none;
   width:28px;height:28px;
@@ -98,12 +99,6 @@ a:hover{text-decoration:underline}
 .radio .tempos{margin-left:auto}
 .radio .barra{height:22px}
 .radio .marker-bubble{max-width:190px;white-space:normal}
-/* no computador a lateral fica parada enquanto o feed rola */
-@media (min-width:701px){
-  .lado{position:sticky;top:0;align-self:start;max-height:100vh;overflow-y:auto;overflow-x:hidden}
-}
-/* no celular a rádio vem logo depois do cabeçalho */
-.radio-solta{border-bottom:1px solid var(--regra);padding:10px 16px 12px}
 
 /* o status: no ar, ouvindo */
 .status{
@@ -250,8 +245,7 @@ audio{display:none}
 .rascunho{color:var(--vermelho);font-weight:bold;margin-left:6px}
 
 /* ---------- corpo: feed à esquerda, a produtora à direita ---------- */
-.corpo{display:grid;grid-template-columns:minmax(0,1fr) 230px}
-.lado{border-left:1px solid var(--regra);padding:12px 0 0}
+.corpo{display:block}
 .bloco{padding:8px 14px 10px;border-bottom:1px solid var(--regra)}
 .bloco b{font-size:12px}
 .bloco p{margin:4px 0 0}
@@ -260,7 +254,6 @@ audio{display:none}
 .obs{color:var(--cinza);font-size:10px}
 .assina{display:flex;flex-direction:column;gap:5px;margin-top:6px}
 .assina .botao{align-self:flex-start}
-.lado .selos{padding:10px 14px 12px}
 
 /* ---------- lagosta tv: o palco da home, uma faixa escura com a tela grande ---------- */
 .tv-palco{padding:20px 16px 14px;border-bottom:1px solid var(--regra)}
@@ -391,15 +384,15 @@ details.comentarios{border-top:0;padding:4px 0 6px}
 
 /* ---------- o rodapé ---------- */
 .rodape{
+  max-width:920px;margin:0 auto;
+  padding:18px 16px 30px;
   border-top:1px solid var(--regra);
-  padding:8px 16px 10px;
-  display:flex;
-  justify-content:space-between;
-  gap:8px 16px;
-  flex-wrap:wrap;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:14px 24px;flex-wrap:wrap;
   color:var(--cinza);
-  font-size:10px;
 }
+.rodape p{margin:0}
+.rodape .assina{flex-direction:row;margin:0}
+.rodape .assina .msg-field{width:170px;flex:none}
 .rodape span{white-space:nowrap}
 /* selinhos 88x31, como os botões dos sites de 2005 */
 .selos{display:flex;flex-wrap:wrap;gap:4px;padding:0 16px 12px}
@@ -420,7 +413,6 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
 /* em tela estreita a lateral desce pro fim */
 @media (max-width:700px){
   .corpo{display:block}
-  .lado{border-left:0;border-top:1px solid var(--regra)}
 }
 @media (max-width:480px){
   .bloco,.leitura,.voltar{padding-left:12px;padding-right:12px}
@@ -474,7 +466,21 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
       <div id="postCorpo"></div>
     </article>
 
-    <!-- os recados do piloto: o script muda essa caixa pra dentro do post do episódio -->
+    <!-- o player e os recados do piloto: o script põe os dois dentro do post do episódio -->
+    <section class="radio" id="radio" aria-label="lagosta fm">
+      <div class="radio-linha">
+        <button id="playBtn" class="play" type="button" aria-label="tocar / pausar">▶</button>
+        <span class="tempos"><span id="currentTime">00:00</span> / <span id="totalTime">--:--</span></span>
+      </div>
+      <div class="barra" id="progressBar" role="slider" aria-label="posição do episódio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+        <div class="progress-bar-fill" id="progressFill"></div>
+        <div class="marker-bubble" id="markerBubble"></div>
+      </div>
+    <!-- áudio (Firebase Storage) -->
+    <audio id="audioPlayer" preload="metadata">
+      <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
+    </audio>
+    </section>
     <details class="comentarios" id="comentarios">
       <summary class="comentarios-cab"><b>recados</b> <span class="quantos" id="recadosCount2"></span></summary>
       <div id="chatLog" class="chat-log" aria-live="polite"></div>
@@ -487,39 +493,16 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
   </main>
 
   <!-- a lateral: a produtora, como a coluna de perfil dos fotologs -->
-  <aside class="lado">
-    <!-- lagosta fm: o primeiro bloco da lateral (no celular o script põe logo depois do cabeçalho) -->
-    <section class="radio bloco" id="radio" aria-label="lagosta fm">
-      <div class="radio-topo"><b>lagosta fm</b></div>
-      <div class="radio-linha">
-        <button id="playBtn" class="play" type="button" aria-label="tocar / pausar">▶</button>
-        <span class="radio-ep">ep. piloto</span>
-        <span class="tempos"><span id="currentTime">00:00</span> / <span id="totalTime">--:--</span></span>
-      </div>
-      <div class="barra" id="progressBar" role="slider" aria-label="posição do episódio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
-        <div class="progress-bar-fill" id="progressFill"></div>
-        <div class="marker-bubble" id="markerBubble"></div>
-      </div>
-    <!-- áudio (Firebase Storage) -->
-    <audio id="audioPlayer" preload="metadata">
-      <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
-    </audio>
-    </section>
-    <div class="bloco">
-      <p>produtora de filmes e outras coisas.<br>fortaleza, ce.</p>
-      <p><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a></p>
-    </div>
-    <div class="bloco" id="newsletter">
-      <form class="assina" id="assinaForm" method="post" target="_blank">
-        <input class="msg-field" type="email" name="email" placeholder="e-mail" required aria-label="seu e-mail">
-        <button class="botao" type="submit">receber</button>
-      </form>
-      <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
-    </div>
-  </aside>
   </div>
 
-
+  <footer class="rodape">
+    <p>produtora de filmes e outras coisas. fortaleza, ce.<br><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a></p>
+    <form class="assina" id="assinaForm" method="post" target="_blank">
+      <input class="msg-field" type="email" name="email" placeholder="e-mail" required aria-label="seu e-mail">
+      <button class="botao" type="submit">receber</button>
+    </form>
+    <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
+  </footer>
 </div>
 
 <!-- SDK Firebase v8 -->
@@ -1051,8 +1034,9 @@ return item;
 // os recados moram dentro do post que tem recados: true (o que estiver à vista)
 function moverRecados(){
 const vis = (postEl.hidden ? feed : postCorpo).querySelector("[data-recados]");
-if(vis){ vis.append(recados); recados.hidden = false; }
-else recados.hidden = true;
+const radio = document.getElementById("radio");
+if(vis){ vis.append(radio, recados); recados.hidden = false; radio.hidden = false; }
+else{ recados.hidden = true; radio.hidden = true; }
 }
 
 // um post aberto sozinho; texto em modo leitura
@@ -1098,19 +1082,6 @@ mostrar();
 })();
 
 
-// no celular a lateral desce pro fim; a rádio sobe pra logo depois do cabeçalho
-(function(){
-const radio = document.getElementById("radio");
-const lado = document.querySelector(".lado");
-const corpo = document.querySelector(".corpo");
-const estreito = matchMedia("(max-width:700px)");
-function arrumar(){
-if(estreito.matches){ document.getElementById("tvCanto").after(radio); radio.classList.add("radio-solta"); }
-else{ lado.prepend(radio); radio.classList.remove("radio-solta"); }
-}
-estreito.addEventListener("change", arrumar);
-arrumar();
-})();
 
 /* =========================================================
   RECEBER POR E-MAIL
