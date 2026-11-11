@@ -1180,42 +1180,17 @@ form.addEventListener("submit", e => e.preventDefault());
          (ex.: o vhs de 1991 e a ruína de hoje do mesmo cômodo)
   ========================================================= */
 const TV_PROGRAMACAO = [
-// casa maranguape: vhs de 1991 e as ruínas de hoje
-{fonte: "1991", titulo: "maranguape, 1991", par: "piscina", video: "tv/casa-1991-piscina.mp4", duracao: 27.13},
-{fonte: "1991", titulo: "maranguape, 2026", par: "piscina", video: "tv/casa-hoje-piscina-C147.mp4", duracao: 25.02},
-{fonte: "1991", titulo: "maranguape, 1991", par: "cobogo", video: "tv/casa-1991-cobogo.mp4", duracao: 26.63},
-{fonte: "1991", titulo: "maranguape, 2026", par: "cobogo", video: "tv/casa-hoje-cobogo-C037.mp4", duracao: 23.02},
-{fonte: "1991", titulo: "maranguape, 1991", video: "tv/casa-1991-01.mp4", duracao: 18.62},
-{fonte: "1991", titulo: "maranguape, 1991", video: "tv/casa-1991-02.mp4", duracao: 15.62},
-{fonte: "1991", titulo: "maranguape, 1991", video: "tv/casa-1991-03.mp4", duracao: 20.92},
-{fonte: "1991", titulo: "maranguape, 1991", video: "tv/casa-1991-04.mp4", duracao: 11.41},
-{fonte: "1991", titulo: "maranguape, 1991", video: "tv/casa-1991-05.mp4", duracao: 21.82},
-{fonte: "1991", titulo: "maranguape, 1991", video: "tv/casa-1991-06.mp4", duracao: 40.41},
-{fonte: "1991", titulo: "maranguape, 1991", video: "tv/casa-1991-07.mp4", duracao: 23.12},
-{fonte: "1991", titulo: "maranguape, 1991", video: "tv/casa-1991-08.mp4", duracao: 25.43},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C165.mp4", duracao: 20.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C162.mp4", duracao: 14.01},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C168.mp4", duracao: 24.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C026.mp4", duracao: 18.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C032.mp4", duracao: 25.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C033.mp4", duracao: 18.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C116.mp4", duracao: 21.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C150.mp4", duracao: 13.01},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C042.mp4", duracao: 15.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C044.mp4", duracao: 25.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C047.mp4", duracao: 22.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C067.mp4", duracao: 20.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C073.mp4", duracao: 19.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C074.mp4", duracao: 23.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C078.mp4", duracao: 25.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C156.mp4", duracao: 25.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C093.mp4", duracao: 14.01},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C120.mp4", duracao: 25.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C141.mp4", duracao: 25.02},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C163.mp4", duracao: 11.01},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C201.mp4", duracao: 11.01},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C200.mp4", duracao: 14.01},
-{fonte: "hoje", titulo: "maranguape, 2026", video: "tv/casa-hoje-C017.mp4", duracao: 25.02}
+// casa maranguape: o mesmo lugar em 1991 e hoje, um se dissolvendo no outro
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-convite.mp4", duracao: 30.54},
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-chegada.mp4", duracao: 25.83},
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-sala.mp4", duracao: 25.96},
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-tijolos.mp4", duracao: 23.5},
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-piscina.mp4", duracao: 25.62},
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-beiral.mp4", duracao: 22.21},
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-pilar.mp4", duracao: 23.46},
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-jardim.mp4", duracao: 26.71},
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-bolo.mp4", duracao: 31.08},
+{fonte: "casa", titulo: "maranguape", video: "tv/casa-cobogo.mp4", duracao: 25.3}
 ];
 const TV_INICIO = Date.parse("2026-11-01T00:00:00-03:00");  // a hora em que o canal "entrou no ar"
 
