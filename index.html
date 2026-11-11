@@ -38,13 +38,13 @@
 }
 
 *{box-sizing:border-box}
-html{background:var(--ceu) url(bg-lagosta.svg)}  /* o céu com as lagostinhas em volta da lâmina */
+html{background:var(--branco)}  /* o papel ocupa a tela toda */
 body{
   margin:0;
   background:transparent;
   color:var(--texto);
   font:11px/1.55 var(--fonte);
-  padding:0 14px;
+  padding:0 0 30px;
 }
 img{max-width:100%}
 a{color:var(--link);text-decoration:none}
@@ -52,15 +52,15 @@ a:hover{text-decoration:underline}
 :focus-visible{outline:1px dotted var(--texto);outline-offset:2px}
 
 /* ---------- a página ---------- */
-.pagina{background:transparent}
+.pagina{background:var(--branco)}
 /* o miolo fica numa coluna central; o papel vai até a borda */
 /* tudo numa coluna só: a tv, o feed com a lateral e o rodapé têm as mesmas bordas */
-/* a lâmina: o papel no meio do céu, com a tv, o feed e o rodapé */
-.corpo{max-width:920px;margin:0 auto;background:var(--branco);border:1px solid var(--moldura);border-bottom:0}
+.corpo{max-width:920px;margin:0 auto}
 
 /* o nome */
 .cabeca{
-  background:transparent;  /* o logo fica direto no céu */
+  background:var(--ceu) url(bg-lagosta.svg);  /* a faixa do céu com as lagostinhas */
+  border-bottom:1px solid var(--moldura);
   position:relative;
   display:flex;
   flex-direction:column;
@@ -394,7 +394,7 @@ details.comentarios{border-top:0;padding:4px 0 6px}
 
 /* ---------- o rodapé ---------- */
 .rodape{
-  max-width:920px;margin:0 auto 30px;background:var(--branco);border:1px solid var(--moldura);border-top-color:var(--regra);box-sizing:border-box;
+  max-width:920px;margin:0 auto;
   padding:18px 16px 30px;
   border-top:1px solid var(--regra);
   display:flex;justify-content:space-between;align-items:flex-end;gap:14px 24px;flex-wrap:wrap;
@@ -426,7 +426,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
 }
 @media (max-width:480px){
   .bloco,.leitura,.voltar{padding-left:12px;padding-right:12px}
-  body{padding:0 8px;font-size:12px}
+  body{padding-top:0;font-size:12px}
   .tv-palco{padding:16px 12px 14px}
   .cabeca{padding:12px 12px 8px}
   .status{padding:7px 12px 8px}
