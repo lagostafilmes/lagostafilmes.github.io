@@ -315,6 +315,7 @@ audio{display:none}
 }
 .item .ler{font-weight:bold}
 .legenda-linha a.data{color:var(--cinza)}
+.legenda-linha a.nome-data{color:var(--texto);font-weight:bold;font-size:12px}
 .nota-txt p{margin:4px 0 0;font-size:12px}
 .tipo.t-nota{background:var(--cinza)}
 .tipo.t-indica{background:#3E7A4F}
@@ -499,7 +500,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     <p>produtora de filmes e outras coisas. fortaleza, ce.<br><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a></p>
     <form class="assina" id="assinaForm" method="post" target="_blank">
       <input class="msg-field" type="email" name="email" placeholder="e-mail" required aria-label="seu e-mail">
-      <button class="botao" type="submit">receber</button>
+      <button class="botao" type="submit">se inscrever</button>
     </form>
     <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
   </footer>
@@ -924,7 +925,6 @@ const POSTS = [
 id: "lagosta-fm-piloto",
 tipo: "episodio",
 data: "2025-10-27",
-titulo: "ep. piloto",
 recados: true
 }
 ];
@@ -957,10 +957,14 @@ function cabecalho(p){
 const linha = el("div","legenda-linha");
 const esq = el("span");
 esq.append(el("span","tipo t-"+p.tipo, NOMES[p.tipo] || p.tipo));
-if(p.titulo && (p.tipo === "foto" || p.tipo === "episodio")) esq.append(el("b", null, p.titulo));
+// episódio sem título (o normal): o nome é a data. com título (episódio temático), a data vai do lado
+const dataComoNome = p.tipo === "episodio" && !p.titulo;
+if(dataComoNome) esq.append(linkProPost(p, dataBr(p.data), "nome-data"));
+else if(p.titulo && (p.tipo === "foto" || p.tipo === "episodio")) esq.append(el("b", null, p.titulo));
 if(p.rascunho) esq.append(el("span","rascunho","rascunho"));
 // a data é o link permanente do post
-linha.append(esq, linkProPost(p, dataBr(p.data), "data"));
+linha.append(esq);
+if(!dataComoNome) linha.append(linkProPost(p, dataBr(p.data), "data"));
 return linha;
 }
 function foto(p){
@@ -1053,7 +1057,7 @@ postCorpo.append(art);
 }else{
 postCorpo.append(itemDoFeed(p));
 }
-document.title = `${p.titulo || NOMES[p.tipo]} · Lagosta Filmes`;
+document.title = `${p.titulo || dataBr(p.data) || NOMES[p.tipo]} · Lagosta Filmes`;
 }
 
 function mostrar(){
