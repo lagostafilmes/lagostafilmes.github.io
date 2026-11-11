@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Lagosta Filmes</title>
-<meta name="description" content="Lagosta Filmes. Fortown!, em breve. Lagosta FM, no ar. Comentários.">
+<meta name="description" content="Lagosta Filmes. Produtora de filmes e outras coisas. Fortaleza, CE.">
 
 <!-- Favicon Lagosta Filmes -->
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -80,34 +80,43 @@ a:hover{text-decoration:underline}
 .fim img{display:block;margin:0 auto 6px;transform:rotate(-8deg);border:1px solid var(--moldura)}
 
 /* a rádio: uma faixa só, no papel, entre o cabeçalho e o feed */
+/* fica preso no pé da tela, escuro, como o player da nts */
 .radio{
+  position:fixed;
+  left:0;right:0;bottom:0;
+  z-index:20;
   display:flex;
   align-items:center;
   gap:12px;
-  padding:12px 16px 10px;
-  background:var(--branco);
-  border-top:1px solid var(--moldura);
-  border-bottom:1px solid var(--regra);
+  padding:9px max(16px,env(safe-area-inset-right,0px)) calc(9px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  background:var(--texto);
+  color:var(--branco);
 }
+body{padding-bottom:80px}
 .play{
   flex:none;
-  width:38px;height:38px;
+  width:36px;height:36px;
   border-radius:50%;
   border:0;
-  background:var(--vermelho);
-  color:var(--faixa);
+  background:var(--branco);
+  color:var(--texto);
   font:13px/1 var(--fonte);
   cursor:pointer;
   padding:0 0 0 2px;
 }
 .play:hover{filter:brightness(1.08)}
 .radio-meio{flex:1;min-width:0}
-.radio-linha{display:flex;align-items:baseline;gap:8px;margin-bottom:5px;white-space:nowrap}
-.radio-nome{color:var(--vermelho);font-size:12px}
-.radio-ep{overflow:hidden;text-overflow:ellipsis}
-.radio .tempos{margin-left:auto}
-.radio .no-ar{color:var(--cinza);font-size:10px}
-.radio .no-ar::before{width:6px;height:6px;margin-right:4px;vertical-align:0}
+.radio-linha{display:flex;align-items:center;gap:10px;margin-bottom:4px;white-space:nowrap;text-transform:uppercase;letter-spacing:.06em;font-size:10px}
+.radio-nome{font-size:10px}
+.radio-ep{overflow:hidden;text-overflow:ellipsis;opacity:.75}
+.radio .tempos{margin-left:auto;color:var(--branco);opacity:.6;font-size:10px}
+.radio .no-ar{order:-1;background:var(--vermelho);color:var(--branco);padding:2px 6px 2px 5px;font-weight:bold}
+.radio .no-ar::before{width:6px;height:6px;margin-right:4px;vertical-align:0;background:var(--branco);border:0}
+.radio .barra{height:18px}
+.radio .onda i{background:var(--branco);opacity:.25}
+.radio .onda i.tocou{background:var(--vermelho);opacity:1}
+.radio .comment-marker{background:var(--branco);top:-3px;height:24px}
+.radio .marker-bubble{bottom:26px}
 
 /* o status: no ar, ouvindo */
 .status{
@@ -407,7 +416,8 @@ details.comentarios{border-top:0;padding:4px 0 6px}
 .selo.s1{background:var(--vermelho);color:var(--faixa)}
 .selo.s2{background:var(--texto);color:var(--faixa)}
 .selo.s3{background:var(--ceu);color:var(--texto)}
-.selo.s4{background:var(--faixa);color:var(--texto);font-weight:normal;font-style:italic;text-transform:none}
+.selo.s4{background:var(--faixa);color:var(--texto)}
+a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:-2px}
 
 /* em tela estreita a lateral desce pro fim */
 @media (max-width:700px){
@@ -438,7 +448,6 @@ details.comentarios{border-top:0;padding:4px 0 6px}
     <a class="marca" href="/" aria-label="Lagosta Filmes">
       <img src="logo-lagosta-filmes-tight.png" alt="Lagosta Filmes" width="336" height="158">
     </a>
-    <span class="lugar">fortaleza, ce</span>
   </header>
 
   <!-- a rádio: play, nome do episódio, onda -->
@@ -498,7 +507,7 @@ details.comentarios{border-top:0;padding:4px 0 6px}
     </div>
     <div class="bloco">
       <b>quem somos</b>
-      <p>a lagosta filmes é uma produtora de filmes e o que der na telha.</p>
+      <p>produtora de filmes e outras coisas.<br>fortaleza, ce.</p>
     </div>
     <div class="bloco">
       <b>projetos</b>
@@ -517,11 +526,12 @@ details.comentarios{border-top:0;padding:4px 0 6px}
       <b>contato</b>
       <p><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a><br><a href="https://instagram.com/lagosta.filmes">@lagosta.filmes</a></p>
     </div>
-    <div class="selos" aria-hidden="true">
-      <span class="selo s1">lagosta<br>filmes</span>
-      <span class="selo s2">lagosta fm<br>no ar</span>
-      <span class="selo s3">feito em<br>fortaleza</span>
-      <span class="selo s4">melhor visto<br>em 800x600</span>
+    <!-- selinhos: cada um faz alguma coisa -->
+    <div class="selos">
+      <a class="selo s1" href="#" id="seloFm">ouvir<br>lagosta fm</a>
+      <a class="selo s2" href="https://instagram.com/lagosta.filmes">instagram</a>
+      <a class="selo s3" href="#newsletter" id="seloEmail">receber<br>por e-mail</a>
+      <a class="selo s4" href="mailto:oi.lagostafilmes@gmail.com">mandar<br>e-mail</a>
     </div>
   </aside>
   </div>
@@ -929,7 +939,7 @@ firebase.auth().onAuthStateChanged((user)=>{
 }
 
 /* =========================================================
-  POSTS (o feed: em ordem de chegada, sem algoritmo)
+  POSTS (o feed, do mais novo pro mais velho)
   Pra postar: acrescente um objeto no topo da lista.
   - id: curto, sem espaço (vira o endereço: lagostafilmes.com/#ep-2)
   - tipo: "foto", "episodio", "texto", "nota" ou "indica"
@@ -988,26 +998,17 @@ texto: [
 "hoje tudo passa por três ou quatro empresas que decidem o que você vê. o feed não é seu, é delas. e ele é desenhado pra você não sair.",
 "> uma rádio é o contrário de um algoritmo: alguém escolheu aquilo, naquela ordem, pra você.",
 "## então",
-"esse site é isso: um puxadinho. tem rádio, tem filme vindo, tem texto quando der vontade e tem coisa boa que eu achei por aí. em ordem de chegada. se quiser receber por e-mail, tem o campinho ali do lado. se não, tudo bem também.",
+"esse site é isso: um puxadinho. tem rádio, tem filme vindo, tem texto quando der vontade e tem coisa boa que eu achei por aí.",
 "(texto de exemplo, escrito por mim só pra ver o formato.)"
 ],
 rascunho: true
-},
-{
-id: "fortown",
-tipo: "foto",
-data: "2026-11-10",
-titulo: "fortown!",
-imagem: "poster-fortown.jpg",
-alt: "Fortown! — em breve. Um filme de (nome coberto com fita)",
-resumo: "em breve."
 },
 {
 id: "lagosta-fm-piloto",
 tipo: "episodio",
 data: "2025-10-27",
 titulo: "lagosta fm – ep. piloto",
-resumo: "o primeiro episódio da rádio. aperta o play lá em cima e deixa um recado no minuto que quiser.",
+resumo: "primeiro episódio. dá pra deixar recado em qualquer minuto.",
 recados: true
 }
 ];
@@ -1128,7 +1129,6 @@ meta.append(linkProPost(p, "ler →", "ler"));
 const ouvir = el("a","ler","▶ ouvir"); ouvir.href = "#";
 ouvir.addEventListener("click",e=>{
 e.preventDefault();
-window.scrollTo(0,0);
 if(audioEl.paused){ audioEl.play(); playBtn.textContent="❚❚"; }
 });
 meta.append(ouvir);
@@ -1181,12 +1181,20 @@ posts.forEach(p => feed.append(itemDoFeed(p)));
 // o fim do feed: não tem mais nada, e tudo bem
 const fim = el("div","fim");
 const masc = el("img"); masc.src = "favicon.svg"; masc.alt = ""; masc.width = 36; masc.height = 36;
-fim.append(masc, el("span", null, "é isso. em ordem de chegada, sem algoritmo."));
+fim.append(masc);
 feed.append(fim);
 
 window.addEventListener("hashchange", mostrar);
 mostrar();
 })();
+
+document.getElementById("seloFm").addEventListener("click",e=>{
+e.preventDefault();
+if(audioEl.paused){ audioEl.play(); playBtn.textContent="❚❚"; }
+});
+document.getElementById("seloEmail").addEventListener("click",()=>{
+setTimeout(()=>document.querySelector("#assinaForm input").focus(),50);
+});
 
 /* =========================================================
   RECEBER POR E-MAIL
