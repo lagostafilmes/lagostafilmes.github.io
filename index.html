@@ -57,8 +57,29 @@ a:hover{text-decoration:underline}
 /* tudo numa coluna só: a tv, o feed com a lateral e o rodapé têm as mesmas bordas */
 /* a lâmina: papel largo, o céu só emoldura */
 .corpo,.rodape{background:var(--branco);border-left:1px solid var(--moldura);border-right:1px solid var(--moldura)}
-.corpo{border-top:1px solid var(--moldura)}
-.corpo > main{max-width:1080px;margin:0 auto}
+.corpo{border-top:1px solid var(--moldura);border-bottom:1px solid var(--moldura);margin-bottom:clamp(10px,3vw,40px)}
+/* como no substack: a tv em cima, ocupando tudo; embaixo o feed e uma coluna estreita à direita */
+.corpo > main{max-width:1080px;margin:0 auto;padding:0 26px;display:grid;grid-template-columns:minmax(0,1fr) 270px;column-gap:48px}
+.corpo > main > #tvCanto{grid-column:1/-1}
+.corpo > main > #feed,.corpo > main > #post{grid-column:1;grid-row:2}
+.coluna{grid-column:2;grid-row:2;align-self:start;position:sticky;top:20px;padding:30px 0}
+.coluna p{margin:8px 0 0;color:var(--cinza)}
+.coluna-marca{display:block;transform:rotate(-8deg)}
+.coluna-nome{font:bold 20px/1.2 Georgia,"Times New Roman",serif;margin:8px 0 0;color:var(--texto)}
+.coluna .assina{display:flex;flex-direction:column;gap:8px;margin:16px 0 4px}
+.coluna .msg-field{padding:8px 10px;font-size:12px;width:100%}
+.inscrever{
+  font:bold 13px/1 var(--fonte);color:var(--branco);background:var(--vermelho);
+  border:0;border-radius:4px;padding:11px 14px;cursor:pointer;
+}
+.inscrever:hover{filter:brightness(1.08)}
+/* cada post numa linha: texto à esquerda, miniatura à direita */
+#feed .item,#post .item{display:grid;grid-template-columns:minmax(0,1fr) 170px;column-gap:24px;padding:26px 0;border-bottom:1px solid var(--regra)}
+.item .legenda{padding:0;grid-column:1;grid-row:1}
+.miniatura{grid-column:2;grid-row:1;align-self:start;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000}
+.miniatura img{width:100%;height:100%;object-fit:cover;display:block}
+.miniatura.t-episodio,.miniatura.t-texto,.miniatura.t-nota,.miniatura.t-links,.miniatura.t-indica{background:var(--faixa);border:1px solid var(--moldura);box-shadow:2px 2px 0 var(--moldura)}
+.miniatura .mini-lagosta{width:46%;height:auto;object-fit:contain;transform:rotate(-8deg)}
 
 /* o nome */
 .cabeca{
@@ -259,7 +280,7 @@ audio{display:none}
 .assina .botao{align-self:flex-start}
 
 /* ---------- lagosta tv: o palco da home, uma faixa escura com a tela grande ---------- */
-.tv-palco{padding:26px 26px 22px;border-bottom:1px solid var(--regra)}
+.tv-palco{padding:30px 0 28px;border-bottom:1px solid var(--regra)}
 .tv{
   position:relative;
   aspect-ratio:16/9;
@@ -331,7 +352,7 @@ audio{display:none}
 }
 .item .ler{font-weight:bold}
 .legenda-linha a.data{color:var(--cinza)}
-.legenda-linha a.nome-data{color:var(--texto);font-weight:bold;font-size:14px}
+.legenda-linha a.nome-data{color:var(--texto);font:bold 22px/1.2 Georgia,"Times New Roman",serif}
 .nota-txt p{margin:4px 0 0;font-size:12px}
 .tipo.t-nota{background:var(--cinza)}
 .tipo.t-indica{background:#3E7A4F}
@@ -432,6 +453,11 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
 @media (max-width:700px){
   .corpo{display:block}
 }
+@media (max-width:760px){
+  .corpo > main{display:block;padding:0 14px}
+  .coluna{position:static;border-top:1px solid var(--regra)}
+  #feed .item,#post .item{grid-template-columns:minmax(0,1fr) 96px;column-gap:14px}
+}
 @media (max-width:480px){
   .bloco,.leitura,.voltar{padding-left:12px;padding-right:12px}
   body{padding:0 8px;font-size:12px}
@@ -474,6 +500,19 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     <!-- o feed: todos os posts, do mais novo pro mais velho (preenchido pelo script) -->
     <section id="feed" aria-label="posts"></section>
 
+    <!-- a coluna: quem é, e a inscrição na newsletter -->
+    <aside class="coluna">
+      <img class="coluna-marca" src="lagosta.svg" alt="" width="46" height="46">
+      <h2 class="coluna-nome">lagosta filmes</h2>
+      <p>produtora de filmes e outras coisas. fortaleza, ce.</p>
+      <form class="assina" id="assinaForm" method="post" target="_blank">
+        <input class="msg-field" type="email" name="email" placeholder="seu e-mail" required aria-label="seu e-mail">
+        <button class="inscrever" type="submit">se inscrever</button>
+      </form>
+      <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
+      <p><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a></p>
+    </aside>
+
     <!-- um post aberto sozinho (lagostafilmes.com/#id); textos abrem em modo leitura -->
     <article id="post" hidden>
       <div class="voltar"><a href="#">← início</a></div>
@@ -509,14 +548,6 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
   <!-- a lateral: a produtora, como a coluna de perfil dos fotologs -->
   </div>
 
-  <footer class="rodape">
-    <p>produtora de filmes e outras coisas. fortaleza, ce.<br><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a></p>
-    <form class="assina" id="assinaForm" method="post" target="_blank">
-      <input class="msg-field" type="email" name="email" placeholder="e-mail" required aria-label="seu e-mail">
-      <button class="botao" type="submit">se inscrever</button>
-    </form>
-    <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
-  </footer>
 </div>
 
 <!-- SDK Firebase v8 -->
@@ -1034,8 +1065,12 @@ else caixa.append(el("p", null, par));
 // um post no feed
 function itemDoFeed(p){
 const item = el("div","item");
-const f = foto(p);
-if(f) item.append(f);
+// a miniatura do post, à direita (a foto do post; episódio sem foto ganha o cartão da lagosta)
+const mini = el(p.id ? "a" : "div","miniatura t-"+p.tipo);
+if(p.id) mini.href = "#" + p.id;
+if(p.imagem){ const im = el("img"); im.src = p.imagem; im.alt = p.alt || p.titulo || ""; im.loading = "lazy"; mini.append(im); }
+else{ const im = el("img","mini-lagosta"); im.src = "lagosta-cheia.svg"; im.alt = ""; mini.append(im); }
+item.append(mini);
 const leg = el("div","legenda");
 leg.append(cabecalho(p));
 
@@ -1121,11 +1156,6 @@ moverRecados();
 }
 
 posts.forEach(p => feed.append(itemDoFeed(p)));
-// o fim do feed: não tem mais nada, e tudo bem
-const fim = el("div","fim");
-const masc = el("img"); masc.src = "lagosta.svg"; masc.alt = ""; masc.width = 110; masc.height = 110;
-fim.append(masc);
-feed.append(fim);
 
 window.addEventListener("hashchange", mostrar);
 mostrar();
