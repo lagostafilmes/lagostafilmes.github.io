@@ -1189,10 +1189,14 @@ form.addEventListener("submit", e => e.preventDefault());
   LAGOSTA TV (24/7)
   Não é post: é um canal que roda sozinho, em loop, pra todo mundo ao mesmo tempo.
   O site olha o relógio e calcula o que está passando agora — quem chega no meio, pega no meio.
-  Pra pôr um vídeo na grade: acrescente uma linha em TV_PROGRAMACAO.
-  - titulo: o que aparece em "agora"
-  - video: endereço do .mp4 (Firebase Storage)
-  - duracao: em segundos (o Claude mede quando você mandar o arquivo)
+  Cada dia a ordem é embaralhada (o mesmo embaralho pra todo mundo naquele dia)
+  e as fontes se alternam: carro, fuji, bike, carro…
+  Cada linha de TV_PROGRAMACAO é um trecho (o cortador gera essa lista):
+  - fonte: "carro", "bike" ou "fuji"
+  - data: "aaaa-mm-dd" (quando foi filmado)
+  - video: endereço do .mp4
+  - duracao: em segundos
+  - titulo: opcional; sem ele aparece "fonte · dd/mm"
   ========================================================= */
 const TV_PROGRAMACAO = [
 ];
@@ -1200,9 +1204,11 @@ const TV_INICIO = Date.parse("2026-11-01T00:00:00-03:00");  // a hora em que o c
 
 // no seu mac, sem programação ainda, a tv passa uns vídeos de teste (que não vão pro site)
 const TV_TESTE = [
-{titulo: "teste 1", video: ".claude/teste-tv/teste-1.mp4", duracao: 12},
-{titulo: "teste 2", video: ".claude/teste-tv/teste-2.mp4", duracao: 16},
-{titulo: "teste 3", video: ".claude/teste-tv/teste-3.mp4", duracao: 20}
+{fonte: "carro", data: "2026-11-10", video: ".claude/teste-tv/carro-20261110-b7b0e0.mp4", duracao: 37.75},
+{fonte: "carro", data: "2026-11-10", video: ".claude/teste-tv/carro-20261110-96d8ce.mp4", duracao: 46.33},
+{fonte: "carro", data: "2026-11-10", video: ".claude/teste-tv/carro-20261110-9ff3f4.mp4", duracao: 35.96},
+{fonte: "bike", data: "2026-11-10", video: ".claude/teste-tv/bike-20261110-3e59d3.mp4", duracao: 29.83},
+{fonte: "fuji", data: "2026-11-10", video: ".claude/teste-tv/fuji-20261110-225fdb.mp4", duracao: 45.0}
 ];
 
 (function(){
@@ -1218,29 +1224,62 @@ const botaoSom = document.getElementById("tvSom");
 const agoraEl = document.getElementById("tvAgora");
 const seguirEl = document.getElementById("tvSeguir");
 const total = grade.reduce((s,g)=>s + g.duracao, 0);
+const DIA = 86400000;
 
-// o que está passando neste instante: qual vídeo e em que segundo dele
-function noAr(t){
-let pos = ((t - TV_INICIO)/1000) % total;
-if(pos < 0) pos += total;
-for(let i=0;i<grade.length;i++){
-if(pos < grade[i].duracao) return {i, seg: pos, falta: grade[i].duracao - pos};
-pos -= grade[i].duracao;
+function nome(g){
+if(g.titulo) return g.titulo;
+const [,m,d] = String(g.data || "").split("-");
+return (g.fonte || "") + (d ? ` · ${d}/${m}` : "");
 }
-return {i:0, seg:0, falta:grade[0].duracao};
+
+// embaralho com semente: o mesmo dia dá sempre a mesma ordem
+function sorteio(semente){
+let x = semente >>> 0 || 1;
+return ()=>{ x ^= x << 13; x ^= x >>> 17; x ^= x << 5; return (x >>> 0) / 4294967296; };
+}
+function ordemDoDia(dia){
+const r = sorteio(dia * 2654435761);
+const porFonte = {};
+grade.forEach(g => (porFonte[g.fonte || "-"] ||= []).push(g));
+const filas = Object.values(porFonte).map(f=>{
+f = f.slice();
+for(let i=f.length-1;i>0;i--){ const j = Math.floor(r()*(i+1)); [f[i],f[j]] = [f[j],f[i]]; }
+return f;
+});
+// entremeia: cada fonte se espalha por igual ao longo do dia
+// (se tem muito mais carro que bike, os de bike aparecem distribuídos no meio)
+const marcados = [];
+filas.forEach(f=>{
+const desloc = r();
+f.forEach((g,k)=>marcados.push({g, chave:(k + desloc)/f.length}));
+});
+return marcados.sort((a,b)=>a.chave-b.chave).map(m=>m.g);
+}
+
+// o que está passando neste instante: qual trecho e em que segundo dele
+function noAr(t){
+const dia = Math.floor((t - TV_INICIO)/DIA);
+const ordem = ordemDoDia(dia);
+let pos = (((t - TV_INICIO) % DIA)/1000) % total;
+if(pos < 0) pos += total;
+for(let i=0;i<ordem.length;i++){
+if(pos < ordem[i].duracao) return {ordem, i, g: ordem[i], seg: pos, falta: ordem[i].duracao - pos};
+pos -= ordem[i].duracao;
+}
+return {ordem, i:0, g: ordem[0], seg:0, falta: ordem[0].duracao};
 }
 function hora(ms){
 const d = new Date(ms);
 return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
 }
 
-let atual = -1;
+let atual = null;
 function sintonizar(){
 const agora = Date.now();
 const n = noAr(agora);
-if(n.i !== atual){
-atual = n.i;
-tv.src = grade[n.i].video;
+if(n.g !== atual){
+atual = n.g;
+tv.src = n.g.video;
 }
 // só corrige o tempo se estiver muito fora (evita engasgo)
 if(Math.abs(tv.currentTime - n.seg) > 2) tv.currentTime = n.seg;
@@ -1248,15 +1287,15 @@ tv.play().catch(()=>{});
 tv.hidden = false; semSinal.hidden = true; botaoSom.hidden = false;
 
 // agora / a seguir (os próximos três, com horário)
-agoraEl.textContent = grade[n.i].titulo;
+agoraEl.textContent = nome(n.g);
 seguirEl.innerHTML = "";
 let quando = agora + n.falta*1000;
 for(let k=1;k<=3 && k<grade.length+1;k++){
-const g = grade[(n.i + k) % grade.length];
+const g = n.ordem[(n.i + k) % n.ordem.length];
 const li = document.createElement("li");
 const h = document.createElement("span");
 h.className = "obs"; h.textContent = hora(quando) + " ";
-li.append(h, document.createTextNode(g.titulo));
+li.append(h, document.createTextNode(nome(g)));
 seguirEl.append(li);
 quando += g.duracao*1000;
 }
@@ -1264,7 +1303,7 @@ quando += g.duracao*1000;
 
 tv.addEventListener("loadedmetadata", ()=>{
 const n = noAr(Date.now());
-if(n.i !== atual) sintonizar();   // enquanto carregava, a grade já passou pro próximo
+if(n.g !== atual) sintonizar();   // enquanto carregava, a grade já passou pro próximo
 else tv.currentTime = n.seg;
 });
 tv.addEventListener("ended", sintonizar);
