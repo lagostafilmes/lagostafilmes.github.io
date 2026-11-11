@@ -236,6 +236,32 @@ audio{display:none}
 .assina .botao{align-self:flex-start}
 .lado .selos{padding:10px 14px 12px}
 
+/* ---------- lagosta tv: uma tv de tubo pequena ---------- */
+.tv{
+  position:relative;
+  aspect-ratio:4/3;
+  background:#111;
+  border:7px solid #3B352D;
+  border-radius:14px/11px;
+  overflow:hidden;
+  margin-top:6px;
+}
+.tv video{display:block;width:100%;height:100%;object-fit:cover;background:#111}
+.tv::after{  /* as linhas da tela */
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 1px,transparent 1px 3px);
+}
+.sem-sinal{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(90deg,#BFBFBF 0 14.3%,#BFBF3C 0 28.6%,#3CBFBF 0 42.9%,#3CBF3C 0 57.1%,#BF3CBF 0 71.4%,#BF3C3C 0 85.7%,#3C3CBF 0);
+}
+.sem-sinal span{background:#111;color:#EEE;font:bold 11px/1 var(--fonte);letter-spacing:1px;padding:4px 8px;text-transform:uppercase}
+.tv-som{margin-top:6px}
+.tv-caixa{padding:16px 16px 4px}
+.item .tv{border-width:10px;margin:0}
+.tipo.t-tv{background:#3B352D}
+
 /* ---------- o feed: cada post do seu jeito ---------- */
 .item{border-bottom:1px solid var(--regra);padding-bottom:4px}
 .tipo{
@@ -430,6 +456,15 @@ details.comentarios{border-top:0;padding:4px 0 6px}
 
   <!-- a lateral: a produtora, como a coluna de perfil dos fotologs -->
   <aside class="lado">
+    <!-- lagosta tv: só aparece quando houver fragmento de tv -->
+    <div class="bloco" id="tvCanto" hidden>
+      <b>lagosta tv</b> <span class="obs" id="tvLegenda"></span>
+      <div class="tv">
+        <video id="tvVideo" muted loop playsinline preload="metadata" hidden></video>
+        <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
+      </div>
+      <button class="botao tv-som" id="tvSom" type="button" hidden>🔈 ligar som</button>
+    </div>
     <div class="bloco">
       <b>quem somos</b>
       <p>a lagosta filmes é uma produtora de filmes e o que der na telha.</p>
@@ -871,6 +906,7 @@ firebase.auth().onAuthStateChanged((user)=>{
       episodio → rádio
       texto    → artigo: aparece a chamada no feed e abre em modo leitura
       nota     → texto curto, aparece inteiro no feed (como legenda de insta)
+      tv       → um fragmento da lagosta tv (video: endereço do .mp4; fragmento, local, camera)
       indica   → uma indicação: link pra fora + o que você achou
       links    → uma lista curada (itens: titulo, link, fonte, nota)
   - data: "aaaa-mm-dd"
@@ -888,6 +924,18 @@ tipo: "episodio",
 data: "2026-12-01",
 titulo: "lagosta fm – ep. 2",
 resumo: "(rascunho: do que fala o episódio 2.)",
+rascunho: true
+},
+{
+id: "tv-fragmento-1",
+tipo: "tv",
+data: "2026-11-26",
+titulo: "fragmento #1",
+fragmento: 1,
+local: "(lugar)",
+camera: "(câmera)",
+resumo: "(rascunho: o primeiro fragmento da lagosta tv. falta o vídeo.)",
+video: "",
 rascunho: true
 },
 {
@@ -965,7 +1013,7 @@ const feed = document.getElementById("feed");
 const postEl = document.getElementById("post");
 const postCorpo = document.getElementById("postCorpo");
 const recados = document.getElementById("comentarios");
-const NOMES = {foto:"foto", episodio:"rádio", texto:"texto", nota:"nota", indica:"indica", links:"links"};
+const NOMES = {tv:"tv", foto:"foto", episodio:"rádio", texto:"texto", nota:"nota", indica:"indica", links:"links"};
 
 function el(tag, cls, txt){
 const e = document.createElement(tag);
@@ -986,7 +1034,7 @@ function cabecalho(p){
 const linha = el("div","legenda-linha");
 const esq = el("span");
 esq.append(el("span","tipo t-"+p.tipo, NOMES[p.tipo] || p.tipo));
-if(p.titulo && (p.tipo === "foto" || p.tipo === "episodio")) esq.append(el("b", null, p.titulo));
+if(p.titulo && (p.tipo === "foto" || p.tipo === "episodio" || p.tipo === "tv")) esq.append(el("b", null, p.titulo));
 if(p.rascunho) esq.append(el("span","rascunho","rascunho"));
 // a data é o link permanente do post
 linha.append(esq, linkProPost(p, dataBr(p.data), "data"));
@@ -1015,6 +1063,19 @@ function itemDoFeed(p){
 const item = el("div","item");
 const f = foto(p);
 if(f) item.append(f);
+if(p.tipo === "tv"){
+const caixa = el("div","tv-caixa");
+const tela = el("div","tv");
+if(p.video){
+const v = el("video","tv-post");
+v.src = p.video; v.controls = true; v.playsInline = true; v.preload = "metadata";
+tela.append(v);
+}else{
+const s = el("div","sem-sinal"); s.append(el("span", null, "sem sinal")); tela.append(s);
+}
+caixa.append(tela);
+item.append(caixa);
+}
 const leg = el("div","legenda");
 leg.append(cabecalho(p));
 
@@ -1031,6 +1092,10 @@ if(p.tipo === "links"){
 leg.append(linkProPost(p, p.titulo, "titulo-texto"));
 }
 if(p.resumo) leg.append(el("p", null, p.resumo));
+if(p.tipo === "tv"){
+const ficha = [p.fragmento ? "fragmento #" + p.fragmento : "", p.local, p.camera].filter(Boolean).join(" · ");
+if(ficha) leg.append(el("div","obs", ficha));
+}
 if(p.tipo === "links"){
 const ol = el("ol","links");
 (p.itens || []).forEach(it=>{
@@ -1131,6 +1196,57 @@ document.getElementById("assinaAviso").hidden = false;
 form.addEventListener("submit", e => e.preventDefault());
 }
 })();
+
+/* =========================================================
+  LAGOSTA TV
+  A telinha da lateral passa o fragmento de tv mais recente, em loop.
+  Começa sem som (o navegador exige); o botão liga o som.
+  TV e rádio não falam ao mesmo tempo: um liga, o outro cala.
+  ========================================================= */
+(function(){
+const verRascunhos = new URLSearchParams(location.search).has("rascunho");
+const fragmentos = POSTS.filter(p => p.tipo === "tv" && (verRascunhos || !p.rascunho));
+const canto = document.getElementById("tvCanto");
+if(!fragmentos.length) return;
+canto.hidden = false;
+
+const tv = document.getElementById("tvVideo");
+const semSinal = document.getElementById("tvSemSinal");
+const botaoSom = document.getElementById("tvSom");
+const legenda = document.getElementById("tvLegenda");
+const atual = fragmentos.find(p => p.video);
+
+if(atual){
+tv.src = atual.video;
+tv.hidden = false; semSinal.hidden = true; botaoSom.hidden = false;
+legenda.textContent = atual.titulo || "";
+tv.play().catch(()=>{});
+}
+
+botaoSom.addEventListener("click",()=>{
+tv.muted = !tv.muted;
+botaoSom.textContent = tv.muted ? "🔈 ligar som" : "🔊 som ligado";
+if(!tv.muted) calarRadio();
+});
+})();
+
+// quem começa a tocar com som cala os outros
+function calarRadio(){
+if(!audioEl.paused){ audioEl.pause(); playBtn.textContent = "play"; }
+}
+function calarTv(){
+const tv = document.getElementById("tvVideo");
+if(tv && !tv.muted){ tv.muted = true; const b = document.getElementById("tvSom"); if(b) b.textContent = "🔈 ligar som"; }
+document.querySelectorAll("video.tv-post").forEach(v => { if(!v.paused) v.pause(); });
+}
+audioEl.addEventListener("play", calarTv);
+document.addEventListener("play", e=>{
+if(e.target.matches && e.target.matches("video.tv-post")){
+calarRadio();
+const tv = document.getElementById("tvVideo");
+if(tv && !tv.muted){ tv.muted = true; const b = document.getElementById("tvSom"); if(b) b.textContent = "🔈 ligar som"; }
+}
+}, true);
 </script>
 
 </body>
