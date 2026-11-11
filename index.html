@@ -285,6 +285,9 @@ audio{display:none}
   background:rgba(20,18,14,.6);color:#fff;font-size:15px;line-height:34px;padding:0;cursor:pointer;
 }
 .tv-som:hover{background:rgba(20,18,14,.85)}
+/* o botão só aparece com o mouse em cima do vídeo (no celular, uns segundos depois de tocar) */
+.tv-som{opacity:0;transition:opacity .2s}
+.tv:hover .tv-som,.tv-som:focus-visible,.tv.mostra .tv-som{opacity:1}
 /* a marca da lagosta no canto da tela, como selo de emissora */
 .tv-marca{position:absolute;bottom:4%;right:2.5%;width:7%;min-width:28px;z-index:2;opacity:.9;pointer-events:none;filter:drop-shadow(0 0 2px rgba(0,0,0,.6))}
 .tv-barra{
@@ -1288,7 +1291,14 @@ setInterval(sintonizar, 15000);
 sintonizar();
 
 // clicar no vídeo também liga/desliga o som
-document.getElementById("tvTela").addEventListener("click", e=>{ if(e.target !== botaoSom) botaoSom.click(); });
+let timerMostra = null;
+document.getElementById("tvTela").addEventListener("click", e=>{
+if(e.target !== botaoSom) botaoSom.click();
+// no celular não tem "mouse em cima": mostra o botão por uns segundos
+const t = document.getElementById("tvTela");
+t.classList.add("mostra"); clearTimeout(timerMostra);
+timerMostra = setTimeout(()=>t.classList.remove("mostra"), 2500);
+});
 botaoSom.addEventListener("click",()=>{
 tv.muted = !tv.muted;
 botaoSom.textContent = tv.muted ? "🔇" : "🔊";
