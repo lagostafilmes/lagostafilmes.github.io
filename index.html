@@ -79,8 +79,8 @@ a:hover{text-decoration:underline}
 /* a rádio: bloco da lateral, irmão da tv */
 .radio-topo{display:flex;align-items:baseline;justify-content:space-between}
 .radio-topo b{font-size:12px}
-.radio .no-ar{color:var(--cinza);font-size:10px}
-.radio .no-ar::before{width:6px;height:6px;margin-right:4px;vertical-align:0}
+.radio .no-ar,#tvCanto .no-ar{color:var(--cinza);font-size:10px}
+.radio .no-ar::before,#tvCanto .no-ar::before{width:6px;height:6px;margin-right:4px;vertical-align:0}
 .radio-linha{display:flex;align-items:center;gap:8px;margin:7px 0 6px}
 .play{
   flex:none;
@@ -284,9 +284,11 @@ audio{display:none}
 }
 .sem-sinal span{background:#111;color:#EEE;font:bold 11px/1 var(--fonte);letter-spacing:1px;padding:4px 8px;text-transform:uppercase}
 .tv-som{margin-top:6px}
-.tv-caixa{padding:16px 16px 4px}
-.item .tv{border-width:10px;margin:0;max-width:440px;aspect-ratio:16/10}
-.tipo.t-tv{background:#3B352D}
+.tv [hidden]{display:none}
+.tv-grade{margin:6px 0 0}
+.tv-grade b{font-size:11px}
+.tv-grade ul{list-style:none;margin:2px 0 0;padding:0}
+.tv-grade li{margin:1px 0}
 
 /* ---------- o feed: cada post do seu jeito ---------- */
 .item{border-bottom:1px solid var(--regra);padding-bottom:4px}
@@ -479,14 +481,19 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
       <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
     </audio>
     </section>
-    <!-- lagosta tv: só aparece quando houver fragmento de tv -->
+    <!-- lagosta tv: canal 24/7 (só aparece quando houver programação) -->
     <div class="bloco" id="tvCanto" hidden>
-      <b>lagosta tv</b> <span class="obs" id="tvLegenda"></span>
+      <div class="radio-topo"><b>lagosta tv</b><span class="no-ar">no ar</span></div>
       <div class="tv">
-        <video id="tvVideo" muted loop playsinline preload="metadata" hidden></video>
+        <video id="tvVideo" muted playsinline preload="metadata" hidden></video>
         <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
       </div>
       <button class="botao tv-som" id="tvSom" type="button" hidden>🔈 ligar som</button>
+      <div class="tv-grade">
+        <div><b>agora:</b> <span id="tvAgora"></span></div>
+        <b>a seguir:</b>
+        <ul id="tvSeguir"></ul>
+      </div>
     </div>
     <div class="bloco">
       <b>quem somos</b>
@@ -930,7 +937,6 @@ firebase.auth().onAuthStateChanged((user)=>{
       episodio → rádio
       texto    → artigo: aparece a chamada no feed e abre em modo leitura
       nota     → texto curto, aparece inteiro no feed (como legenda de insta)
-      tv       → um fragmento da lagosta tv (video: endereço do .mp4; fragmento, local, camera)
       indica   → uma indicação: link pra fora + o que você achou
       links    → uma lista curada (itens: titulo, link, fonte, nota)
   - data: "aaaa-mm-dd"
@@ -942,18 +948,6 @@ firebase.auth().onAuthStateChanged((user)=>{
   - rascunho: true esconde o post; ele só aparece com ?rascunho no endereço
   ========================================================= */
 const POSTS = [
-{
-id: "tv-fragmento-1",
-tipo: "tv",
-data: "2026-11-26",
-titulo: "fragmento #1",
-fragmento: 1,
-local: "(lugar)",
-camera: "(câmera)",
-resumo: "(exemplo: aqui entra o primeiro fragmento da tv.)",
-video: "",
-rascunho: true
-},
 {
 id: "zap-1",
 tipo: "links",
@@ -1003,7 +997,7 @@ const feed = document.getElementById("feed");
 const postEl = document.getElementById("post");
 const postCorpo = document.getElementById("postCorpo");
 const recados = document.getElementById("comentarios");
-const NOMES = {tv:"tv", foto:"foto", episodio:"rádio", texto:"texto", nota:"nota", indica:"indica", links:"links"};
+const NOMES = {foto:"foto", episodio:"rádio", texto:"texto", nota:"nota", indica:"indica", links:"links"};
 
 function el(tag, cls, txt){
 const e = document.createElement(tag);
@@ -1024,7 +1018,7 @@ function cabecalho(p){
 const linha = el("div","legenda-linha");
 const esq = el("span");
 esq.append(el("span","tipo t-"+p.tipo, NOMES[p.tipo] || p.tipo));
-if(p.titulo && (p.tipo === "foto" || p.tipo === "episodio" || p.tipo === "tv")) esq.append(el("b", null, p.titulo));
+if(p.titulo && (p.tipo === "foto" || p.tipo === "episodio")) esq.append(el("b", null, p.titulo));
 if(p.rascunho) esq.append(el("span","rascunho","rascunho"));
 // a data é o link permanente do post
 linha.append(esq, linkProPost(p, dataBr(p.data), "data"));
@@ -1053,19 +1047,6 @@ function itemDoFeed(p){
 const item = el("div","item");
 const f = foto(p);
 if(f) item.append(f);
-if(p.tipo === "tv"){
-const caixa = el("div","tv-caixa");
-const tela = el("div","tv");
-if(p.video){
-const v = el("video","tv-post");
-v.src = p.video; v.controls = true; v.playsInline = true; v.preload = "metadata";
-tela.append(v);
-}else{
-const s = el("div","sem-sinal"); s.append(el("span", null, "sem sinal")); tela.append(s);
-}
-caixa.append(tela);
-item.append(caixa);
-}
 const leg = el("div","legenda");
 leg.append(cabecalho(p));
 
@@ -1082,10 +1063,6 @@ if(p.tipo === "links"){
 leg.append(linkProPost(p, p.titulo, "titulo-texto"));
 }
 if(p.resumo) leg.append(el("p", null, p.resumo));
-if(p.tipo === "tv"){
-const ficha = [p.fragmento ? "fragmento #" + p.fragmento : "", p.local, p.camera].filter(Boolean).join(" · ");
-if(ficha) leg.append(el("div","obs", ficha));
-}
 if(p.tipo === "links"){
 const ol = el("ol","links");
 (p.itens || []).forEach(it=>{
@@ -1209,30 +1186,91 @@ form.addEventListener("submit", e => e.preventDefault());
 })();
 
 /* =========================================================
-  LAGOSTA TV
-  A telinha da lateral passa o fragmento de tv mais recente, em loop.
-  Começa sem som (o navegador exige); o botão liga o som.
-  TV e rádio não falam ao mesmo tempo: um liga, o outro cala.
+  LAGOSTA TV (24/7)
+  Não é post: é um canal que roda sozinho, em loop, pra todo mundo ao mesmo tempo.
+  O site olha o relógio e calcula o que está passando agora — quem chega no meio, pega no meio.
+  Pra pôr um vídeo na grade: acrescente uma linha em TV_PROGRAMACAO.
+  - titulo: o que aparece em "agora"
+  - video: endereço do .mp4 (Firebase Storage)
+  - duracao: em segundos (o Claude mede quando você mandar o arquivo)
   ========================================================= */
+const TV_PROGRAMACAO = [
+];
+const TV_INICIO = Date.parse("2026-11-01T00:00:00-03:00");  // a hora em que o canal "entrou no ar"
+
+// no seu mac, sem programação ainda, a tv passa uns vídeos de teste (que não vão pro site)
+const TV_TESTE = [
+{titulo: "teste 1", video: ".claude/teste-tv/teste-1.mp4", duracao: 12},
+{titulo: "teste 2", video: ".claude/teste-tv/teste-2.mp4", duracao: 16},
+{titulo: "teste 3", video: ".claude/teste-tv/teste-3.mp4", duracao: 20}
+];
+
 (function(){
-const verRascunhos = new URLSearchParams(location.search).has("rascunho") || location.hostname === "localhost";  // no seu mac, os rascunhos sempre aparecem
-const fragmentos = POSTS.filter(p => p.tipo === "tv" && (verRascunhos || !p.rascunho));
+const grade = TV_PROGRAMACAO.length ? TV_PROGRAMACAO
+: (location.hostname === "localhost" ? TV_TESTE : []);
 const canto = document.getElementById("tvCanto");
-if(!fragmentos.length) return;
+if(!grade.length) return;  // sem programação: o bloco da tv nem aparece
 canto.hidden = false;
 
 const tv = document.getElementById("tvVideo");
 const semSinal = document.getElementById("tvSemSinal");
 const botaoSom = document.getElementById("tvSom");
-const legenda = document.getElementById("tvLegenda");
-const atual = fragmentos.find(p => p.video);
+const agoraEl = document.getElementById("tvAgora");
+const seguirEl = document.getElementById("tvSeguir");
+const total = grade.reduce((s,g)=>s + g.duracao, 0);
 
-if(atual){
-tv.src = atual.video;
-tv.hidden = false; semSinal.hidden = true; botaoSom.hidden = false;
-legenda.textContent = atual.titulo || "";
-tv.play().catch(()=>{});
+// o que está passando neste instante: qual vídeo e em que segundo dele
+function noAr(t){
+let pos = ((t - TV_INICIO)/1000) % total;
+if(pos < 0) pos += total;
+for(let i=0;i<grade.length;i++){
+if(pos < grade[i].duracao) return {i, seg: pos, falta: grade[i].duracao - pos};
+pos -= grade[i].duracao;
 }
+return {i:0, seg:0, falta:grade[0].duracao};
+}
+function hora(ms){
+const d = new Date(ms);
+return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0");
+}
+
+let atual = -1;
+function sintonizar(){
+const agora = Date.now();
+const n = noAr(agora);
+if(n.i !== atual){
+atual = n.i;
+tv.src = grade[n.i].video;
+}
+// só corrige o tempo se estiver muito fora (evita engasgo)
+if(Math.abs(tv.currentTime - n.seg) > 2) tv.currentTime = n.seg;
+tv.play().catch(()=>{});
+tv.hidden = false; semSinal.hidden = true; botaoSom.hidden = false;
+
+// agora / a seguir (os próximos três, com horário)
+agoraEl.textContent = grade[n.i].titulo;
+seguirEl.innerHTML = "";
+let quando = agora + n.falta*1000;
+for(let k=1;k<=3 && k<grade.length+1;k++){
+const g = grade[(n.i + k) % grade.length];
+const li = document.createElement("li");
+const h = document.createElement("span");
+h.className = "obs"; h.textContent = hora(quando) + " ";
+li.append(h, document.createTextNode(g.titulo));
+seguirEl.append(li);
+quando += g.duracao*1000;
+}
+}
+
+tv.addEventListener("loadedmetadata", ()=>{
+const n = noAr(Date.now());
+if(n.i !== atual) sintonizar();   // enquanto carregava, a grade já passou pro próximo
+else tv.currentTime = n.seg;
+});
+tv.addEventListener("ended", sintonizar);
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) sintonizar(); });
+setInterval(sintonizar, 15000);
+sintonizar();
 
 botaoSom.addEventListener("click",()=>{
 tv.muted = !tv.muted;
@@ -1241,23 +1279,14 @@ if(!tv.muted) calarRadio();
 });
 })();
 
-// quem começa a tocar com som cala os outros
+// tv e rádio não falam ao mesmo tempo: quem liga o som cala o outro
 function calarRadio(){
-if(!audioEl.paused){ audioEl.pause(); playBtn.textContent="▶"; }
+if(!audioEl.paused){ audioEl.pause(); playBtn.textContent = "▶"; }
 }
-function calarTv(){
+audioEl.addEventListener("play", ()=>{
 const tv = document.getElementById("tvVideo");
-if(tv && !tv.muted){ tv.muted = true; const b = document.getElementById("tvSom"); if(b) b.textContent = "🔈 ligar som"; }
-document.querySelectorAll("video.tv-post").forEach(v => { if(!v.paused) v.pause(); });
-}
-audioEl.addEventListener("play", calarTv);
-document.addEventListener("play", e=>{
-if(e.target.matches && e.target.matches("video.tv-post")){
-calarRadio();
-const tv = document.getElementById("tvVideo");
-if(tv && !tv.muted){ tv.muted = true; const b = document.getElementById("tvSom"); if(b) b.textContent = "🔈 ligar som"; }
-}
-}, true);
+if(tv && !tv.muted){ tv.muted = true; document.getElementById("tvSom").textContent = "🔈 ligar som"; }
+});
 </script>
 
 </body>
