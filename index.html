@@ -38,13 +38,13 @@
 }
 
 *{box-sizing:border-box}
-html{background:var(--branco)}  /* o papel ocupa a tela toda */
+html{background:var(--ceu) url(bg-lagosta.svg)}  /* o céu com as lagostinhas: em cima e em duas faixas finas dos lados */
 body{
   margin:0;
   background:transparent;
   color:var(--texto);
   font:11px/1.55 var(--fonte);
-  padding:0 0 30px;
+  padding:0 clamp(10px,3vw,40px);
 }
 img{max-width:100%}
 a{color:var(--link);text-decoration:none}
@@ -52,15 +52,17 @@ a:hover{text-decoration:underline}
 :focus-visible{outline:1px dotted var(--texto);outline-offset:2px}
 
 /* ---------- a página ---------- */
-.pagina{background:var(--branco)}
+.pagina{background:transparent}
 /* o miolo fica numa coluna central; o papel vai até a borda */
 /* tudo numa coluna só: a tv, o feed com a lateral e o rodapé têm as mesmas bordas */
-.corpo{max-width:920px;margin:0 auto}
+/* a lâmina: papel largo, o céu só emoldura */
+.corpo,.rodape{background:var(--branco);border-left:1px solid var(--moldura);border-right:1px solid var(--moldura)}
+.corpo{border-top:1px solid var(--moldura)}
+.corpo > main{max-width:920px;margin:0 auto}
 
 /* o nome */
 .cabeca{
-  background:var(--ceu) url(bg-lagosta.svg);  /* a faixa do céu com as lagostinhas */
-  border-bottom:1px solid var(--moldura);
+  background:transparent;
   position:relative;
   display:flex;
   flex-direction:column;
@@ -398,8 +400,9 @@ details.comentarios{border-top:0;padding:4px 0 6px}
 
 /* ---------- o rodapé ---------- */
 .rodape{
-  max-width:920px;margin:0 auto;
-  padding:18px 16px 30px;
+  margin:0 0 clamp(10px,3vw,40px);border-bottom:1px solid var(--moldura);
+  padding-left:max(16px,calc((100% - 920px)/2 + 16px));padding-right:max(16px,calc((100% - 920px)/2 + 16px));
+  padding-top:18px;padding-bottom:30px;
   border-top:1px solid var(--regra);
   display:flex;justify-content:space-between;align-items:flex-end;gap:14px 24px;flex-wrap:wrap;
   color:var(--cinza);
@@ -430,7 +433,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
 }
 @media (max-width:480px){
   .bloco,.leitura,.voltar{padding-left:12px;padding-right:12px}
-  body{padding-top:0;font-size:12px}
+  body{padding:0 8px;font-size:12px}
   .tv-palco{padding:16px 12px 14px}
   .cabeca{padding:12px 12px 8px}
   .status{padding:7px 12px 8px}
