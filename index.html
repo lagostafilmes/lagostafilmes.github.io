@@ -270,6 +270,12 @@ audio{display:none}
 .leitura .data{color:var(--cinza)}
 .leitura .prosa{max-width:34em;margin-top:14px}
 .leitura .prosa p{font:16px/1.7 Georgia,"Times New Roman",serif;margin:0 0 1em}
+.leitura .prosa h2{font:bold 18px/1.3 Georgia,"Times New Roman",serif;margin:1.6em 0 .5em}
+.leitura .prosa blockquote{font:italic 18px/1.5 Georgia,"Times New Roman",serif;color:var(--vermelho);border-left:3px solid var(--vermelho);margin:1.2em 0;padding:0 0 0 14px}
+.links{margin:8px 0 2px;padding-left:20px}
+.links li{margin:0 0 9px;font-size:12px}
+.links li a{font-weight:bold}
+.tipo.t-links{background:#6B4E8A}
 
 /* ---------- os comentários ---------- */
 .comentarios{
@@ -866,6 +872,7 @@ firebase.auth().onAuthStateChanged((user)=>{
       texto    → artigo: aparece a chamada no feed e abre em modo leitura
       nota     → texto curto, aparece inteiro no feed (como legenda de insta)
       indica   → uma indicação: link pra fora + o que você achou
+      links    → uma lista curada (itens: titulo, link, fonte, nota)
   - data: "aaaa-mm-dd"
   - titulo; imagem (arquivo na raiz, opcional)
   - resumo: a frase que aparece no feed
@@ -884,32 +891,52 @@ resumo: "(rascunho: do que fala o episódio 2.)",
 rascunho: true
 },
 {
-id: "primeiro-texto",
+id: "coisas-que-eu-mandaria-no-zap",
+tipo: "links",
+data: "2026-11-24",
+titulo: "coisas que eu mandaria no zap se a gente fosse amigo #1",
+resumo: "uma vez por mês, ou quando der. sem patrocínio, sem afiliado.",
+itens: [
+{titulo: "radio garden", link: "https://radio.garden", fonte: "radio.garden", nota: "um globo girando com rádio ao vivo do mundo inteiro. achei uma rádio de pescador no maranhão às 3 da manhã."},
+{titulo: "ubuweb", link: "https://ubu.com", fonte: "ubu.com", nota: "o arquivo de vanguarda que resiste desde 1996. filme, som, poesia concreta. tudo de graça, sem login."},
+{titulo: "prelinger archives", link: "https://archive.org/details/prelinger", fonte: "internet archive", nota: "milhares de filmes institucionais e caseiros em domínio público. material bruto pra quem monta."},
+{titulo: "the electric typewriter", link: "https://tetw.org", fonte: "tetw.org", nota: "os melhores ensaios e reportagens longas da internet, organizados por assunto. pra ler devagar."}
+],
+rascunho: true
+},
+{
+id: "por-que-uma-radio",
 tipo: "texto",
 data: "2026-11-20",
 titulo: "por que uma rádio",
-resumo: "(rascunho: uma frase que puxa pro texto.)",
+resumo: "ninguém pediu, e talvez por isso mesmo.",
 texto: [
-"(texto de exemplo. aqui entra o primeiro texto do blog — pode ser longo, com vários parágrafos.)",
-"cada item da lista vira um parágrafo."
+"a gente começou a lagosta fm sem saber direito o que era. um microfone, uma mesa emprestada, uns amigos falando à toa numa tarde quente de fortaleza. o piloto tem setenta e oito minutos e eu não cortaria nenhum.",
+"## a internet que eu lembro",
+"tinha uma época em que a internet era um monte de puxadinho. fotolog, blog de amigo, rádio de faculdade transmitindo pra doze pessoas. ninguém estava tentando crescer. a graça era estar ali.",
+"hoje tudo passa por três ou quatro empresas que decidem o que você vê. o feed não é seu, é delas. e ele é desenhado pra você não sair.",
+"> uma rádio é o contrário de um algoritmo: alguém escolheu aquilo, naquela ordem, pra você.",
+"## então",
+"esse site é isso: um puxadinho. tem rádio, tem filme vindo, tem texto quando der vontade e tem coisa boa que eu achei por aí. em ordem de chegada. se quiser receber por e-mail, tem o campinho ali do lado. se não, tudo bem também.",
+"(texto simulado, só pra ver como fica.)"
 ],
 rascunho: true
 },
 {
 id: "indica-exemplo",
 tipo: "indica",
-data: "2026-11-15",
-titulo: "(nome do filme, disco, livro, site…)",
-fonte: "(de onde é)",
+data: "2026-11-16",
+titulo: "(exemplo de indicação)",
+fonte: "internet",
 link: "https://example.com",
-texto: ["(rascunho: por que vale a pena.)"],
+texto: ["(rascunho: um exemplo de indicação solta, com um comentário seu de uma ou duas linhas. troque pelo link de verdade.)"],
 rascunho: true
 },
 {
 id: "nota-exemplo",
 tipo: "nota",
 data: "2026-11-12",
-texto: ["(rascunho: uma nota curta, do jeito que viria numa legenda.)"],
+texto: ["choveu em fortaleza hoje. três minutos. a cidade inteira parou pra olhar. (nota simulada)"],
 rascunho: true
 },
 {
@@ -938,7 +965,7 @@ const feed = document.getElementById("feed");
 const postEl = document.getElementById("post");
 const postCorpo = document.getElementById("postCorpo");
 const recados = document.getElementById("comentarios");
-const NOMES = {foto:"foto", episodio:"rádio", texto:"texto", nota:"nota", indica:"indica"};
+const NOMES = {foto:"foto", episodio:"rádio", texto:"texto", nota:"nota", indica:"indica", links:"links"};
 
 function el(tag, cls, txt){
 const e = document.createElement(tag);
@@ -974,8 +1001,13 @@ img.src = p.imagem; img.alt = p.alt || p.titulo || ""; img.loading = "lazy";
 f.append(img);
 return f;
 }
+// "## " no começo vira intertítulo; "> " vira citação; o resto é parágrafo
 function paragrafos(lista, caixa){
-(lista || []).forEach(par => caixa.append(el("p", null, par)));
+(lista || []).forEach(par=>{
+if(par.startsWith("## ")) caixa.append(el("h2", null, par.slice(3)));
+else if(par.startsWith("> ")) caixa.append(el("blockquote", null, par.slice(2)));
+else caixa.append(el("p", null, par));
+});
 }
 
 // um post no feed
@@ -995,7 +1027,23 @@ a.href = p.link; a.target = "_blank"; a.rel = "noopener";
 leg.append(a);
 if(p.fonte) leg.append(el("div","obs", p.fonte));
 }
+if(p.tipo === "links"){
+leg.append(linkProPost(p, p.titulo, "titulo-texto"));
+}
 if(p.resumo) leg.append(el("p", null, p.resumo));
+if(p.tipo === "links"){
+const ol = el("ol","links");
+(p.itens || []).forEach(it=>{
+const li = el("li");
+const a = el("a", null, it.titulo + " ↗");
+a.href = it.link; a.target = "_blank"; a.rel = "noopener";
+li.append(a);
+if(it.fonte) li.append(el("span","obs"," " + it.fonte));
+if(it.nota) li.append(el("div", null, it.nota));
+ol.append(li);
+});
+leg.append(ol);
+}
 if(p.tipo === "nota" || p.tipo === "indica"){
 const caixa = el("div","nota-txt");
 paragrafos(p.texto, caixa);
