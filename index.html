@@ -107,9 +107,40 @@ a:hover{text-decoration:underline}
 .radio .no-ar::before,.tv-palco .no-ar::before{width:6px;height:6px;margin-right:4px;vertical-align:0}
 .radio{margin:8px 0 2px}
 .radio-linha{display:flex;align-items:center;gap:10px;margin:0 0 6px}
+/* o player fica num campo de cor chapada (como o intervalo do obs); a cor troca a cada faixa */
+.radio{padding:12px 14px 10px;transition:background-color 1.2s linear}
+.radio.c-ceu{background:var(--ceu)}
+.radio.c-faixa{background:var(--faixa)}
+.radio.c-campo{background:var(--campo)}
+/* o anel: o texto gira em volta do play enquanto toca */
+.anel-play{position:relative;flex:none;width:84px;height:84px;display:grid;place-items:center}
+.anel{position:absolute;inset:0;width:100%;height:100%;overflow:visible;animation:gira 40s linear infinite;animation-play-state:paused}
+.radio.tocando .anel{animation-play-state:running}
+.anel text{font:10px var(--fonte);fill:var(--texto);letter-spacing:.5px}
+@keyframes gira{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.anel{animation:none}}
+/* a tracklist */
+.faixas{list-style:none;margin:8px 0 0;padding:0;font-size:11px;max-height:190px;overflow:auto}
+.faixas li{padding:2px 0;cursor:pointer;border-top:1px solid rgba(34,32,24,.12)}
+.faixas li:hover{text-decoration:underline}
+.faixas li.agora{font-weight:bold}
+.faixas .quando{color:var(--texto);opacity:.6;font-variant-numeric:tabular-nums;display:inline-block;min-width:44px}
+.mixcloud{margin-top:8px;line-height:0}
+.mixcloud iframe{width:100%;height:60px;border:0}
+/* quando o mixcloud não aceita o nosso botão: só o player deles, a tracklist vira lista */
+.radio.so-mixcloud .radio-linha{display:none}
+.radio.so-mixcloud .mixcloud{margin-top:0}
+.radio.so-mixcloud .faixas li{cursor:default}
+.radio.so-mixcloud .faixas li:hover{text-decoration:none}
+/* "ouvir": nos episódios que não estão no player */
+.ouvir{font:12px var(--fonte);color:var(--link);background:none;border:0;padding:0;margin-top:8px;cursor:pointer;display:inline-flex;align-items:center;gap:4px}
+.ouvir:hover{text-decoration:underline}
+.ouvir[hidden]{display:none}
+.ouvir-play{display:inline-block;width:20px;height:20px;border-radius:50%;background:var(--vermelho);color:var(--branco);font-size:8px;line-height:20px;text-align:center;padding-left:1px}
 .play{
   flex:none;
-  width:36px;height:36px;
+  position:relative;
+  width:40px;height:40px;
   border-radius:50%;
   border:0;
   background:var(--vermelho);
@@ -187,7 +218,7 @@ a:hover{text-decoration:underline}
   cursor:pointer;
 }
 .progress-bar-fill{display:none}
-.onda{display:flex;align-items:flex-end;gap:1px;height:100%}
+.onda{display:flex;align-items:flex-end;gap:1px;height:100%;overflow:hidden}
 .onda i{flex:1;background:var(--campo);opacity:.55;min-width:1px}
 .onda i.tocou{background:var(--vermelho);opacity:1}
 /* cada recado é um risquinho na onda: só aparece quando o recado está em foco
@@ -522,17 +553,26 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     <!-- o player e os recados do piloto: o script põe os dois dentro do post do episódio -->
     <section class="radio" id="radio" aria-label="lagosta fm">
       <div class="radio-linha">
-        <button id="playBtn" class="play" type="button" aria-label="tocar / pausar">▶</button>
+        <!-- o anel do intervalo: texto em volta do play, gira enquanto toca -->
+        <div class="anel-play">
+          <svg class="anel" viewBox="0 0 100 100" aria-hidden="true">
+            <defs><path id="anelCirc" d="M50,50 m-40,0 a40,40 0 1,1 80,0 a40,40 0 1,1 -80,0"/></defs>
+            <text><textPath href="#anelCirc" id="anelTexto" textLength="250" lengthAdjust="spacing"></textPath></text>
+          </svg>
+          <button id="playBtn" class="play" type="button" aria-label="tocar">▶</button>
+        </div>
+        <div class="barra" id="progressBar" role="slider" aria-label="posição do episódio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+          <div class="progress-bar-fill" id="progressFill"></div>
+          <div class="marker-bubble" id="markerBubble"></div>
+        </div>
         <span class="tempos"><span id="currentTime">00:00</span> / <span id="totalTime">--:--</span></span>
       </div>
-      <div class="barra" id="progressBar" role="slider" aria-label="posição do episódio" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
-        <div class="progress-bar-fill" id="progressFill"></div>
-        <div class="marker-bubble" id="markerBubble"></div>
-      </div>
-    <!-- áudio (Firebase Storage) -->
-    <audio id="audioPlayer" preload="metadata">
-      <source src="https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde" type="audio/mpeg">
-    </audio>
+      <!-- a tracklist (do post.txt): clicar numa faixa pula pra ela -->
+      <ol class="faixas" id="faixas" hidden></ol>
+      <!-- o widget do mixcloud, quando o episódio estiver lá -->
+      <div class="mixcloud" id="mixcloudCaixa" hidden></div>
+    <!-- áudio (Firebase Storage); o endereço vem do post -->
+    <audio id="audioPlayer" preload="metadata"></audio>
     </section>
     <details class="comentarios" id="comentarios">
       <summary class="comentarios-cab"><b>comentários</b> <span class="quantos" id="recadosCount2"></span></summary>
@@ -592,6 +632,9 @@ if(e.key==="Enter"){ e.preventDefault(); chatInputEl.focus(); }
 
 /* =========================================================
   PLAYER / TIMECODE
+  Um player só pra todos os episódios: ele mora dentro do episódio
+  que está tocando (ou do mais novo). O som vem de um arquivo
+  (audio: Firebase Storage) ou do Mixcloud (mixcloud: o endereço do show).
   ========================================================= */
 const audioEl       = document.getElementById("audioPlayer");
 const playBtn       = document.getElementById("playBtn");
@@ -600,6 +643,10 @@ const currentTimeEl = document.getElementById("currentTime");
 const totalTimeEl   = document.getElementById("totalTime");
 const progressBar   = document.getElementById("progressBar");
 const markerBubble  = document.getElementById("markerBubble");
+const radioEl       = document.getElementById("radio");
+const anelTexto     = document.getElementById("anelTexto");
+const faixasEl      = document.getElementById("faixas");
+const mixcloudCaixa = document.getElementById("mixcloudCaixa");
 
 // a onda: barrinhas de alturas variadas (desenho fixo, não é o áudio de verdade)
 const onda = document.createElement("div");
@@ -619,58 +666,220 @@ onda.childNodes.forEach((b,i)=>b.classList.toggle("tocou", i < ate));
 
 function formatTime(sec){
 if(isNaN(sec)) return "--:--";
-const m = Math.floor(sec/60);
+sec = Math.max(0, sec);
+const h = Math.floor(sec/3600);
+const m = Math.floor(sec%3600/60);
 const s = Math.floor(sec%60);
-return String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+const mm = String(m).padStart(2,"0")+":"+String(s).padStart(2,"0");
+return h ? h+":"+mm : mm;
+}
+// "01:02:03" ou "02:03" → segundos
+function segundos(txt){
+return String(txt).split(":").reduce((acc,n)=>acc*60 + (parseFloat(n)||0), 0);
 }
 
-playBtn.addEventListener("click",()=>{
-if(audioEl.paused){
-audioEl.play();
-playBtn.textContent="❚❚";
-}else{
-audioEl.pause();
-playBtn.textContent="▶";
+// o som: a mesma conversa pro arquivo e pro mixcloud
+const som = {
+modo: "audio",     // "audio" ou "mixcloud"
+ep: null,          // o post do episódio que está no player
+t: 0, dur: 0,
+tocando: false,
+mc: null,          // o widget do mixcloud, quando houver
+tocar(){
+if(this.modo === "mixcloud"){ if(this.mc) this.mc.play(); }
+else audioEl.play().catch(()=>{});
+},
+pausar(){
+if(this.modo === "mixcloud"){ if(this.mc) this.mc.pause(); }
+else audioEl.pause();
+},
+alternar(){ this.tocando ? this.pausar() : this.tocar(); },
+ir(t){
+if(!this.dur) return;
+t = Math.max(0, Math.min(this.dur - 0.5, t));
+this.t = t;
+if(this.modo === "mixcloud"){ if(this.mc) this.mc.seek(t); }
+else audioEl.currentTime = t;
+aoTempo();
 }
+};
+
+playBtn.addEventListener("click", ()=> som.alternar());
+
+/* --- o anel: texto em volta do play, gira enquanto toca (vem do intervalo do obs) --- */
+function textoDoAnel(p){
+const nome = p.titulo ? p.titulo.toLowerCase() : dataPonto(p.data);
+const um = `lagosta fm · ${nome} · `;
+return um + um;
+}
+function dataPonto(s){
+const [a,m,d] = String(s||"").split("-");
+return (a && m && d) ? `${d}.${m}.${a}` : "";
+}
+
+/* --- a cor do fundo: troca quando muda a faixa (como o anel batendo na borda) --- */
+const CORES = ["c-ceu","c-faixa","c-campo"];
+let faixas = [];     // [{t, nome, li}]
+let faixaAtual = -1;
+function montarFaixas(p){
+faixasEl.innerHTML = "";
+faixas = (p.faixas || []).map(linha=>{
+// a linha vem do post.txt: "00:12:34  artista - faixa"
+const m = String(linha).match(/^\s*([\d:]+)\s+(.*)$/);
+const t = m ? segundos(m[1]) : 0;
+const nome = m ? m[2] : String(linha);
+const li = document.createElement("li");
+const quando = document.createElement("span");
+quando.className = "quando"; quando.textContent = formatTime(t);
+li.append(quando, document.createTextNode(" " + nome));
+li.title = "ouvir dessa faixa";
+li.addEventListener("click", ()=>{ som.ir(t); if(!som.tocando) som.tocar(); });
+faixasEl.append(li);
+return {t, nome, li};
 });
-audioEl.addEventListener("ended",()=>{ playBtn.textContent="▶"; });
+faixasEl.hidden = !faixas.length;
+faixaAtual = -1;
+pintarCor();
+}
+function pintarCor(){
+const i = Math.max(0, faixaAtual);
+CORES.forEach((c,k)=> radioEl.classList.toggle(c, k === i % CORES.length));
+}
+function conferirFaixa(){
+let i = -1;
+faixas.forEach((f,k)=>{ if(som.t >= f.t) i = k; });
+if(i === faixaAtual) return;
+faixaAtual = i;
+faixas.forEach((f,k)=> f.li.classList.toggle("agora", k === i));
+pintarCor();
+}
 
-// a duração às vezes só chega depois (e o safari às vezes dá "infinito" no começo)
-function mostrarTotal(){ if(isFinite(audioEl.duration) && audioEl.duration > 0) totalTimeEl.textContent = formatTime(audioEl.duration); }
-audioEl.addEventListener("loadedmetadata", mostrarTotal);
-audioEl.addEventListener("durationchange", mostrarTotal);
-
-audioEl.addEventListener("timeupdate",()=>{
-if(alvo !== null) return;   // ainda indo pro ponto escolhido
-currentTimeEl.textContent = formatTime(audioEl.currentTime);
-mostrarTotal();
-if(!isNaN(audioEl.duration) && audioEl.duration>0){
-const pct = (audioEl.currentTime/audioEl.duration)*100;
+/* --- o que acontece a cada passo do som --- */
+function aoTempo(){
+if(alvo !== null && som.modo === "audio") return;   // ainda indo pro ponto escolhido
+currentTimeEl.textContent = formatTime(som.t);
+if(som.dur > 0){
+totalTimeEl.textContent = formatTime(som.dur);
+const pct = (som.t/som.dur)*100;
 progressFill.style.width = pct+"%";
 pintarOnda(pct);
 progressBar.setAttribute("aria-valuenow", Math.round(pct));
 }
-});
+conferirFaixa();
+passarRecados();
+}
+function aoEstado(){
+playBtn.textContent = som.tocando ? "❚❚" : "▶";
+playBtn.setAttribute("aria-label", som.tocando ? "pausar" : "tocar");
+radioEl.classList.toggle("tocando", som.tocando);
+if(som.tocando) calarTv();
+}
 
-// clicar ou arrastar na onda: pula pro ponto (e começa a tocar, como no soundcloud)
+/* --- o arquivo (firebase storage) --- */
+// a duração às vezes só chega depois (e o safari às vezes dá "infinito" no começo)
 function duracaoAudio(){
 if(isFinite(audioEl.duration) && audioEl.duration > 0) return audioEl.duration;
 try{ if(audioEl.seekable.length) return audioEl.seekable.end(audioEl.seekable.length-1); }catch(e){}
 return 0;
 }
+function audioMudou(){
+if(som.modo !== "audio") return;
+som.t = audioEl.currentTime || 0;
+const d = duracaoAudio();
+if(d && d !== som.dur){ som.dur = d; renderMarkers(); }
+aoTempo();
+}
+["timeupdate","loadedmetadata","durationchange"].forEach(ev=> audioEl.addEventListener(ev, audioMudou));
+audioEl.addEventListener("play", ()=>{ if(som.modo==="audio"){ som.tocando = true; aoEstado(); } });
+audioEl.addEventListener("pause", ()=>{ if(som.modo==="audio"){ som.tocando = false; aoEstado(); } });
+audioEl.addEventListener("ended", ()=>{ som.tocando = false; aoEstado(); });
+
+/* --- o mixcloud: o widget deles toca (e cuida da licença), o nosso botão manda --- */
+let mixcloudApi = null;
+function carregarMixcloudApi(){
+if(!mixcloudApi) mixcloudApi = new Promise((ok, erro)=>{
+const s = document.createElement("script");
+s.src = "https://widget.mixcloud.com/media/js/widgetApi.js";
+s.onload = ()=> ok(window.Mixcloud);
+s.onerror = erro;
+document.head.append(s);
+});
+return mixcloudApi;
+}
+function montarMixcloud(caminho, tocarJa){
+mixcloudCaixa.innerHTML = "";
+mixcloudCaixa.hidden = false;
+const f = document.createElement("iframe");
+const feed = encodeURIComponent("https://www.mixcloud.com" + caminho);
+f.src = `https://www.mixcloud.com/widget/iframe/?feed=${feed}&hide_cover=1&mini=1&light=1&hide_artwork=1`;
+f.title = "mixcloud";
+f.allow = "encrypted-media; autoplay";
+const carregou = new Promise(ok=> f.addEventListener("load", ok, {once:true}));
+mixcloudCaixa.append(f);
+som.mc = null;
+radioEl.classList.remove("so-mixcloud");
+// se o widget não conversar com a gente em 10 s, ele toca sozinho (o nosso botão sai de cena)
+setTimeout(()=>{
+if(mixcloudCaixa.contains(f) && !som.mc) radioEl.classList.add("so-mixcloud");
+}, 10000);
+// a api só conversa com o widget depois que ele abriu
+Promise.all([carregarMixcloudApi(), carregou]).then(([Mixcloud])=>{
+const w = Mixcloud.PlayerWidget(f);
+w.ready.then(()=>{
+if(!mixcloudCaixa.contains(f) || som.modo !== "mixcloud") return;   // já trocou de episódio
+som.mc = w;
+w.events.progress.on((pos, dur)=>{
+som.t = pos || 0;
+if(dur && dur !== som.dur){ som.dur = dur; renderMarkers(); }
+aoTempo();
+});
+w.events.play.on(()=>{ som.tocando = true; aoEstado(); });
+w.events.pause.on(()=>{ som.tocando = false; aoEstado(); });
+w.events.ended.on(()=>{ som.tocando = false; aoEstado(); });
+w.getDuration().then(d=>{ if(d){ som.dur = d; aoTempo(); renderMarkers(); } });
+if(tocarJa) w.play();
+});
+}).catch(()=>{ mixcloudCaixa.textContent = "o mixcloud não carregou."; });
+}
+
+// põe um episódio no player (tocarJa: começa a tocar)
+function carregarEpisodio(p, tocarJa){
+if(som.ep === p){ if(tocarJa && !som.tocando) som.tocar(); return; }
+som.pausar();
+som.ep = p; som.t = 0; som.dur = 0; som.tocando = false; som.mc = null;
+aoEstado();
+anelTexto.textContent = textoDoAnel(p);
+currentTimeEl.textContent = "00:00"; totalTimeEl.textContent = "--:--"; pintarOnda(0);
+montarFaixas(p);
+if(p.mixcloud){
+som.modo = "mixcloud";
+audioEl.removeAttribute("src"); audioEl.load();
+montarMixcloud(p.mixcloud, tocarJa);
+}else{
+som.modo = "audio";
+mixcloudCaixa.innerHTML = ""; mixcloudCaixa.hidden = true;
+radioEl.classList.remove("so-mixcloud");
+if(audioEl.getAttribute("src") !== p.audio){ audioEl.src = p.audio || ""; audioEl.load(); }
+if(tocarJa) som.tocar();
+}
+mostrarRecados();
+}
+
+// clicar ou arrastar na onda: pula pro ponto (e começa a tocar, como no soundcloud)
 let alvo = null;   // pra onde o usuário mandou ir, enquanto o áudio ainda está chegando lá
 function irPara(ratio){
-const d = duracaoAudio();
-if(!d) return;
+if(!som.dur) return;
 ratio = Math.max(0, Math.min(1, ratio));
-alvo = ratio * d;
+if(som.modo === "audio"){
+alvo = ratio * som.dur;
 // mostra na hora, sem esperar o áudio carregar
 pintarOnda(ratio*100);
 currentTimeEl.textContent = formatTime(alvo);
 progressBar.classList.add("buscando");
 audioEl.currentTime = alvo;
+}else som.ir(ratio * som.dur);
 }
-audioEl.addEventListener("seeked", ()=>{ alvo = null; progressBar.classList.remove("buscando"); });
+audioEl.addEventListener("seeked", ()=>{ alvo = null; progressBar.classList.remove("buscando"); audioMudou(); });
 function ratioDoPonteiro(e){
 const r = progressBar.getBoundingClientRect();
 return (e.clientX - r.left) / r.width;
@@ -685,7 +894,7 @@ const soltar = ()=>{
 progressBar.removeEventListener("pointermove", mover);
 progressBar.removeEventListener("pointerup", soltar);
 progressBar.removeEventListener("pointercancel", soltar);
-if(audioEl.paused){ audioEl.play(); playBtn.textContent="❚❚"; }
+if(!som.tocando) som.tocar();
 };
 progressBar.addEventListener("pointermove", mover);
 progressBar.addEventListener("pointerup", soltar);
@@ -693,14 +902,16 @@ progressBar.addEventListener("pointercancel", soltar);
 });
 // setas: pular 10 s
 progressBar.addEventListener("keydown",(e)=>{
-const d = duracaoAudio(); if(!d) return;
-const agora = alvo ?? audioEl.currentTime;
-if(e.key==="ArrowRight"){ e.preventDefault(); irPara((agora+10)/d); }
-if(e.key==="ArrowLeft"){ e.preventDefault(); irPara((agora-10)/d); }
+if(!som.dur) return;
+const agora = alvo ?? som.t;
+if(e.key==="ArrowRight"){ e.preventDefault(); irPara((agora+10)/som.dur); }
+if(e.key==="ArrowLeft"){ e.preventDefault(); irPara((agora-10)/som.dur); }
 });
 
 /* =========================================================
   COMENTÁRIOS (local + timecode)
+  Cada recado sabe de que episódio é (campo ep). Os do piloto,
+  de antes de existir mais de um episódio, não têm ep.
   ========================================================= */
 const chatLogEl   = document.getElementById("chatLog");
 const chatInputEl = document.getElementById("chatInput");
@@ -708,6 +919,7 @@ const sendBtn     = document.getElementById("sendBtn");
 const contadores  = ["recadosCount","recadosCount2"].map(id=>document.getElementById(id));
 
 const STORAGE_KEY = "lagostaChatMessages_v1";
+const PILOTO = "lagosta-fm-piloto";
 
 function loadLocalMessages(){
 try{
@@ -730,6 +942,12 @@ return String(str).replace(/[&<>"']/g, s=>({
 }[s]));
 }
 
+// os recados do episódio que está no player
+function recadosDoEp(){
+const id = som.ep ? som.ep.id : PILOTO;
+return messages.filter(m => (m.ep || PILOTO) === id);
+}
+
 function dataCurta(m){
 const d = new Date(m.at);
 const hh=String(m.atHour).padStart(2,"0");
@@ -740,7 +958,8 @@ const mo=String(d.getMonth()+1).padStart(2,"0");
 return `${dd}/${mo}/${d.getFullYear()} ${hh}:${mm}`;
 }
 
-function renderChat(msgs){
+function renderChat(){
+const msgs = recadosDoEp();
 chatLogEl.innerHTML="";
 if(contadores[0]) contadores[0].textContent = msgs.length;
 if(contadores[1]) contadores[1].textContent = "(" + msgs.length + ")";
@@ -768,32 +987,24 @@ chatLogEl.addEventListener("click",(e)=>{
 const t = e.target.closest(".at-time");
 if(!t) return;
 const sec = parseFloat(t.dataset.t);
-if(!isNaN(sec) && !isNaN(audioEl.duration)){
-audioEl.currentTime = sec;
-if(audioEl.paused){ audioEl.play(); playBtn.textContent="❚❚"; }
-}
+if(!isNaN(sec)){ som.ir(sec); if(!som.tocando) som.tocar(); }
 });
 
-function renderMarkers(msgs){
-const olds = progressBar.querySelectorAll(".comment-marker");
-olds.forEach(o=>o.remove());
-
-if(isNaN(audioEl.duration) || audioEl.duration===0) return;
-
-msgs.forEach(m=>{
+function renderMarkers(){
+progressBar.querySelectorAll(".comment-marker").forEach(o=>o.remove());
+if(!som.dur) return;
+recadosDoEp().forEach(m=>{
 if(!(m.tAudio > 0.5)) return; // comentário deixado antes de dar play: fica na lista, sem marca na barra
-const pct = (m.tAudio / audioEl.duration) * 100;
 const marker = document.createElement("div");
 marker.className = "comment-marker";
-marker.style.left = pct + "%";
+marker.style.left = Math.min(100, (m.tAudio / som.dur) * 100) + "%";
 marker.dataset.at = m.at;
 marker.setAttribute("aria-label", `${formatTime(m.tAudio)} ${m.nick || ""}: ${m.text}`);
-
 marker._msg = m;
-
 progressBar.appendChild(marker);
 });
 }
+function mostrarRecados(){ renderChat(); renderMarkers(); }
 
 function showMarkerBubble(msg, markerEl){
 const rect = progressBar.getBoundingClientRect();
@@ -818,10 +1029,10 @@ if(d) focarRecado(d.dataset.at);
 });
 chatLogEl.addEventListener("mouseleave",()=>focarRecado(null));
 
-// como no soundcloud: quando o áudio passa por um recado, ele aparece por uns segundos
+// como no soundcloud: quando o som passa por um recado, ele aparece por uns segundos
 let ultimoT = 0, timerRecado = null;
-audioEl.addEventListener("timeupdate",()=>{
-const t = audioEl.currentTime;
+function passarRecados(){
+const t = som.t;
 if(t > ultimoT && t - ultimoT < 2){
 const mk = [...progressBar.querySelectorAll(".comment-marker")]
 .find(el => el._msg.tAudio > ultimoT && el._msg.tAudio <= t);
@@ -834,7 +1045,7 @@ timerRecado = setTimeout(()=>{ mk.classList.remove("agora"); hideMarkerBubble();
 }
 }
 ultimoT = t;
-});
+}
 function hideMarkerBubble(){
 markerBubble.style.display="none";
 }
@@ -844,26 +1055,21 @@ function addMessage(text){
 if(!text.trim()) return;
 
 const now    = new Date();
-const at     = now.getTime();
-const atHour = now.getHours();
-const atMin  = now.getMinutes();
-const tAudio = (!isNaN(audioEl.currentTime)) ? audioEl.currentTime : 0;
-
 const newMsg = {
 text: text.trim(),
-tAudio,
-at,
-atHour,
-atMin,
+tAudio: som.t || 0,
+at: now.getTime(),
+atHour: now.getHours(),
+atMin: now.getMinutes(),
 nick: nomeAtual()
 };
+// o piloto continua como sempre foi; os episódios novos dizem de quem é o recado
+if(som.ep && som.ep.id !== PILOTO) newMsg.ep = som.ep.id;
 
 messages.push(newMsg);
 saveLocalMessages(messages);
 sendToFirebase(newMsg);
-
-renderChat(messages);
-renderMarkers(messages);
+mostrarRecados();
 }
 
 sendBtn.addEventListener("click",()=>{
@@ -884,11 +1090,7 @@ chatInputEl.value="";
 });
 
 let messages = loadLocalMessages();
-audioEl.addEventListener("loadedmetadata",()=>{
-renderChat(messages);
-renderMarkers(messages);
-});
-renderChat(messages);
+
 
 /* =========================================================
   FIREBASE (tempo real)
@@ -956,8 +1158,7 @@ changed=true;
 });
 if(changed){
 saveLocalMessages(messages);
-renderChat(messages);
-renderMarkers(messages);
+mostrarRecados();
 }
 });
 }
@@ -994,21 +1195,57 @@ firebase.auth().onAuthStateChanged((user)=>{
   - resumo: a frase que aparece no feed
   - texto: lista de parágrafos (texto puro, sem html)
   - link, fonte: só no "indica" (o endereço e de onde é)
-  - recados: true põe os recados da rádio dentro desse post
+  - só no "episodio" (cada episódio tem o próprio player e os próprios recados):
+      audio:    o endereço do mp3 no Firebase Storage
+      mixcloud: ou o endereço do show no Mixcloud, ex. "/lagostafilmes/20-11-2026/"
+      faixas:   a tracklist, colada do post.txt (uma linha por faixa: "00:12:34  artista - faixa")
   - rascunho: true esconde o post; ele só aparece com ?rascunho no endereço
+  - teste: true só aparece no seu mac (localhost), nunca no site
   ========================================================= */
 const POSTS = [
 {
 id: "lagosta-fm-piloto",
 tipo: "episodio",
 data: "2025-10-27",
-recados: true
+audio: "https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde"
+},
+// episódios de teste: só no localhost, pra ver o mixcloud e a tracklist. apagar quando o primeiro de verdade entrar
+{
+id: "teste-mixcloud",
+tipo: "episodio",
+data: "2026-11-06",
+teste: true,
+resumo: "teste: um mix qualquer do mixcloud (o exemplo da documentação deles), tocado pelo nosso botão.",
+mixcloud: "/spartacus/party-time/",
+faixas: [
+"00:00:00  (teste) faixa um",
+"00:01:00  (teste) faixa dois",
+"00:02:30  (teste) faixa três",
+"00:04:00  (teste) faixa quatro"
+]
+},
+{
+id: "teste-tracklist",
+tipo: "episodio",
+data: "2026-11-13",
+teste: true,
+resumo: "teste: o áudio do piloto com uma tracklist inventada, pra ver a cor trocando a cada faixa.",
+audio: "https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde",
+faixas: [
+"00:00:00  (teste) faixa um",
+"00:00:20  (teste) faixa dois",
+"00:00:40  (teste) faixa três",
+"00:01:00  (teste) faixa quatro"
+]
 }
 ];
 
 (function(){
 const verRascunhos = new URLSearchParams(location.search).has("rascunho") || location.hostname === "localhost";  // no seu mac, os rascunhos sempre aparecem
-const posts = POSTS.filter(p => verRascunhos || !p.rascunho);
+const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+const posts = POSTS
+.filter(p => (verRascunhos || !p.rascunho) && (local || !p.teste))
+.sort((a,b) => String(b.data).localeCompare(String(a.data)));   // o mais novo em cima
 const feed = document.getElementById("feed");
 const postEl = document.getElementById("post");
 const postCorpo = document.getElementById("postCorpo");
@@ -1111,21 +1348,37 @@ if(p.tipo === "texto"){
 meta.append(linkProPost(p, "ler →", "ler"));
 }
 if(meta.childNodes.length) leg.append(meta);
-if(p.recados) leg.dataset.recados = "1";
+// episódio: o player vem morar aqui quando é a vez dele; até lá, um "ouvir"
+if(p.tipo === "episodio"){
+leg.dataset.ep = p.id;
+const b = el("button","ouvir");
+b.type = "button";
+b.append(el("span","ouvir-play","▶"), document.createTextNode(" ouvir"));
+b.addEventListener("click", ()=>{ carregarEpisodio(p, true); moverRecados(); });
+leg.append(b);
+}
 item.append(leg);
 return item;
 }
 
-// os recados moram dentro do post que tem recados: true (o que estiver à vista)
+// o player e os recados moram dentro do episódio que está no player (o que estiver à vista)
 function moverRecados(){
-const vis = (postEl.hidden ? feed : postCorpo).querySelector("[data-recados]");
+const caixa = postEl.hidden ? feed : postCorpo;
 const radio = document.getElementById("radio");
+const vis = som.ep ? caixa.querySelector(`[data-ep="${som.ep.id}"]`) : null;
 if(vis){ vis.append(radio, recados); recados.hidden = false; radio.hidden = false; }
 else{ recados.hidden = true; radio.hidden = true; }
+// o "ouvir" some no episódio que já tem o player
+caixa.querySelectorAll("[data-ep]").forEach(l=>{
+const b = l.querySelector(".ouvir");
+if(b) b.hidden = l === vis;
+});
 }
 
 // um post aberto sozinho; texto em modo leitura
 function abrir(p){
+// o player pode estar morando aqui: tira antes de limpar, senão ele vai junto
+postEl.after(document.getElementById("radio"), recados);
 postCorpo.innerHTML = "";
 if(p.tipo === "texto"){
 const art = el("div","leitura");
@@ -1146,6 +1399,8 @@ const id = decodeURIComponent(location.hash.slice(1));
 const p = posts.find(x => x.id === id);
 if(p){
 abrir(p);
+// abriu um episódio e nada está tocando: ele vai pro player
+if(p.tipo === "episodio" && !som.tocando) carregarEpisodio(p, false);
 feed.hidden = true; postEl.hidden = false;
 window.scrollTo(0,0);
 }else{
@@ -1156,6 +1411,9 @@ moverRecados();
 }
 
 posts.forEach(p => feed.append(itemDoFeed(p)));
+// de saída, o player fica no episódio mais novo
+const maisNovo = posts.find(p => p.tipo === "episodio");
+if(maisNovo) carregarEpisodio(maisNovo, false);
 
 window.addEventListener("hashchange", mostrar);
 mostrar();
@@ -1375,12 +1633,12 @@ if(!tv.muted) calarRadio();
 
 // tv e rádio não falam ao mesmo tempo: quem liga o som cala o outro
 function calarRadio(){
-if(!audioEl.paused){ audioEl.pause(); playBtn.textContent = "▶"; }
+if(som.tocando) som.pausar();
 }
-audioEl.addEventListener("play", ()=>{
+function calarTv(){
 const tv = document.getElementById("tvVideo");
 if(tv && !tv.muted){ tv.muted = true; document.getElementById("tvSom").textContent = "🔇"; }
-});
+}
 </script>
 
 </body>
