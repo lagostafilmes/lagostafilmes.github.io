@@ -142,6 +142,8 @@ a:hover{text-decoration:underline}
 .cena-faixa{position:absolute;right:12px;bottom:9px;max-width:55%;font:11px/1.3 var(--fonte);color:var(--branco);background:none;border:0;padding:0;text-align:right;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.8)}
 .cena-faixa:hover{text-decoration:underline}
 .radio.so-mixcloud .cena{display:none}
+/* o vídeo do obs já vem com os cantos desenhados: aqui não repete */
+.cena.gravada .cena-marca,.cena.gravada .cena-setlist,.cena.gravada .cena-janela,.cena.gravada .cena-faixa{display:none}
 @media (max-width:480px){
   .cena-janela{display:none}
   .cena-setlist{width:22%}
@@ -572,7 +574,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
 
     <!-- o player e os recados do piloto: o script põe os dois dentro do post do episódio -->
     <section class="radio" id="radio" aria-label="lagosta fm">
-      <!-- a cena: a câmera esquecida no canto, com os cantos do obs refeitos aqui (só no episódio aberto) -->
+      <!-- a cena: o vídeo do obs, mudo (só no episódio aberto); com a câmera crua, os cantos são refeitos aqui -->
       <div class="cena" id="cena" hidden>
         <div class="cena-camera" id="cenaCamera"></div>
         <span class="cena-marca">lagosta fm</span>
@@ -949,9 +951,11 @@ if(e.key==="ArrowLeft"){ e.preventDefault(); irPara((agora-10)/som.dur); }
 
 /* =========================================================
   A CENA (a câmera do canto, como no obs)
-  No episódio aberto, se o post tiver video: a câmera muda segue o som.
+  No episódio aberto, se o post tiver video: o vídeo mudo segue o som.
   video é o id de um vídeo não listado no YouTube (sem áudio, pra não ter
-  problema de direitos) ou um .mp4. Por cima, os cantos do obs refeitos aqui:
+  problema de direitos) ou um .mp4. Normalmente é a gravação do obs, que já
+  traz os cantos desenhados (nome, setlist, janelinha da tv, faixa tocando).
+  Só com cru: true (a câmera sem nada por cima) os cantos são refeitos aqui:
   o nome, a setlist (setlist: a foto), a janelinha com a lagosta tv ao vivo
   e a faixa tocando.
   ========================================================= */
@@ -962,12 +966,15 @@ const cenaJanela  = document.getElementById("cenaJanela");
 const cenaFaixa   = document.getElementById("cenaFaixa");
 let camera = null;        // {tocar, pausar, tempo, ir, dur}
 let cenaVisivel = false;
+let cenaCrua = false;     // true: os cantos são desenhados aqui
 let ultimaSeguida = 0;
 
 function montarCena(p){
 cenaCamera.innerHTML = ""; camera = null;
 cenaSetlist.classList.remove("aberta");
 if(!p.video){ mostrarCena(false); return; }
+cenaCrua = !!p.cru;
+cenaEl.classList.toggle("gravada", !cenaCrua);
 const img = cenaSetlist.querySelector("img");
 if(p.setlist){ img.src = p.setlist; cenaSetlist.hidden = false; }
 else{ img.removeAttribute("src"); cenaSetlist.hidden = true; }
@@ -1077,7 +1084,7 @@ timerJanela = setInterval(espelhar, 2000);
 function mostrarCena(ver){
 cenaVisivel = !!(ver && camera);
 cenaEl.hidden = !cenaVisivel;
-janela(cenaVisivel);
+janela(cenaVisivel && cenaCrua);
 cenaSeguir(true);
 }
 
@@ -1388,9 +1395,10 @@ id: "teste-mixcloud",
 tipo: "episodio",
 data: "2026-11-06",
 teste: true,
-resumo: "teste: um mix qualquer do mixcloud (o exemplo da documentação deles), tocado pelo nosso botão. a câmera é um vídeo qualquer do youtube.",
+resumo: "teste: um mix qualquer do mixcloud (o exemplo da documentação deles), tocado pelo nosso botão. a câmera é um vídeo qualquer do youtube, crua (os cantos desenhados aqui).",
 mixcloud: "/spartacus/party-time/",
 video: "aqz-KE-bpKQ",
+cru: true,
 setlist: "poster-fortown.jpg",
 faixas: [
 "00:00:00  (teste) faixa um",
@@ -1400,19 +1408,16 @@ faixas: [
 ]
 },
 {
-id: "teste-tracklist",
+id: "teste-ensaio",
 tipo: "episodio",
 data: "2026-11-13",
 teste: true,
-resumo: "teste: o áudio do piloto com uma tracklist inventada, pra ver a cor trocando a cada faixa. a câmera é um clipe da tv.",
-video: "tv/carro-42.mp4",
-setlist: "poster-fortown.jpg",
-audio: "https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde",
+resumo: "teste: o ensaio de 13/11, com o vídeo mudo do obs (os cantos já vêm gravados) e a tracklist do post.txt. os arquivos ficam em .claude/teste-ep, fora do repo.",
+video: ".claude/teste-ep/001-video.mp4",
+audio: ".claude/teste-ep/001.mp3",
 faixas: [
-"00:00:00  (teste) faixa um",
-"00:00:20  (teste) faixa dois",
-"00:00:40  (teste) faixa três",
-"00:01:00  (teste) faixa quatro"
+"00:01:10  Sozinho 1 Tim Maia Soul Tim",
+"00:06:03  Sozinho 1 Tim Maia Soul Tim How Deep is Your Love 2 Margaret Qualley Kinds of Kindness (Original Motion Picture Soundtrack)"
 ]
 }
 ];
