@@ -382,6 +382,23 @@ audio{display:none}
   border:1px solid var(--campo);padding:5px 9px;cursor:pointer;
 }
 .tv-botao:hover{border-color:var(--texto)}
+/* a sessão no youtube ocupa a tela inteira, sem controles: quem manda é o relógio */
+.tv-yt,.tv-yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
+/* o intervalo antes de cada sessão: cor chapada e o anel do obs, "a seguir" */
+.tv-intervalo{position:absolute;inset:0;z-index:1;background:var(--faixa);display:grid;place-items:center}
+.tv-intervalo svg{width:34%;overflow:visible;animation:gira 40s linear infinite}
+.tv-intervalo text{font:bold 7.5px var(--fonte);fill:var(--vermelho);letter-spacing:.4px}
+@media (prefers-reduced-motion:reduce){.tv-intervalo svg{animation:none}}
+/* a linha de baixo da tv: o que está passando e o que vem; "grade" abre o dia inteiro, como no jornal */
+.tv-agora{font-size:11px;color:var(--cinza);min-width:0}
+.tv-agora b{color:var(--texto)}
+.tv-grade{list-style:none;margin:8px 0 0;padding:0;font-size:11px;border-top:1px solid var(--regra)}
+.tv-grade li{display:flex;gap:12px;padding:5px 0;border-bottom:1px solid var(--regra)}
+.tv-grade .hora{flex:none;min-width:40px;color:var(--cinza)}
+.tv-grade .obs{display:block;color:var(--cinza)}
+.tv-grade li.agora .hora{color:var(--vermelho)}
+.tv-grade li.agora b::after{content:" · no ar";color:var(--vermelho);font-weight:normal}
+.tv-grade[hidden]{display:none}
 
 /* ---------- o feed: cada post do seu jeito ---------- */
 .item{border-bottom:1px solid var(--regra);padding-bottom:4px}
@@ -558,8 +575,20 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
         <img class="tv-marca" src="lagosta-cheia.svg" alt="" aria-hidden="true">
         <button class="tv-som" id="tvSom" type="button" aria-label="ligar o som" hidden>🔇</button>
         <video id="tvVideo" muted playsinline preload="metadata" hidden></video>
+        <div class="tv-yt" id="tvYt" hidden></div>
+        <div class="tv-intervalo" id="tvIntervalo" hidden>
+          <svg viewBox="0 0 100 100" aria-hidden="true">
+            <defs><path id="tvAnelCirc" d="M50,50 m-40,0 a40,40 0 1,1 80,0 a40,40 0 1,1 -80,0"/></defs>
+            <text><textPath href="#tvAnelCirc" id="tvAnelTexto" textLength="250" lengthAdjust="spacing"></textPath></text>
+          </svg>
+        </div>
         <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
       </div>
+      <div class="tv-barra">
+        <span class="tv-agora" id="tvAgora" aria-live="polite"></span>
+        <button class="tv-botao" id="tvGradeBotao" type="button" aria-expanded="false" aria-controls="tvGrade">grade</button>
+      </div>
+      <ol class="tv-grade" id="tvGrade" hidden></ol>
     </section>
     <!-- o feed: todos os posts, do mais novo pro mais velho (preenchido pelo script) -->
     <section id="feed" aria-label="posts"></section>
@@ -816,6 +845,7 @@ playBtn.textContent = som.tocando ? "❚❚" : "▶";
 playBtn.setAttribute("aria-label", som.tocando ? "pausar" : "tocar");
 radioEl.classList.toggle("tocando", som.tocando);
 if(som.tocando) calarTv();
+if(window.tvAvisar) window.tvAvisar();
 cenaSeguir(true);
 }
 
@@ -1371,6 +1401,31 @@ firebase.auth().onAuthStateChanged((user)=>{
 }
 
 /* =========================================================
+  A GRADE DA TV (hora marcada, hora de fortaleza)
+  O dia da lagosta tv tem dois pontos fixos; no resto, a programação normal
+  (os trechos de TV_PROGRAMACAO, embaralhados).
+  - 08:00 lagosta fm: o episódio mais novo que tem vídeo, o programa do café da manhã.
+    a imagem é o vídeo mudo do episódio; o som (o botão de som da tv) é o player da rádio,
+    no mesmo ponto. depois disso o episódio continua no post dele.
+  - 00:00 a sessão da meia-noite: o essential mix do nicolas jaar (bbc radio 1, 2012)
+    com a colagem de filmes da lagosta filmes por cima.
+    video: id de um vídeo do youtube (não listado) ou um .mp4. sem video, a sessão não entra.
+  Pra testar no seu mac: ?hora=23:59:40 no endereço põe o relógio da tv nessa hora.
+  ========================================================= */
+const TV_SESSOES = [
+{id:"essential", hora:"00:00", titulo:"essential mix", quem:"nicolas jaar, bbc radio 1, 2012. a colagem de filmes é da lagosta filmes", video:"", duracao:7088.4},
+{id:"fm", hora:"08:00", titulo:"lagosta fm", quem:"o programa da semana. o som vem da rádio", ep:true}
+];
+// no seu mac, a sessão da meia-noite passa o arquivo local (fora do repo)
+const TV_SESSOES_TESTE = {essential: ".claude/teste-tv/essential-jaar.mp4"};
+// o episódio que passa na tv de manhã: o mais novo com vídeo
+function epDaTv(){
+const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+return POSTS.filter(p => p.tipo === "episodio" && p.video && !p.rascunho && (local || !p.teste))
+.sort((a,b) => String(b.data).localeCompare(String(a.data)))[0] || null;
+}
+
+/* =========================================================
   POSTS (o feed, do mais novo pro mais velho)
   Pra postar: acrescente um objeto no topo da lista.
   - id: curto, sem espaço (vira o endereço: lagostafilmes.com/#ep-2)
@@ -1391,6 +1446,7 @@ firebase.auth().onAuthStateChanged((user)=>{
       audio:    o endereço do mp3 no Firebase Storage
       mixcloud: ou o endereço do show no Mixcloud, ex. "/lagostafilmes/20-11-2026/"
       faixas:   a tracklist, colada do post.txt (uma linha por faixa: "00:12:34  artista - faixa")
+      duracao:  em segundos (a grade da tv precisa saber quando o programa acaba)
   - só na "carta":
       numero: o mesmo do episódio (carta 002 anda com o lagosta fm 002)
       ep:     o id do episódio da semana; ele ganha "na carta: …" e a carta ganha o player
@@ -1450,6 +1506,7 @@ data: "2026-11-13",
 teste: true,
 resumo: "teste: o ensaio de 13/11, com o vídeo mudo do obs (os cantos já vêm gravados) e a tracklist do post.txt. os arquivos ficam em .claude/teste-ep, fora do repo.",
 video: ".claude/teste-ep/001-video.mp4",
+duracao: 507,
 audio: ".claude/teste-ep/001.mp3",
 faixas: [
 "00:01:10  Tim Maia - Sozinho",
@@ -1586,6 +1643,14 @@ if(p.tipo === "texto" || p.tipo === "carta"){
 meta.append(linkProPost(p, "ler →", "ler"));
 }
 if(meta.childNodes.length) leg.append(meta);
+// o episódio da semana passa na tv toda manhã
+if(p.tipo === "episodio" && p === epDaTv()){
+const fm = TV_SESSOES.find(x => x.ep);
+const na = el("p","na-carta","na lagosta tv: todo dia às " + fm.hora + ", com imagem. ");
+const a = el("a", null, "ver a grade"); a.href = "#"; a.addEventListener("click", e=>{ e.preventDefault(); if(window.abrirGrade) window.abrirGrade(); });
+na.append(a);
+leg.append(na);
+}
 // episódio com carta: os assuntos dela, que são os assuntos do programa
 const carta = p.tipo === "episodio" && cartaDoEp(p);
 if(carta){
@@ -1710,6 +1775,7 @@ posts.forEach(p => feed.append(itemDoFeed(p)));
 const maisNovo = posts.find(p => p.tipo === "episodio");
 if(maisNovo) carregarEpisodio(maisNovo, false);
 
+window.moverRecados = moverRecados;   // a tv usa, quando liga o som do lagosta fm
 window.addEventListener("hashchange", mostrar);
 mostrar();
 })();
@@ -1828,8 +1894,8 @@ const TV_TESTE = [
 ];
 
 (function(){
-const grade = TV_PROGRAMACAO.length ? TV_PROGRAMACAO
-: (location.hostname === "localhost" ? TV_TESTE : []);
+const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
+const grade = TV_PROGRAMACAO.length ? TV_PROGRAMACAO : (local ? TV_TESTE : []);
 const canto = document.getElementById("tvCanto");
 if(!grade.length) return;  // sem programação: o bloco da tv nem aparece
 canto.hidden = false;
@@ -1837,9 +1903,41 @@ canto.hidden = false;
 const tv = document.getElementById("tvVideo");
 const semSinal = document.getElementById("tvSemSinal");
 const botaoSom = document.getElementById("tvSom");
+const ytCaixa = document.getElementById("tvYt");
+const intervaloEl = document.getElementById("tvIntervalo");
+const anelTv = document.getElementById("tvAnelTexto");
+const agoraEl = document.getElementById("tvAgora");
+const gradeEl = document.getElementById("tvGrade");
+const gradeBotao = document.getElementById("tvGradeBotao");
 const total = grade.reduce((s,g)=>s + g.duracao, 0);
 const DIA = 86400000;
+const INTERVALO = 20;   // segundos de "a seguir" antes de cada sessão
+const FONTES = {zap:"zap", carro:"do carro", casa:"a casa", curtas:"curtas", bike:"de bike", fuji:"fuji"};
 
+// no seu mac, ?hora=23:59:40 põe o relógio da tv nessa hora
+let desvio = 0;
+const horaTeste = new URLSearchParams(location.search).get("hora");
+if(local && horaTeste){
+const [a,b,c] = horaTeste.split(":").map(Number);
+const hoje = TV_INICIO + Math.floor((Date.now() - TV_INICIO)/DIA)*DIA;
+desvio = hoje + ((a||0)*3600 + (b||0)*60 + (c||0))*1000 - Date.now();
+}
+const relogio = ()=> Date.now() + desvio;
+const msDoDia = t => (((t - TV_INICIO) % DIA) + DIA) % DIA;
+const diaCurto = d => { const [a,m,dd] = String(d).split("-"); return dd && m ? dd + "/" + m : ""; };
+
+// as sessões que existem (as que têm vídeo), com início e duração
+const sessoes = TV_SESSOES.map(s=>{
+const [h,m] = s.hora.split(":").map(Number);
+const base = {...s, ini: (h*60 + m)*60000};
+if(s.ep){
+const ep = epDaTv();
+if(!ep) return null;
+return {...base, ep, video: ep.video, nome: "lagosta fm " + diaCurto(ep.data), duracao: ep.duracao || 7200};
+}
+const video = s.video || (local ? TV_SESSOES_TESTE[s.id] : "");
+return video ? {...base, video, nome: s.titulo} : null;
+}).filter(Boolean).sort((a,b)=>a.ini-b.ini);
 
 // embaralho com semente: o mesmo dia dá sempre a mesma ordem
 function sorteio(semente){
@@ -1884,29 +1982,163 @@ pos -= ordem[i].duracao;
 return {ordem, i:0, g: ordem[0], seg:0, falta: ordem[0].duracao};
 }
 
-let atual = null;
-function sintonizar(){
-const agora = Date.now();
-const n = noAr(agora);
-if(n.g !== atual){
-atual = n.g;
-tv.src = n.g.video;
-}
-// só corrige o tempo se estiver muito fora (evita engasgo)
-if(Math.abs(tv.currentTime - n.seg) > 2) tv.currentTime = n.seg;
-tv.play().catch(()=>{});
-tv.hidden = false; semSinal.hidden = true; botaoSom.hidden = false;
 
+// o que passa neste instante: uma sessão, o intervalo antes dela, ou um trecho da programação normal
+function estado(t){
+const ms = msDoDia(t);
+for(const s of sessoes){
+const pos = (ms - s.ini + DIA) % DIA;
+if(pos < s.duracao*1000) return {sessao: s, seg: pos/1000, falta: s.duracao - pos/1000};
+}
+let prox = null, falta = Infinity;
+sessoes.forEach(s=>{ const f = (s.ini - ms + DIA) % DIA; if(f < falta){ falta = f; prox = s; } });
+if(prox && falta < INTERVALO*1000) return {intervalo: prox, falta: falta/1000, trecho: noAr(t)};
+return {trecho: noAr(t), prox, ate: falta/1000};
 }
 
-tv.addEventListener("loadedmetadata", ()=>{
-const n = noAr(Date.now());
-if(n.g !== atual) sintonizar();   // enquanto carregava, a grade já passou pro próximo
-else tv.currentTime = n.seg;
+/* --- a tela: um .mp4 no <video> ou um vídeo do youtube por cima --- */
+let srcAtual = null, sessaoAtual = null, somTv = false;
+let yt = null, ytId = null, ytPronto = false;
+const ehYoutube = v => !/\.mp4($|\?)/.test(v);
+function passar(video, seg){
+if(ehYoutube(video)){
+tv.pause(); tv.hidden = true; ytCaixa.hidden = false;
+if(ytId !== video){
+ytId = video; ytPronto = false; ytCaixa.innerHTML = "";
+const d = document.createElement("div"); ytCaixa.append(d);
+carregarYoutubeApi().then(YT=>{
+if(ytId !== video) return;
+yt = new YT.Player(d, {videoId: video, host: "https://www.youtube-nocookie.com",
+playerVars: {mute:1, controls:0, disablekb:1, playsinline:1, rel:0, iv_load_policy:3, fs:0, start: Math.floor(seg)},
+events: {onReady(){ ytPronto = true; aplicarSom(); sintonizar(); }}});
 });
-tv.addEventListener("ended", sintonizar);
+}else if(ytPronto){
+if(Math.abs(yt.getCurrentTime() - seg) > 2) yt.seekTo(seg, true);
+yt.playVideo();
+}
+}else{
+if(ytId){ ytId = null; ytPronto = false; yt = null; ytCaixa.innerHTML = ""; }
+ytCaixa.hidden = true;
+if(srcAtual !== video){ srcAtual = video; tv.src = video; }
+if(tv.readyState >= 1 && Math.abs(tv.currentTime - seg) > 2) tv.currentTime = seg;
+tv.play().catch(()=>{});
+tv.hidden = false;
+}
+semSinal.hidden = true; botaoSom.hidden = false;
+}
+
+/* --- o som: no lagosta fm, o som é a rádio; no resto, o da própria tv --- */
+const fmNoAr = ()=> !!(sessaoAtual && sessaoAtual.ep);
+function aplicarSom(){
+const ligado = somTv && !fmNoAr();
+tv.muted = !ligado;
+if(yt && ytPronto){ if(ligado) yt.unMute(); else yt.mute(); }
+pintarSom();
+}
+function pintarSom(){
+const ligado = fmNoAr() ? (som.tocando && som.ep === sessaoAtual.ep) : somTv;
+botaoSom.textContent = ligado ? "🔊" : "🔇";
+botaoSom.setAttribute("aria-label", ligado ? "desligar o som" : (fmNoAr() ? "ouvir o lagosta fm" : "ligar o som"));
+}
+// liga a rádio no episódio que está na tv, no mesmo ponto
+function radioNaTv(){
+const s = sessaoAtual;
+carregarEpisodio(s.ep, false);
+if(window.moverRecados) window.moverRecados();
+let tentativas = 40;
+(function ir(){
+const e = estado(relogio());
+if(!e.sessao || e.sessao !== s) return;
+if(som.dur){ som.ir(e.seg); som.tocar(); }
+else if(tentativas-- > 0) setTimeout(ir, 250);
+})();
+}
+window.tvCalar = ()=>{ if(somTv){ somTv = false; aplicarSom(); } };
+window.tvAvisar = ()=>{ if(sessaoAtual) pintarSom(); };
+
+/* --- a linha "agora" e a grade --- */
+function hhmm(ms){ const m = Math.round(ms/60000) % 1440; return String(Math.floor(m/60)).padStart(2,"0") + ":" + String(m%60).padStart(2,"0"); }
+function escrever(no, partes){
+no.textContent = "";
+partes.forEach(p => no.append(typeof p === "string" ? p : Object.assign(document.createElement("b"), {textContent: p.b})));
+}
+const nomeDoTrecho = g => g.titulo || FONTES[g.fonte] || g.fonte || "programação";
+let gradeQuem = null;
+function escreverAgora(e){
+if(e.sessao){
+escrever(agoraEl, ["agora: ", {b: e.sessao.nome}, " · até " + hhmm(e.sessao.ini + e.sessao.duracao*1000) + (fmNoAr() ? " · o som é a rádio" : "")]);
+}else if(e.intervalo){
+escrever(agoraEl, ["a seguir: ", {b: e.intervalo.nome}, ", às " + e.intervalo.hora]);
+}else{
+const p = e.prox;
+escrever(agoraEl, ["agora: ", {b: nomeDoTrecho(e.trecho.g)}].concat(p ? [" · às " + p.hora + ": " + p.nome] : []));
+}
+const quem = e.sessao ? e.sessao.id : "resto";
+if(quem !== gradeQuem){ gradeQuem = quem; montarGrade(); }
+}
+function montarGrade(){
+gradeEl.textContent = "";
+const item = (hora, nome, obs, agora)=>{
+const li = document.createElement("li");
+if(agora) li.className = "agora";
+const h = document.createElement("span"); h.className = "hora"; h.textContent = hora;
+const d = document.createElement("span");
+if(nome) d.append(Object.assign(document.createElement("b"), {textContent: nome}));
+d.append(Object.assign(document.createElement("span"), {className: nome ? "obs" : "", textContent: obs}));
+li.append(h, d);
+gradeEl.append(li);
+};
+sessoes.forEach(s => item(s.hora, s.nome, s.quem + " · " + Math.round(s.duracao/60) + " min", gradeQuem === s.id));
+const fontes = [...new Set(grade.map(g => FONTES[g.fonte] || g.fonte))].join(", ");
+item("o resto", "", fontes + ", embaralhados. a ordem muda todo dia, igual pra todo mundo.", gradeQuem === "resto");
+}
+window.abrirGrade = ()=>{
+gradeEl.hidden = false; gradeBotao.setAttribute("aria-expanded","true");
+canto.scrollIntoView({behavior:"smooth", block:"start"});
+};
+gradeBotao.addEventListener("click", ()=>{
+gradeEl.hidden = !gradeEl.hidden;
+gradeBotao.setAttribute("aria-expanded", String(!gradeEl.hidden));
+});
+
+/* --- sintonizar: confere a cada virada (fim do trecho, intervalo, sessão) e a cada 15 s --- */
+let proximo = null;   // o próximo trecho, já carregando, pra troca não ter buraco
+let timer = null;
+function sintonizar(){
+const e = estado(relogio());
+const antes = sessaoAtual;
+sessaoAtual = e.sessao || null;
+// entrou no lagosta fm com o som da tv ligado: o som passa pra rádio
+if(fmNoAr() && sessaoAtual !== antes && somTv){ somTv = false; radioNaTv(); }
+intervaloEl.hidden = !e.intervalo;
+if(e.intervalo){
+const um = `a seguir · ${e.intervalo.hora} · ${e.intervalo.nome} · `;
+if(anelTv.textContent !== um + um) anelTv.textContent = um + um;
+}
+if(e.sessao) passar(e.sessao.video, e.seg);
+else passar(e.trecho.g.video, e.trecho.seg);
+aplicarSom();
+escreverAgora(e);
+// o próximo trecho já vai carregando
+if(!e.sessao && e.trecho.falta < 12){
+const prox = e.trecho.ordem[e.trecho.i + 1];
+if(prox && (!proximo || proximo.dataset.src !== prox.video)){
+proximo = document.createElement("video");
+proximo.muted = true; proximo.preload = "auto"; proximo.dataset.src = prox.video; proximo.src = prox.video;
+}
+}
+const viradas = [15];
+if(e.sessao) viradas.push(e.falta);
+else viradas.push(e.trecho.falta);
+if(e.intervalo) viradas.push(e.falta);
+if(e.ate) viradas.push(e.ate - INTERVALO);
+clearTimeout(timer);
+timer = setTimeout(sintonizar, Math.max(0.3, Math.min(...viradas.filter(v => v > 0)) + 0.2) * 1000);
+}
+
+tv.addEventListener("loadedmetadata", sintonizar);
+if(local){ window.tvEstado = ()=> estado(relogio()); window.tvSintonizar = sintonizar; }   // pra conferir no console
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) sintonizar(); });
-setInterval(sintonizar, 15000);
 sintonizar();
 
 // clicar no vídeo também liga/desliga o som
@@ -1919,10 +2151,13 @@ t.classList.add("mostra"); clearTimeout(timerMostra);
 timerMostra = setTimeout(()=>t.classList.remove("mostra"), 2500);
 });
 botaoSom.addEventListener("click",()=>{
-tv.muted = !tv.muted;
-botaoSom.textContent = tv.muted ? "🔇" : "🔊";
-botaoSom.setAttribute("aria-label", tv.muted ? "ligar o som" : "desligar o som");
-if(!tv.muted) calarRadio();
+if(fmNoAr()){
+if(som.tocando && som.ep === sessaoAtual.ep) som.pausar(); else radioNaTv();
+}else{
+somTv = !somTv;
+if(somTv) calarRadio();
+aplicarSom();
+}
 });
 })();
 
@@ -1931,8 +2166,7 @@ function calarRadio(){
 if(som.tocando) som.pausar();
 }
 function calarTv(){
-const tv = document.getElementById("tvVideo");
-if(tv && !tv.muted){ tv.muted = true; document.getElementById("tvSom").textContent = "🔇"; }
+if(window.tvCalar) window.tvCalar();
 }
 </script>
 
