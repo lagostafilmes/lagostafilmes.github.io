@@ -112,6 +112,7 @@ a:hover{text-decoration:underline}
 .radio.c-ceu{background:var(--ceu)}
 .radio.c-faixa{background:var(--faixa)}
 .radio.c-campo{background:var(--campo)}
+.radio.c-campo .onda i:not(.tocou){background:var(--branco)}
 /* o anel: o texto gira em volta do play enquanto toca */
 .anel-play{position:relative;flex:none;width:84px;height:84px;display:grid;place-items:center}
 .anel{position:absolute;inset:0;width:100%;height:100%;overflow:visible;animation:gira 40s linear infinite;animation-play-state:paused}
@@ -127,6 +128,25 @@ a:hover{text-decoration:underline}
 .faixas .quando{color:var(--texto);opacity:.6;font-variant-numeric:tabular-nums;display:inline-block;min-width:44px}
 .mixcloud{margin-top:8px;line-height:0}
 .mixcloud iframe{width:100%;height:60px;border:0}
+/* a cena: a câmera do canto (muda) e, por cima, os cantos do obs */
+.cena{position:relative;aspect-ratio:16/9;background:#111;margin:0 0 12px;overflow:hidden;border:1px solid var(--texto);box-shadow:3px 3px 0 var(--moldura)}
+.cena-camera,.cena-camera > *{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover}
+.cena-camera{pointer-events:none}
+.cena-marca{position:absolute;left:12px;top:9px;color:var(--vermelho);font:bold 12px/1 var(--fonte)}
+.cena-setlist{position:absolute;left:12px;bottom:12px;width:16%;padding:0;border:0;background:none;cursor:zoom-in;transform:rotate(-3deg);transform-origin:bottom left;transition:width .3s}
+.cena-setlist img{display:block;width:100%;box-shadow:1px 1px 3px rgba(0,0,0,.5)}
+.cena-setlist.aberta{width:42%;cursor:zoom-out}
+.cena-janela{position:absolute;right:12px;top:9px;width:22%;aspect-ratio:16/9;border:1px solid var(--branco);background:#000;line-height:0}
+.cena-janela video{width:100%;height:100%;object-fit:cover}
+.cena-janela[hidden],.cena-setlist[hidden],.cena-faixa[hidden]{display:none}
+.cena-faixa{position:absolute;right:12px;bottom:9px;max-width:55%;font:11px/1.3 var(--fonte);color:var(--branco);background:none;border:0;padding:0;text-align:right;cursor:pointer;text-shadow:0 1px 2px rgba(0,0,0,.8)}
+.cena-faixa:hover{text-decoration:underline}
+.radio.so-mixcloud .cena{display:none}
+@media (max-width:480px){
+  .cena-janela{display:none}
+  .cena-setlist{width:22%}
+  .cena-faixa{font-size:10px}
+}
 /* quando o mixcloud não aceita o nosso botão: só o player deles, a tracklist vira lista */
 .radio.so-mixcloud .radio-linha{display:none}
 .radio.so-mixcloud .mixcloud{margin-top:0}
@@ -552,6 +572,14 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
 
     <!-- o player e os recados do piloto: o script põe os dois dentro do post do episódio -->
     <section class="radio" id="radio" aria-label="lagosta fm">
+      <!-- a cena: a câmera esquecida no canto, com os cantos do obs refeitos aqui (só no episódio aberto) -->
+      <div class="cena" id="cena" hidden>
+        <div class="cena-camera" id="cenaCamera"></div>
+        <span class="cena-marca">lagosta fm</span>
+        <button class="cena-setlist" id="cenaSetlist" type="button" aria-label="ver a setlist" hidden><img alt="a setlist, escrita à mão"></button>
+        <a class="cena-janela" id="cenaJanela" href="#" aria-label="lagosta tv" hidden><video muted playsinline aria-hidden="true"></video></a>
+        <button class="cena-faixa" id="cenaFaixa" type="button" hidden></button>
+      </div>
       <div class="radio-linha">
         <!-- o anel do intervalo: texto em volta do play, gira enquanto toca -->
         <div class="anel-play">
@@ -752,6 +780,7 @@ if(i === faixaAtual) return;
 faixaAtual = i;
 faixas.forEach((f,k)=> f.li.classList.toggle("agora", k === i));
 pintarCor();
+cenaTexto();
 }
 
 /* --- o que acontece a cada passo do som --- */
@@ -767,12 +796,14 @@ progressBar.setAttribute("aria-valuenow", Math.round(pct));
 }
 conferirFaixa();
 passarRecados();
+cenaTempo();
 }
 function aoEstado(){
 playBtn.textContent = som.tocando ? "❚❚" : "▶";
 playBtn.setAttribute("aria-label", som.tocando ? "pausar" : "tocar");
 radioEl.classList.toggle("tocando", som.tocando);
 if(som.tocando) calarTv();
+cenaSeguir(true);
 }
 
 /* --- o arquivo (firebase storage) --- */
@@ -858,6 +889,7 @@ aoEstado();
 anelTexto.textContent = textoDoAnel(p);
 currentTimeEl.textContent = "00:00"; totalTimeEl.textContent = "--:--"; pintarOnda(0);
 montarFaixas(p);
+montarCena(p);
 if(p.mixcloud){
 som.modo = "mixcloud";
 audioEl.removeAttribute("src"); audioEl.load();
@@ -914,6 +946,140 @@ const agora = alvo ?? som.t;
 if(e.key==="ArrowRight"){ e.preventDefault(); irPara((agora+10)/som.dur); }
 if(e.key==="ArrowLeft"){ e.preventDefault(); irPara((agora-10)/som.dur); }
 });
+
+/* =========================================================
+  A CENA (a câmera do canto, como no obs)
+  No episódio aberto, se o post tiver video: a câmera muda segue o som.
+  video é o id de um vídeo não listado no YouTube (sem áudio, pra não ter
+  problema de direitos) ou um .mp4. Por cima, os cantos do obs refeitos aqui:
+  o nome, a setlist (setlist: a foto), a janelinha com a lagosta tv ao vivo
+  e a faixa tocando.
+  ========================================================= */
+const cenaEl      = document.getElementById("cena");
+const cenaCamera  = document.getElementById("cenaCamera");
+const cenaSetlist = document.getElementById("cenaSetlist");
+const cenaJanela  = document.getElementById("cenaJanela");
+const cenaFaixa   = document.getElementById("cenaFaixa");
+let camera = null;        // {tocar, pausar, tempo, ir, dur}
+let cenaVisivel = false;
+let ultimaSeguida = 0;
+
+function montarCena(p){
+cenaCamera.innerHTML = ""; camera = null;
+cenaSetlist.classList.remove("aberta");
+if(!p.video){ mostrarCena(false); return; }
+const img = cenaSetlist.querySelector("img");
+if(p.setlist){ img.src = p.setlist; cenaSetlist.hidden = false; }
+else{ img.removeAttribute("src"); cenaSetlist.hidden = true; }
+camera = /\.mp4($|\?)/.test(p.video) ? cameraMp4(p.video) : cameraYoutube(p.video);
+cenaTexto();
+}
+
+// um mp4 (no teste, um clipe da tv; dá a volta se for mais curto que o som)
+function cameraMp4(src){
+const v = document.createElement("video");
+v.src = src; v.muted = true; v.playsInline = true; v.loop = true; v.preload = "metadata";
+cenaCamera.append(v);
+return {
+tocar(){ v.play().catch(()=>{}); },
+pausar(){ v.pause(); },
+tempo(){ return v.currentTime; },
+ir(t){ v.currentTime = t; },
+dur(){ return isFinite(v.duration) ? v.duration : 0; }
+};
+}
+
+// um vídeo do youtube, mudo e sem controles: quem manda é o som
+let youtubeApi = null;
+function carregarYoutubeApi(){
+if(!youtubeApi) youtubeApi = new Promise(ok=>{
+const antes = window.onYouTubeIframeAPIReady;
+window.onYouTubeIframeAPIReady = ()=>{ if(antes) antes(); ok(window.YT); };
+const s = document.createElement("script");
+s.src = "https://www.youtube.com/iframe_api";
+document.head.append(s);
+});
+return youtubeApi;
+}
+function cameraYoutube(id){
+const caixa = document.createElement("div");
+cenaCamera.append(caixa);
+const cam = {
+p: null, pronto: false,
+tocar(){ if(this.pronto) this.p.playVideo(); },
+pausar(){ if(this.pronto) this.p.pauseVideo(); },
+tempo(){ return this.pronto ? this.p.getCurrentTime() : 0; },
+ir(t){ if(this.pronto) this.p.seekTo(t, true); },
+dur(){ return this.pronto ? this.p.getDuration() : 0; }
+};
+carregarYoutubeApi().then(YT=>{
+if(!cenaCamera.contains(caixa)) return;   // já trocou de episódio
+cam.p = new YT.Player(caixa, {
+videoId: id,
+host: "https://www.youtube-nocookie.com",
+playerVars: {mute:1, controls:0, disablekb:1, playsinline:1, rel:0, iv_load_policy:3, fs:0},
+events: {onReady(e){ e.target.mute(); cam.pronto = true; cenaSeguir(true); }}
+});
+});
+return cam;
+}
+
+// a câmera vai atrás do som: toca junto, pausa junto, e corrige se escorregar mais de 1,5 s
+function cenaSeguir(forcar){
+if(!camera) return;
+if(!cenaVisivel || !som.tocando){ camera.pausar(); return; }
+const d = camera.dur();
+const alvo = d ? som.t % d : som.t;
+if(forcar || Math.abs(camera.tempo() - alvo) > 1.5) camera.ir(alvo);
+camera.tocar();
+}
+// chamada a cada passo do som; confere a cada 2 s
+function cenaTempo(){
+if(!cenaVisivel || Date.now() - ultimaSeguida < 2000) return;
+ultimaSeguida = Date.now();
+cenaSeguir(false);
+}
+
+// a faixa tocando, no canto de baixo; clicar mostra ela na tracklist
+function cenaTexto(){
+const f = faixas[faixaAtual];
+cenaFaixa.textContent = f ? f.nome : "";
+cenaFaixa.hidden = !f;
+}
+cenaFaixa.addEventListener("click", ()=>{
+const f = faixas[faixaAtual];
+if(f) f.li.scrollIntoView({block:"nearest", behavior:"smooth"});
+});
+cenaSetlist.addEventListener("click", ()=> cenaSetlist.classList.toggle("aberta"));
+
+// a janelinha: espelha o canal da lagosta tv (o mesmo clipe, no mesmo segundo)
+const janelaVideo = cenaJanela.querySelector("video");
+let timerJanela = null;
+function janela(ligar){
+clearInterval(timerJanela);
+cenaJanela.hidden = true;
+if(!ligar){ janelaVideo.pause(); return; }
+// a tv liga depois da rádio (e some sem programação): confere a cada vez
+const espelhar = ()=>{
+const tv = document.getElementById("tvVideo");
+const temTv = tv && !document.getElementById("tvCanto").hidden && tv.currentSrc;
+cenaJanela.hidden = !temTv;
+if(!temTv) return;
+if(janelaVideo.src !== tv.currentSrc) janelaVideo.src = tv.currentSrc;
+if(Math.abs(janelaVideo.currentTime - tv.currentTime) > 1.5) janelaVideo.currentTime = tv.currentTime;
+janelaVideo.play().catch(()=>{});
+};
+espelhar();
+timerJanela = setInterval(espelhar, 2000);
+}
+
+// a cena só aparece no episódio aberto que tem vídeo
+function mostrarCena(ver){
+cenaVisivel = !!(ver && camera);
+cenaEl.hidden = !cenaVisivel;
+janela(cenaVisivel);
+cenaSeguir(true);
+}
 
 /* =========================================================
   COMENTÁRIOS (local + timecode)
@@ -1222,8 +1388,10 @@ id: "teste-mixcloud",
 tipo: "episodio",
 data: "2026-11-06",
 teste: true,
-resumo: "teste: um mix qualquer do mixcloud (o exemplo da documentação deles), tocado pelo nosso botão.",
+resumo: "teste: um mix qualquer do mixcloud (o exemplo da documentação deles), tocado pelo nosso botão. a câmera é um vídeo qualquer do youtube.",
 mixcloud: "/spartacus/party-time/",
+video: "aqz-KE-bpKQ",
+setlist: "poster-fortown.jpg",
 faixas: [
 "00:00:00  (teste) faixa um",
 "00:01:00  (teste) faixa dois",
@@ -1236,7 +1404,9 @@ id: "teste-tracklist",
 tipo: "episodio",
 data: "2026-11-13",
 teste: true,
-resumo: "teste: o áudio do piloto com uma tracklist inventada, pra ver a cor trocando a cada faixa.",
+resumo: "teste: o áudio do piloto com uma tracklist inventada, pra ver a cor trocando a cada faixa. a câmera é um clipe da tv.",
+video: "tv/carro-42.mp4",
+setlist: "poster-fortown.jpg",
 audio: "https://firebasestorage.googleapis.com/v0/b/lagosta-fm.firebasestorage.app/o/ep-piloto.mp3?alt=media&token=ce87e2ff-d1e1-4e31-9c3d-2aeaa8a3fbde",
 faixas: [
 "00:00:00  (teste) faixa um",
@@ -1383,6 +1553,8 @@ const radio = document.getElementById("radio");
 const vis = som.ep ? caixa.querySelector(`[data-ep="${som.ep.id}"]`) : null;
 if(vis){ mudar(vis, radio, recados); recados.hidden = false; radio.hidden = false; }
 else{ recados.hidden = true; radio.hidden = true; }
+// a câmera só no episódio aberto
+mostrarCena(!!vis && !postEl.hidden);
 // o "ouvir" some no episódio que já tem o player
 caixa.querySelectorAll("[data-ep]").forEach(l=>{
 const b = l.querySelector(".ouvir");
