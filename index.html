@@ -810,24 +810,31 @@ function montarMixcloud(caminho, tocarJa){
 mixcloudCaixa.innerHTML = "";
 mixcloudCaixa.hidden = false;
 const f = document.createElement("iframe");
-const feed = encodeURIComponent("https://www.mixcloud.com" + caminho);
-f.src = `https://www.mixcloud.com/widget/iframe/?feed=${feed}&hide_cover=1&mini=1&light=1&hide_artwork=1`;
+// direto no player-widget (o endereço www redireciona e a api não conversa)
+f.src = `https://player-widget.mixcloud.com/widget/iframe/?feed=${encodeURIComponent(caminho)}&hide_cover=1&mini=1&light=1&hide_artwork=1`;
 f.title = "mixcloud";
 f.allow = "encrypted-media; autoplay";
 const carregou = new Promise(ok=> f.addEventListener("load", ok, {once:true}));
 mixcloudCaixa.append(f);
 som.mc = null;
 radioEl.classList.remove("so-mixcloud");
-// se o widget não conversar com a gente em 10 s, ele toca sozinho (o nosso botão sai de cena)
+// o widget só acorda quando aparece na tela. se, à vista, ele não conversar com a gente em 10 s,
+// toca sozinho (o nosso botão sai de cena); se ele responder depois, o botão volta
+const vigia = new IntersectionObserver(([e])=>{
+if(!e.isIntersecting) return;
+vigia.disconnect();
 setTimeout(()=>{
 if(mixcloudCaixa.contains(f) && !som.mc) radioEl.classList.add("so-mixcloud");
 }, 10000);
+});
+vigia.observe(f);
 // a api só conversa com o widget depois que ele abriu
 Promise.all([carregarMixcloudApi(), carregou]).then(([Mixcloud])=>{
 const w = Mixcloud.PlayerWidget(f);
 w.ready.then(()=>{
 if(!mixcloudCaixa.contains(f) || som.modo !== "mixcloud") return;   // já trocou de episódio
 som.mc = w;
+radioEl.classList.remove("so-mixcloud");
 w.events.progress.on((pos, dur)=>{
 som.t = pos || 0;
 if(dur && dur !== som.dur){ som.dur = dur; renderMarkers(); }
@@ -1361,12 +1368,20 @@ item.append(leg);
 return item;
 }
 
+// muda o player de lugar sem reiniciar o som (moveBefore: chrome novo; nos outros, append, e o som pode parar)
+function mudar(onde, ...nos){
+nos.forEach(n=>{
+if(n.parentNode === onde && n === onde.lastChild) return;
+if(onde.moveBefore && n.isConnected) onde.moveBefore(n, null); else onde.append(n);
+});
+}
+
 // o player e os recados moram dentro do episódio que está no player (o que estiver à vista)
 function moverRecados(){
 const caixa = postEl.hidden ? feed : postCorpo;
 const radio = document.getElementById("radio");
 const vis = som.ep ? caixa.querySelector(`[data-ep="${som.ep.id}"]`) : null;
-if(vis){ vis.append(radio, recados); recados.hidden = false; radio.hidden = false; }
+if(vis){ mudar(vis, radio, recados); recados.hidden = false; radio.hidden = false; }
 else{ recados.hidden = true; radio.hidden = true; }
 // o "ouvir" some no episódio que já tem o player
 caixa.querySelectorAll("[data-ep]").forEach(l=>{
@@ -1378,7 +1393,7 @@ if(b) b.hidden = l === vis;
 // um post aberto sozinho; texto em modo leitura
 function abrir(p){
 // o player pode estar morando aqui: tira antes de limpar, senão ele vai junto
-postEl.after(document.getElementById("radio"), recados);
+mudar(postEl.parentNode, document.getElementById("radio"), recados);
 postCorpo.innerHTML = "";
 if(p.tipo === "texto"){
 const art = el("div","leitura");
