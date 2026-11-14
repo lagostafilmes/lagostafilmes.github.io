@@ -424,6 +424,16 @@ audio{display:none}
 .links li{margin:0 0 9px;font-size:12px}
 .links li a{font-weight:bold}
 .tipo.t-links{background:#6B4E8A}
+/* a carta: a newsletter da semana, que anda junto com o episódio */
+.na-carta{margin:6px 0 0;font-size:11px;color:var(--cinza)}
+.na-carta a{color:var(--link)}
+.carta-pe{max-width:34em;border-top:1px solid var(--regra);margin-top:20px;padding-top:10px;font-size:12px;color:var(--cinza)}
+.carta-pe p{margin:0 0 6px}
+.cartas{list-style:none;margin:14px 0 0;padding:0;max-width:34em}
+.cartas li{display:flex;gap:10px;align-items:baseline;border-bottom:1px solid var(--regra);padding:7px 0}
+.cartas .num{color:var(--cinza);font-size:10px;min-width:58px}
+.cartas a{font:bold 15px/1.3 Georgia,"Times New Roman",serif;color:var(--texto)}
+.cartas .assuntos{display:block;font:11px var(--fonte);color:var(--cinza);margin-top:2px}
 
 /* ---------- os comentários ---------- */
 .comentarios{
@@ -563,6 +573,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
         <button class="inscrever" type="submit">se inscrever</button>
       </form>
       <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
+      <p><a href="#cartas">cartas anteriores</a></p>
       <p><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a></p>
     </aside>
 
@@ -1370,6 +1381,7 @@ firebase.auth().onAuthStateChanged((user)=>{
       nota     → texto curto, aparece inteiro no feed (como legenda de insta)
       indica   → uma indicação: link pra fora + o que você achou
       links    → uma lista curada (itens: titulo, link, fonte, nota)
+      carta    → a newsletter da semana (abre em modo leitura; o arquivo fica em #cartas)
   - data: "aaaa-mm-dd"
   - titulo; imagem (arquivo na raiz, opcional)
   - resumo: a frase que aparece no feed
@@ -1379,6 +1391,11 @@ firebase.auth().onAuthStateChanged((user)=>{
       audio:    o endereço do mp3 no Firebase Storage
       mixcloud: ou o endereço do show no Mixcloud, ex. "/lagostafilmes/20-11-2026/"
       faixas:   a tracklist, colada do post.txt (uma linha por faixa: "00:12:34  artista - faixa")
+  - só na "carta":
+      numero: o mesmo do episódio (carta 002 anda com o lagosta fm 002)
+      ep:     o id do episódio da semana; ele ganha "na carta: …" e a carta ganha o player
+      texto:  como no "texto"; cada "## " é um assunto (e um assunto do programa)
+  - nos parágrafos, [palavras](https://…) vira link
   - rascunho: true esconde o post; ele só aparece com ?rascunho no endereço
   - teste: true só aparece no seu mac (localhost), nunca no site
   ========================================================= */
@@ -1408,6 +1425,25 @@ faixas: [
 ]
 },
 {
+id: "teste-carta",
+tipo: "carta",
+numero: 1,
+data: "2026-11-14",
+ep: "teste-ensaio",
+teste: true,
+resumo: "teste: a carta que anda com o ensaio. chuva, um livro, um disco.",
+texto: [
+"bom dia. choveu a madrugada inteira e o café ficou mais gostoso por causa disso. essa é a primeira carta, então ainda tô achando o jeito.",
+"## um livro",
+"terminei [esse livro aqui](https://example.com) e fiquei pensando nele a semana toda. falo mais dele no programa, perto da metade.",
+"> uma frase que eu sublinhei e que não larga.",
+"## um disco",
+"saiu o disco novo de alguém que eu gosto. ouvi três vezes seguidas no ônibus.",
+"## no ar",
+"o lagosta fm 001 tá logo aqui embaixo: duas horas de música e conversa, os assuntos dessa carta em voz alta."
+]
+},
+{
 id: "teste-ensaio",
 tipo: "episodio",
 data: "2026-11-13",
@@ -1432,7 +1468,11 @@ const feed = document.getElementById("feed");
 const postEl = document.getElementById("post");
 const postCorpo = document.getElementById("postCorpo");
 const recados = document.getElementById("comentarios");
-const NOMES = {foto:"foto", episodio:"lagosta fm", texto:"texto", nota:"nota", indica:"indica", links:"links"};
+const NOMES = {foto:"foto", episodio:"lagosta fm", texto:"texto", nota:"nota", indica:"indica", links:"links", carta:"carta"};
+const cartas = posts.filter(p => p.tipo === "carta");
+const nomeCarta = c => c.titulo || "carta " + String(c.numero || "").padStart(3,"0");
+const assuntos = c => (c.texto || []).filter(t => t.startsWith("## ")).map(t => t.slice(3));
+const cartaDoEp = ep => cartas.find(c => c.ep === ep.id);
 
 function el(tag, cls, txt){
 const e = document.createElement(tag);
@@ -1476,9 +1516,22 @@ return f;
 function paragrafos(lista, caixa){
 (lista || []).forEach(par=>{
 if(par.startsWith("## ")) caixa.append(el("h2", null, par.slice(3)));
-else if(par.startsWith("> ")) caixa.append(el("blockquote", null, par.slice(2)));
-else caixa.append(el("p", null, par));
+else if(par.startsWith("> ")) caixa.append(comLinks(el("blockquote"), par.slice(2)));
+else caixa.append(comLinks(el("p"), par));
 });
+}
+// [palavras](https://…) vira link; o resto entra como texto puro
+function comLinks(no, txt){
+const re = /\[([^\]]+)\]\((https?:\/\/[^)\s]+)\)/g;
+let i = 0, m;
+while((m = re.exec(txt))){
+no.append(txt.slice(i, m.index));
+const a = el("a", null, m[1]); a.href = m[2]; a.target = "_blank"; a.rel = "noopener";
+no.append(a);
+i = re.lastIndex;
+}
+no.append(txt.slice(i));
+return no;
 }
 
 // um post no feed
@@ -1495,6 +1548,9 @@ leg.append(cabecalho(p));
 
 if(p.tipo === "texto"){
 leg.append(linkProPost(p, p.titulo, "titulo-texto"));
+}
+if(p.tipo === "carta"){
+leg.append(linkProPost(p, nomeCarta(p), "titulo-texto"));
 }
 if(p.tipo === "indica"){
 const a = el("a","titulo-texto", p.titulo + " ↗");
@@ -1526,10 +1582,18 @@ leg.append(caixa);
 }
 
 const meta = el("div","meta");
-if(p.tipo === "texto"){
+if(p.tipo === "texto" || p.tipo === "carta"){
 meta.append(linkProPost(p, "ler →", "ler"));
 }
 if(meta.childNodes.length) leg.append(meta);
+// episódio com carta: os assuntos dela, que são os assuntos do programa
+const carta = p.tipo === "episodio" && cartaDoEp(p);
+if(carta){
+const na = el("p","na-carta","na carta: ");
+const lista = assuntos(carta);
+na.append(lista.length ? lista.join(" · ") + " " : "", linkProPost(carta, nomeCarta(carta) + " →"));
+leg.append(na);
+}
 // episódio: o player vem morar aqui quando é a vez dele; até lá, um "ouvir"
 if(p.tipo === "episodio"){
 leg.dataset.ep = p.id;
@@ -1572,27 +1636,66 @@ function abrir(p){
 // o player pode estar morando aqui: tira antes de limpar, senão ele vai junto
 mudar(postEl.parentNode, document.getElementById("radio"), recados);
 postCorpo.innerHTML = "";
-if(p.tipo === "texto"){
+if(p.tipo === "texto" || p.tipo === "carta"){
 const art = el("div","leitura");
-art.append(cabecalho(p), el("h1", null, p.titulo));
+art.append(cabecalho(p), el("h1", null, p.tipo === "carta" ? nomeCarta(p) : p.titulo));
 if(p.resumo) art.append(el("p","data", p.resumo));
 const prosa = el("div","prosa");
 paragrafos(p.texto, prosa);
 art.append(prosa);
 postCorpo.append(art);
+if(p.tipo === "carta"){
+// o episódio da semana vem junto, com o player
+const ep = posts.find(x => x.id === p.ep);
+if(ep) postCorpo.append(itemDoFeed(ep));
+const pe = el("div","carta-pe leitura");
+const l1 = el("p"); l1.append(linkProPost({id:"cartas"}, "cartas anteriores"), " · ", linkProPost({id:""}, "o resto do site"));
+pe.append(l1, el("p", null, "pra receber por e-mail, o campo é aqui do lado (ou lá embaixo, no celular)."));
+postCorpo.append(pe);
+}
 }else{
 postCorpo.append(itemDoFeed(p));
 }
-document.title = `${p.titulo || dataBr(p.data) || NOMES[p.tipo]} · Lagosta Filmes`;
+document.title = `${p.tipo === "carta" ? nomeCarta(p) : (p.titulo || dataBr(p.data) || NOMES[p.tipo])} · Lagosta Filmes`;
+}
+
+// o arquivo das cartas (como o de um substack, só que uma lista)
+function arquivoDeCartas(){
+mudar(postEl.parentNode, document.getElementById("radio"), recados);
+postCorpo.innerHTML = "";
+const art = el("div","leitura");
+art.append(el("h1", null, "cartas"));
+art.append(el("p","data", cartas.length ? "uma por semana, junto com o lagosta fm." : "nenhuma ainda."));
+const ol = el("ol","cartas");
+cartas.forEach(c=>{
+const li = el("li");
+li.append(el("span","num", dataBr(c.data)));
+const d = el("div");
+d.append(linkProPost(c, nomeCarta(c)));
+const a = assuntos(c);
+if(a.length) d.append(el("span","assuntos", a.join(" · ")));
+li.append(d);
+ol.append(li);
+});
+art.append(ol);
+postCorpo.append(art);
+document.title = "cartas · Lagosta Filmes";
 }
 
 function mostrar(){
 const id = decodeURIComponent(location.hash.slice(1));
 const p = posts.find(x => x.id === id);
-if(p){
+if(id === "cartas"){
+arquivoDeCartas();
+feed.hidden = true; postEl.hidden = false;
+window.scrollTo(0,0);
+}else if(p){
 abrir(p);
 // abriu um episódio e nada está tocando: ele vai pro player
 if(p.tipo === "episodio" && !som.tocando) carregarEpisodio(p, false);
+// abriu uma carta: o episódio dela vai pro player (se nada estiver tocando)
+const epDaCarta = p.tipo === "carta" && posts.find(x => x.id === p.ep);
+if(epDaCarta && !som.tocando) carregarEpisodio(epDaCarta, false);
 feed.hidden = true; postEl.hidden = false;
 window.scrollTo(0,0);
 }else{
