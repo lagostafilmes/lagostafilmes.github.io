@@ -1987,6 +1987,7 @@ return {ordem, i:0, g: ordem[0], seg:0, falta: ordem[0].duracao};
 function estado(t){
 const ms = msDoDia(t);
 for(const s of sessoes){
+if(s.fora) continue;   // o youtube recusou (direitos, vídeo apagado): volta a programação normal
 const pos = (ms - s.ini + DIA) % DIA;
 if(pos < s.duracao*1000) return {sessao: s, seg: pos/1000, falta: s.duracao - pos/1000};
 }
@@ -2010,7 +2011,10 @@ carregarYoutubeApi().then(YT=>{
 if(ytId !== video) return;
 yt = new YT.Player(d, {videoId: video, host: "https://www.youtube-nocookie.com",
 playerVars: {mute:1, controls:0, disablekb:1, playsinline:1, rel:0, iv_load_policy:3, fs:0, start: Math.floor(seg)},
-events: {onReady(){ ytPronto = true; aplicarSom(); sintonizar(); }}});
+events: {
+onReady(){ ytPronto = true; aplicarSom(); sintonizar(); },
+onError(){ sessoes.forEach(s=>{ if(s.video === video) s.fora = true; }); ytId = null; yt = null; ytCaixa.innerHTML = ""; gradeQuem = null; sintonizar(); }
+}});
 });
 }else if(ytPronto){
 if(Math.abs(yt.getCurrentTime() - seg) > 2) yt.seekTo(seg, true);
@@ -2088,7 +2092,7 @@ d.append(Object.assign(document.createElement("span"), {className: nome ? "obs" 
 li.append(h, d);
 gradeEl.append(li);
 };
-sessoes.forEach(s => item(s.hora, s.nome, s.quem + " · " + Math.round(s.duracao/60) + " min", gradeQuem === s.id));
+sessoes.filter(s => !s.fora).forEach(s => item(s.hora, s.nome, s.quem + " · " + Math.round(s.duracao/60) + " min", gradeQuem === s.id));
 const fontes = [...new Set(grade.map(g => FONTES[g.fonte] || g.fonte))].join(", ");
 item("o resto", "", fontes + ", embaralhados. a ordem muda todo dia, igual pra todo mundo.", gradeQuem === "resto");
 }
