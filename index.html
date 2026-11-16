@@ -1407,16 +1407,16 @@ firebase.auth().onAuthStateChanged((user)=>{
   - 08:00 lagosta fm: o episódio mais novo que tem vídeo, o programa do café da manhã.
     a imagem é o vídeo mudo do episódio; o som (o botão de som da tv) é o player da rádio,
     no mesmo ponto. depois disso o episódio continua no post dele.
-  - 00:00 a sessão da meia-noite: o essential mix do nicolas jaar (bbc radio 1, 2012)
+  - 21:00 a sessão da noite: o essential mix do nicolas jaar (bbc radio 1, 2012)
     com a colagem de filmes da lagosta filmes por cima.
     video: id de um vídeo do youtube (não listado) ou um .mp4. sem video, a sessão não entra.
-  Pra testar no seu mac: ?hora=23:59:40 no endereço põe o relógio da tv nessa hora.
+  Pra testar no seu mac: ?hora=20:59:40 no endereço põe o relógio da tv nessa hora.
   ========================================================= */
 const TV_SESSOES = [
-{id:"essential", hora:"00:00", titulo:"essential mix", quem:"nicolas jaar, bbc radio 1, 2012. a colagem de filmes é da lagosta filmes", video:"", duracao:7088.4},
+{id:"essential", hora:"21:00", titulo:"essential mix", quem:"nicolas jaar, bbc radio 1, 2012. a colagem de filmes é da lagosta filmes", video:"", duracao:7088.4},
 {id:"fm", hora:"08:00", titulo:"lagosta fm", quem:"o programa da semana. o som vem da rádio", ep:true}
 ];
-// no seu mac, a sessão da meia-noite passa o arquivo local (fora do repo)
+// no seu mac, a sessão da noite passa o arquivo local (fora do repo)
 const TV_SESSOES_TESTE = {essential: ".claude/teste-tv/essential-jaar.mp4"};
 // o episódio que passa na tv de manhã: o mais novo com vídeo
 function epDaTv(){
@@ -1914,7 +1914,7 @@ const DIA = 86400000;
 const INTERVALO = 20;   // segundos de "a seguir" antes de cada sessão
 const FONTES = {zap:"zap", carro:"do carro", casa:"a casa", curtas:"curtas", bike:"de bike", fuji:"fuji"};
 
-// no seu mac, ?hora=23:59:40 põe o relógio da tv nessa hora
+// no seu mac, ?hora=20:59:40 põe o relógio da tv nessa hora
 let desvio = 0;
 const horaTeste = new URLSearchParams(location.search).get("hora");
 if(local && horaTeste){
