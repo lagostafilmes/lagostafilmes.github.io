@@ -441,7 +441,7 @@ audio{display:none}
 .links li{margin:0 0 9px;font-size:12px}
 .links li a{font-weight:bold}
 .tipo.t-links{background:#6B4E8A}
-/* a carta: a newsletter da semana, que anda junto com o episódio */
+/* a newsletter da semana, que anda junto com o episódio (no código, tipo "carta") */
 .na-carta{margin:6px 0 0;font-size:11px;color:var(--cinza)}
 .na-carta a{color:var(--link)}
 .carta-pe{max-width:34em;border-top:1px solid var(--regra);margin-top:20px;padding-top:10px;font-size:12px;color:var(--cinza)}
@@ -602,7 +602,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
         <button class="inscrever" type="submit">se inscrever</button>
       </form>
       <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
-      <p><a href="#cartas">cartas anteriores</a></p>
+      <p><a href="#newsletter">newsletters anteriores</a></p>
       <p><a href="mailto:oi.lagostafilmes@gmail.com">oi.lagostafilmes@gmail.com</a></p>
     </aside>
 
@@ -1436,7 +1436,7 @@ return POSTS.filter(p => p.tipo === "episodio" && p.video && !p.rascunho && (loc
       nota     → texto curto, aparece inteiro no feed (como legenda de insta)
       indica   → uma indicação: link pra fora + o que você achou
       links    → uma lista curada (itens: titulo, link, fonte, nota)
-      carta    → a newsletter da semana (abre em modo leitura; o arquivo fica em #cartas)
+      carta    → a newsletter da semana (abre em modo leitura; o arquivo fica em #newsletter)
   - data: "aaaa-mm-dd"
   - titulo; imagem (arquivo na raiz, opcional)
   - resumo: a frase que aparece no feed
@@ -1448,8 +1448,8 @@ return POSTS.filter(p => p.tipo === "episodio" && p.video && !p.rascunho && (loc
       faixas:   a tracklist, colada do post.txt (uma linha por faixa: "00:12:34  artista - faixa")
       duracao:  em segundos (a grade da tv precisa saber quando o programa acaba)
   - só na "carta":
-      numero: o mesmo do episódio (carta 002 anda com o lagosta fm 002)
-      ep:     o id do episódio da semana; ele ganha "na carta: …" e a carta ganha o player
+      numero: o mesmo do episódio (newsletter 002 anda com o lagosta fm 002)
+      ep:     o id do episódio da semana; ele ganha "na newsletter: …" e a newsletter ganha o player
       texto:  como no "texto"; cada "## " é um assunto (e um assunto do programa)
   - nos parágrafos, [palavras](https://…) vira link
   - rascunho: true esconde o post; ele só aparece com ?rascunho no endereço
@@ -1474,9 +1474,9 @@ const feed = document.getElementById("feed");
 const postEl = document.getElementById("post");
 const postCorpo = document.getElementById("postCorpo");
 const recados = document.getElementById("comentarios");
-const NOMES = {foto:"foto", episodio:"lagosta fm", texto:"texto", nota:"nota", indica:"indica", links:"links", carta:"carta"};
+const NOMES = {foto:"foto", episodio:"lagosta fm", texto:"texto", nota:"nota", indica:"indica", links:"links", carta:"newsletter"};
 const cartas = posts.filter(p => p.tipo === "carta");
-const nomeCarta = c => c.titulo || "carta " + String(c.numero || "").padStart(3,"0");
+const nomeCarta = c => c.titulo || "newsletter " + String(c.numero || "").padStart(3,"0");
 const assuntos = c => (c.texto || []).filter(t => t.startsWith("## ")).map(t => t.slice(3));
 const cartaDoEp = ep => cartas.find(c => c.ep === ep.id);
 
@@ -1600,10 +1600,10 @@ const a = el("a", null, "ver a grade"); a.href = "#"; a.addEventListener("click"
 na.append(a);
 leg.append(na);
 }
-// episódio com carta: os assuntos dela, que são os assuntos do programa
+// episódio com newsletter: os assuntos dela, que são os assuntos do programa
 const carta = p.tipo === "episodio" && cartaDoEp(p);
 if(carta){
-const na = el("p","na-carta","na carta: ");
+const na = el("p","na-carta","na newsletter: ");
 const lista = assuntos(carta);
 na.append(lista.length ? lista.join(" · ") + " " : "", linkProPost(carta, nomeCarta(carta) + " →"));
 leg.append(na);
@@ -1663,7 +1663,7 @@ if(p.tipo === "carta"){
 const ep = posts.find(x => x.id === p.ep);
 if(ep) postCorpo.append(itemDoFeed(ep));
 const pe = el("div","carta-pe leitura");
-const l1 = el("p"); l1.append(linkProPost({id:"cartas"}, "cartas anteriores"), " · ", linkProPost({id:""}, "o resto do site"));
+const l1 = el("p"); l1.append(linkProPost({id:"newsletter"}, "newsletters anteriores"), " · ", linkProPost({id:""}, "o resto do site"));
 pe.append(l1, el("p", null, "pra receber por e-mail, o campo é aqui do lado (ou lá embaixo, no celular)."));
 postCorpo.append(pe);
 }
@@ -1673,12 +1673,12 @@ postCorpo.append(itemDoFeed(p));
 document.title = `${p.tipo === "carta" ? nomeCarta(p) : (p.titulo || dataBr(p.data) || NOMES[p.tipo])} · Lagosta Filmes`;
 }
 
-// o arquivo das cartas (como o de um substack, só que uma lista)
+// o arquivo das newsletters (como o de um substack, só que uma lista)
 function arquivoDeCartas(){
 mudar(postEl.parentNode, document.getElementById("radio"), recados);
 postCorpo.innerHTML = "";
 const art = el("div","leitura");
-art.append(el("h1", null, "cartas"));
+art.append(el("h1", null, "newsletter"));
 art.append(el("p","data", cartas.length ? "uma por semana, junto com o lagosta fm." : "nenhuma ainda."));
 const ol = el("ol","cartas");
 cartas.forEach(c=>{
@@ -1693,13 +1693,13 @@ ol.append(li);
 });
 art.append(ol);
 postCorpo.append(art);
-document.title = "cartas · Lagosta Filmes";
+document.title = "newsletter · Lagosta Filmes";
 }
 
 function mostrar(){
 const id = decodeURIComponent(location.hash.slice(1));
 const p = posts.find(x => x.id === id);
-if(id === "cartas"){
+if(id === "newsletter" || id === "cartas"){
 arquivoDeCartas();
 feed.hidden = true; postEl.hidden = false;
 window.scrollTo(0,0);
@@ -1707,7 +1707,7 @@ window.scrollTo(0,0);
 abrir(p);
 // abriu um episódio e nada está tocando: ele vai pro player
 if(p.tipo === "episodio" && !som.tocando) carregarEpisodio(p, false);
-// abriu uma carta: o episódio dela vai pro player (se nada estiver tocando)
+// abriu uma newsletter: o episódio dela vai pro player (se nada estiver tocando)
 const epDaCarta = p.tipo === "carta" && posts.find(x => x.id === p.ep);
 if(epDaCarta && !som.tocando) carregarEpisodio(epDaCarta, false);
 feed.hidden = true; postEl.hidden = false;
