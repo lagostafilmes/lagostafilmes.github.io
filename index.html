@@ -1409,11 +1409,11 @@ firebase.auth().onAuthStateChanged((user)=>{
     no mesmo ponto. depois disso o episódio continua no post dele.
   - 21:00 a sessão da noite: o essential mix do nicolas jaar (bbc radio 1, 2012)
     com a colagem de filmes da lagosta filmes por cima.
-    video: id de um vídeo do youtube (não listado) ou um .mp4. sem video, a sessão não entra.
+    video: um .mp4 (o do jaar fica no archive.org: o youtube bloqueia a colagem por direitos) ou id do youtube. sem video, a sessão não entra.
   Pra testar no seu mac: ?hora=20:59:40 no endereço põe o relógio da tv nessa hora.
   ========================================================= */
 const TV_SESSOES = [
-{id:"essential", hora:"21:00", titulo:"essential mix", quem:"nicolas jaar, bbc radio 1, 2012. a colagem de filmes é da lagosta filmes", video:"", duracao:7088.4},
+{id:"essential", hora:"21:00", titulo:"essential mix", quem:"nicolas jaar, bbc radio 1, 2012. a colagem de filmes é da lagosta filmes", video:"https://archive.org/download/lagosta-essential-jaar/essential-jaar.mp4", duracao:7088.4},
 {id:"fm", hora:"08:00", titulo:"lagosta fm", quem:"o programa da semana. o som vem da rádio", ep:true}
 ];
 // no seu mac, a sessão da noite passa o arquivo local (fora do repo)
@@ -2141,6 +2141,13 @@ timer = setTimeout(sintonizar, Math.max(0.3, Math.min(...viradas.filter(v => v >
 }
 
 tv.addEventListener("loadedmetadata", sintonizar);
+// o .mp4 de uma sessão não abriu (tirado do ar, servidor fora): ela sai da grade e volta a programação normal
+tv.addEventListener("error", ()=>{
+const caiu = sessoes.filter(s=>s.video && !s.fora && srcAtual === s.video);
+if(!caiu.length) return;
+caiu.forEach(s=>{ s.fora = true; });
+srcAtual = null; gradeQuem = null; sintonizar();
+});
 if(local){ window.tvEstado = ()=> estado(relogio()); window.tvSintonizar = sintonizar; }   // pra conferir no console
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) sintonizar(); });
 sintonizar();
