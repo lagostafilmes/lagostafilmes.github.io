@@ -1396,23 +1396,17 @@ function startFirebaseListener(){
 if(!firebaseEnabled || !firebaseDbRef || firebaseListening) return;
 firebaseListening = true;
 firebaseOnMessage((incomingList)=>{
-let changed=false;
+const igual = (a, b) => a.at === b.at && a.text === b.text && Math.abs(a.tAudio - b.tAudio) < 0.01;
+// recado novo de outra pessoa: a tv mostra na hora
 incomingList.forEach(m=>{
-const exists = messages.some(
-x => x.at===m.at &&
-x.text===m.text &&
-Math.abs(x.tAudio - m.tAudio) < 0.01
-);
-if(!exists){
-messages.push(m);
-changed=true;
-if(window.tvRecadoChegou) window.tvRecadoChegou(m);
-}
+if(!messages.some(x => igual(x, m)) && window.tvRecadoChegou) window.tvRecadoChegou(m);
 });
-if(changed){
+// o banco manda: o que foi apagado lá some daqui também (antes ficava guardado no navegador pra sempre).
+// os meus, mandados agora há pouco e que ainda não chegaram lá, ficam
+const pendentes = messages.filter(m => Date.now() - m.at < 60000 && !incomingList.some(x => igual(x, m)));
+messages = incomingList.concat(pendentes);
 saveLocalMessages(messages);
 mostrarRecados();
-}
 });
 }
 
