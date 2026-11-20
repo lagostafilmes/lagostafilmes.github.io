@@ -89,6 +89,10 @@ a:hover{text-decoration:underline}
 #feed .item.sem-mini,#post .item.sem-mini{grid-template-columns:minmax(0,1fr)}
 .miniatura{grid-column:2;grid-row:1;align-self:start;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#000}
 .miniatura img{width:100%;height:100%;object-fit:cover;display:block}
+/* a foto do dia: a linha de cima (foto, data) e a imagem inteira embaixo, na largura da coluna */
+#feed .item.so-foto{grid-template-columns:minmax(0,1fr);row-gap:10px}
+.so-foto .miniatura{grid-column:1;grid-row:2;aspect-ratio:auto;background:none;border:1px solid var(--texto);box-shadow:3px 3px 0 var(--moldura)}
+.so-foto .miniatura img{height:auto;object-fit:contain}
 .miniatura.t-episodio,.miniatura.t-texto,.miniatura.t-nota,.miniatura.t-links,.miniatura.t-indica{background:var(--faixa);border:1px solid var(--moldura);box-shadow:2px 2px 0 var(--moldura)}
 .mini-nome{font:bold 18px/1.1 Georgia,"Times New Roman",serif;color:var(--vermelho);text-align:center;padding:0 10px;transform:rotate(-4deg)}
 
@@ -1610,6 +1614,7 @@ const mini = el("a","miniatura"); mini.href = "#" + p.id;
 const im = el("img"); im.src = p.imagem; im.alt = p.alt || p.titulo || ""; im.loading = "lazy"; mini.append(im);
 item.append(mini);
 }else item.classList.add("sem-mini");
+if(p.tipo === "foto" && p.imagem) item.classList.add("so-foto");   // a foto do dia aparece grande, não em miniatura
 const leg = el("div","legenda");
 leg.append(cabecalho(p));
 
