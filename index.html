@@ -400,16 +400,9 @@ audio{display:none}
 .tv-botao:hover{border-color:var(--texto)}
 /* a sessão no youtube ocupa a tela inteira, sem controles: quem manda é o relógio */
 .tv-yt,.tv-yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
-/* a linha de baixo da tv: o que está passando e o que vem; "grade" abre o dia inteiro, como no jornal */
+/* a linha de baixo da tv: só o que está passando. não tem grade nem "a seguir": o que vem, vem */
 .tv-agora{font-size:11px;color:var(--cinza);min-width:0}
 .tv-agora b{color:var(--texto)}
-.tv-grade{list-style:none;margin:8px 0 0;padding:0;font-size:11px;border-top:1px solid var(--regra)}
-.tv-grade li{display:flex;gap:12px;padding:5px 0;border-bottom:1px solid var(--regra)}
-.tv-grade .hora{flex:none;min-width:40px;color:var(--cinza)}
-.tv-grade .obs{display:block;color:var(--cinza)}
-.tv-grade li.agora .hora{color:var(--vermelho)}
-.tv-grade li.agora b::after{content:" · no ar";color:var(--vermelho);font-weight:normal}
-.tv-grade[hidden]{display:none}
 .tv-botoes{align-items:center}
 .tv-vendo{font-size:10px;color:var(--cinza);margin-right:4px}
 /* numa sessão, com o som desligado, o botão fica à vista e diz o que faz */
@@ -609,7 +602,6 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
         <span class="tv-botoes">
           <span class="tv-vendo" id="tvVendo" hidden></span>
           <button class="tv-botao" id="tvCheia" type="button">tela cheia</button>
-          <button class="tv-botao" id="tvGradeBotao" type="button" aria-expanded="false" aria-controls="tvGrade">grade</button>
         </span>
       </div>
       <!-- recado na sessão (só aparece durante uma sessão): fica preso no ponto dela, como os comentários do rádio -->
@@ -618,7 +610,6 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
         <input class="msg-field" id="tvRecado" type="text" maxlength="180" placeholder="recado na sessão" autocomplete="off" aria-label="recado na sessão">
         <button class="botao" type="submit">enviar</button>
       </form>
-      <ol class="tv-grade" id="tvGrade" hidden></ol>
     </section>
     <!-- o feed: todos os posts, do mais novo pro mais velho (preenchido pelo script) -->
     <section id="feed" aria-label="posts"></section>
@@ -1652,10 +1643,7 @@ if(meta.childNodes.length) leg.append(meta);
 // o episódio da semana passa na tv toda manhã
 if(p.tipo === "episodio" && p === epDaTv()){
 const fm = TV_SESSOES.find(x => x.ep);
-const na = el("p","na-carta","na lagosta tv: todo dia às " + fm.hora + ", com imagem. ");
-const a = el("a", null, "ver a grade"); a.href = "#"; a.addEventListener("click", e=>{ e.preventDefault(); if(window.abrirGrade) window.abrirGrade(); });
-na.append(a);
-leg.append(na);
+leg.append(el("p","na-carta","na lagosta tv: todo dia às " + fm.hora + ", com imagem."));
 }
 // episódio com newsletter: os assuntos dela, que são os assuntos do programa
 const carta = p.tipo === "episodio" && cartaDoEp(p);
@@ -1911,8 +1899,6 @@ const semSinal = document.getElementById("tvSemSinal");
 const botaoSom = document.getElementById("tvSom");
 const ytCaixa = document.getElementById("tvYt");
 const agoraEl = document.getElementById("tvAgora");
-const gradeEl = document.getElementById("tvGrade");
-const gradeBotao = document.getElementById("tvGradeBotao");
 const telaEl = document.getElementById("tvTela");
 const recadoForm = document.getElementById("tvRecadoForm");
 const total = grade.reduce((s,g)=>s + g.duracao, 0);
@@ -1950,7 +1936,6 @@ return itens.length ? {...base, itens, nome: s.titulo, duracao: itens.reduce((t,
 const video = s.video || (local ? TV_SESSOES_TESTE[s.id] : "");
 return video ? {...base, video, nome: s.titulo} : null;
 }).filter(Boolean).sort((a,b)=>a.ini-b.ini);
-const NOMES_DIAS = ["dom","seg","ter","qua","qui","sex","sáb"];
 const diaDe = t => Math.floor((t - TV_INICIO)/DIA);   // o canal entrou no ar num domingo: dia % 7 é o dia da semana
 // o rodízio da noite: uma sessão por semana; a semana vira no sábado
 const noites = sessoes.filter(s => s.noite);
@@ -2014,7 +1999,7 @@ return {ordem, i:0, g: ordem[0], seg:0, falta: ordem[0].duracao};
 
 
 // o que passa neste instante: uma sessão ou um trecho da programação normal.
-// a sessão entra sem aviso: nada de "a seguir" na tela nem na linha de baixo (quem quiser saber, abre a grade)
+// a sessão entra sem aviso: nada de "a seguir" na tela nem na linha de baixo, e não existe grade pra consultar
 function estado(t){
 const ms = msDoDia(t), dia = diaDe(t);
 for(const s of sessoes){
@@ -2043,7 +2028,7 @@ yt = new YT.Player(d, {videoId: video, host: "https://www.youtube-nocookie.com",
 playerVars: {mute:1, controls:0, disablekb:1, playsinline:1, rel:0, iv_load_policy:3, fs:0, start: Math.floor(seg)},
 events: {
 onReady(){ ytPronto = true; aplicarSom(); sintonizar(); },
-onError(){ sessoes.forEach(s=>{ if(s.video === video) s.fora = true; }); ytId = null; yt = null; ytCaixa.innerHTML = ""; gradeQuem = null; sintonizar(); }
+onError(){ sessoes.forEach(s=>{ if(s.video === video) s.fora = true; }); ytId = null; yt = null; ytCaixa.innerHTML = ""; sintonizar(); }
 }});
 });
 }else if(ytPronto){
@@ -2091,53 +2076,20 @@ else if(tentativas-- > 0) setTimeout(ir, 250);
 window.tvCalar = ()=>{ if(somTv){ somTv = false; aplicarSom(); } };
 window.tvAvisar = ()=>{ if(sessaoAtual) pintarSom(); };
 
-/* --- a linha "agora" e a grade --- */
+/* --- a linha "agora" --- */
 function hhmm(ms){ const m = Math.round(ms/60000) % 1440; return String(Math.floor(m/60)).padStart(2,"0") + ":" + String(m%60).padStart(2,"0"); }
 function escrever(no, partes){
 no.textContent = "";
 partes.forEach(p => no.append(typeof p === "string" ? p : Object.assign(document.createElement("b"), {textContent: p.b})));
 }
 const nomeDoTrecho = g => g.titulo || FONTES[g.fonte] || g.fonte || "programação";
-let gradeQuem = null, gradeDia = null;
 function escreverAgora(e){
 if(e.sessao){
 escrever(agoraEl, ["agora: ", {b: e.sessao.nome}, " · até " + hhmm(e.sessao.ini + e.sessao.duracao*1000) + (fmNoAr() ? " · o som é a rádio" : "")]);
 }else{
 escrever(agoraEl, ["agora: ", {b: nomeDoTrecho(e.trecho.g)}]);
 }
-const quem = e.sessao ? e.sessao.id : "resto";
-const dia = diaDe(relogio());
-if(quem !== gradeQuem || dia !== gradeDia){ gradeQuem = quem; gradeDia = dia; montarGrade(); }
 }
-function montarGrade(){
-gradeEl.textContent = "";
-const item = (hora, nome, obs, agora)=>{
-const li = document.createElement("li");
-if(agora) li.className = "agora";
-const h = document.createElement("span"); h.className = "hora"; h.textContent = hora;
-const d = document.createElement("span");
-if(nome) d.append(Object.assign(document.createElement("b"), {textContent: nome}));
-d.append(Object.assign(document.createElement("span"), {className: nome ? "obs" : "", textContent: obs}));
-li.append(h, d);
-gradeEl.append(li);
-};
-// as sessões de hoje; as de outro dia levam o dia na frente; das da noite, só a da semana
-const dia = diaDe(relogio());
-sessoes.filter(s => !s.fora && daSemana(s, dia)).forEach(s=>{
-const quando = (doDia(s, dia) ? "" : s.dias.map(d => NOMES_DIAS[d]).join(", ") + " ") + s.hora;
-item(quando, s.nome, s.quem + " · " + Math.round(s.duracao/60) + " min", gradeQuem === s.id);
-});
-const fontes = [...new Set(grade.map(g => FONTES[g.fonte] || g.fonte))].join(", ");
-item("o resto", "", fontes + ", embaralhados. a ordem muda todo dia, igual pra todo mundo.", gradeQuem === "resto");
-}
-window.abrirGrade = ()=>{
-gradeEl.hidden = false; gradeBotao.setAttribute("aria-expanded","true");
-canto.scrollIntoView({behavior:"smooth", block:"start"});
-};
-gradeBotao.addEventListener("click", ()=>{
-gradeEl.hidden = !gradeEl.hidden;
-gradeBotao.setAttribute("aria-expanded", String(!gradeEl.hidden));
-});
 
 /* --- sintonizar: confere a cada virada (fim do trecho, começo e fim de sessão) e a cada 15 s --- */
 let proximo = null;   // o próximo trecho, já carregando, pra troca não ter buraco
@@ -2172,12 +2124,12 @@ timer = setTimeout(sintonizar, Math.max(0.3, Math.min(...viradas.filter(v => v >
 }
 
 tv.addEventListener("loadedmetadata", sintonizar);
-// o .mp4 de uma sessão não abriu (tirado do ar, servidor fora): ela sai da grade e volta a programação normal
+// o .mp4 de uma sessão não abriu (tirado do ar, servidor fora): ela sai do ar e volta a programação normal
 tv.addEventListener("error", ()=>{
 const caiu = sessoes.filter(s=>s.video && !s.fora && srcAtual === s.video);
 if(!caiu.length) return;
 caiu.forEach(s=>{ s.fora = true; });
-srcAtual = null; gradeQuem = null; sintonizar();
+srcAtual = null; sintonizar();
 });
 if(local){ window.tvEstado = ()=> estado(relogio()); window.tvSintonizar = sintonizar; }   // pra conferir no console
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) sintonizar(); });
