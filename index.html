@@ -1452,6 +1452,7 @@ firebase.auth().onAuthStateChanged((user)=>{
     com a colagem de filmes da lagosta filmes por cima.
     video: um .mp4 (o do jaar fica no archive.org: o youtube bloqueia a colagem por direitos) ou id do youtube. sem video, a sessão não entra.
     de: de quem é a obra, quando não é da casa (aparece do lado do nome: "essential mix, nicolas jaar").
+    montagem: de quem é a montagem das imagens, quando a obra é de outro e a imagem é da casa.
     noite: true põe a sessão no rodízio da noite: uma por semana, na ordem da lista
     (a semana vira no sábado, junto com a newsletter). com uma só, é ela toda noite.
   - domingo, 19:00, a sessão de curtas: os curtas da casa, um atrás do outro.
@@ -1460,7 +1461,7 @@ firebase.auth().onAuthStateChanged((user)=>{
   Pra testar no seu mac: ?hora=20:59:40 no endereço põe o relógio da tv nessa hora.
   ========================================================= */
 const TV_SESSOES = [
-{id:"essential", hora:"21:00", noite:true, titulo:"essential mix", de:"nicolas jaar", video:"https://archive.org/download/lagosta-essential-jaar/essential-jaar.mp4", duracao:7088.4},
+{id:"essential", hora:"21:00", noite:true, titulo:"essential mix", de:"nicolas jaar", montagem:"lagosta filmes", video:"https://archive.org/download/lagosta-essential-jaar/essential-jaar.mp4", duracao:7088.4},
 {id:"curtas", hora:"19:00", dias:[0], titulo:"sessão de curtas", lista:"curtas"},
 {id:"fm", hora:"08:00", titulo:"lagosta fm", ep:true}
 ];
@@ -2084,7 +2085,7 @@ partes.forEach(p => no.append(typeof p === "string" ? p : Object.assign(document
 }
 function escreverAgora(e){
 if(e.sessao){
-escrever(agoraEl, ["agora: ", {b: e.sessao.nome}, (e.sessao.de ? ", " + e.sessao.de : "") + " · até " + hhmm(e.sessao.ini + e.sessao.duracao*1000) + (fmNoAr() ? " · o som é a rádio" : "")]);
+escrever(agoraEl, ["agora: ", {b: e.sessao.nome}, (e.sessao.de ? ", " + e.sessao.de : "") + (e.sessao.montagem ? " · montagem " + e.sessao.montagem : "") + " · até " + hhmm(e.sessao.ini + e.sessao.duracao*1000) + (fmNoAr() ? " · o som é a rádio" : "")]);
 }else{
 agoraEl.textContent = "";   // na programação normal a tela não diz o que é: só imagem
 }
