@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Lagosta Filmes</title>
 <meta name="description" content="Lagosta Filmes. Produtora de filmes e outras coisas. Fortaleza, CE.">
+<!-- o cartão que aparece quando o link é colado no whatsapp, no instagram etc. -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lagosta Filmes">
+<meta property="og:title" content="Lagosta Filmes">
+<meta property="og:description" content="produtora de filmes e outras coisas. fortaleza, ce.">
+<meta property="og:url" content="https://www.lagostafilmes.com/">
+<meta property="og:image" content="https://www.lagostafilmes.com/capa.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 
 <!-- Favicon Lagosta Filmes -->
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
@@ -399,6 +409,19 @@ audio{display:none}
 .tv-grade li.agora .hora{color:var(--vermelho)}
 .tv-grade li.agora b::after{content:" · no ar";color:var(--vermelho);font-weight:normal}
 .tv-grade[hidden]{display:none}
+.tv-botoes{align-items:center}
+.tv-vendo{font-size:10px;color:var(--cinza);margin-right:4px}
+/* numa sessão, com o som desligado, o botão fica à vista e diz o que faz */
+.tv.sessao .tv-som.desligado{opacity:.9;width:auto;padding:0 10px;border-radius:14px;font:11px/28px var(--fonte)}
+/* os recados da sessão, por cima da imagem, uns segundos cada */
+.tv-recados{position:absolute;left:12px;right:18%;bottom:48px;z-index:3;display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
+.tv-diz{background:rgba(20,18,14,.6);color:#fff;font:11px/1.35 var(--fonte);padding:3px 7px;max-width:100%;overflow-wrap:anywhere}
+.tv-recado{display:flex;gap:6px;margin-top:8px}
+.tv-recado[hidden]{display:none}
+.tv-recado .msg-field{flex:1;min-width:0}
+/* tela cheia: pra deixar ligado */
+.tv:fullscreen{border:0;box-shadow:none;aspect-ratio:auto;width:100vw;height:100vh}
+.tv:fullscreen .tv-diz{font-size:16px;padding:5px 10px}
 
 /* ---------- o feed: cada post do seu jeito ---------- */
 .item{border-bottom:1px solid var(--regra);padding-bottom:4px}
@@ -547,7 +570,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
   .status{padding:7px 12px 8px}
   .foto{padding:12px 12px 0}
   .legenda,.comentarios,.rodape{padding-left:12px;padding-right:12px}
-  .chat-envio{flex-wrap:wrap}
+  .chat-envio,.tv-recado{flex-wrap:wrap}
   .msg-field.nome{flex:1 1 100%}
 }
 @media (prefers-reduced-motion:reduce){
@@ -583,11 +606,23 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
           </svg>
         </div>
         <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
+        <!-- os recados da sessão passam aqui, no ponto em que foram deixados -->
+        <div class="tv-recados" id="tvRecados" aria-live="polite"></div>
       </div>
       <div class="tv-barra">
         <span class="tv-agora" id="tvAgora" aria-live="polite"></span>
-        <button class="tv-botao" id="tvGradeBotao" type="button" aria-expanded="false" aria-controls="tvGrade">grade</button>
+        <span class="tv-botoes">
+          <span class="tv-vendo" id="tvVendo" hidden></span>
+          <button class="tv-botao" id="tvCheia" type="button">tela cheia</button>
+          <button class="tv-botao" id="tvGradeBotao" type="button" aria-expanded="false" aria-controls="tvGrade">grade</button>
+        </span>
       </div>
+      <!-- recado na sessão (só aparece durante uma sessão): fica preso no ponto dela, como os comentários do rádio -->
+      <form class="tv-recado" id="tvRecadoForm" hidden>
+        <input class="msg-field nome" id="tvNick" type="text" maxlength="24" placeholder="nome" autocomplete="nickname" aria-label="seu nome">
+        <input class="msg-field" id="tvRecado" type="text" maxlength="180" placeholder="recado na sessão" autocomplete="off" aria-label="recado na sessão">
+        <button class="botao" type="submit">enviar</button>
+      </form>
       <ol class="tv-grade" id="tvGrade" hidden></ol>
     </section>
     <!-- o feed: todos os posts, do mais novo pro mais velho (preenchido pelo script) -->
@@ -597,6 +632,7 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     <aside class="coluna">
       <h2 class="coluna-nome">lagosta filmes</h2>
       <p>produtora de filmes e outras coisas. fortaleza, ce.</p>
+      <p>newsletter aos sábados.</p>
       <form class="assina" id="assinaForm" method="post" target="_blank">
         <input class="msg-field" type="email" name="email" placeholder="seu e-mail" required aria-label="seu e-mail">
         <button class="inscrever" type="submit">se inscrever</button>
@@ -1375,6 +1411,7 @@ Math.abs(x.tAudio - m.tAudio) < 0.01
 if(!exists){
 messages.push(m);
 changed=true;
+if(window.tvRecadoChegou) window.tvRecadoChegou(m);
 }
 });
 if(changed){
@@ -1382,6 +1419,23 @@ saveLocalMessages(messages);
 mostrarRecados();
 }
 });
+}
+
+// quantos estão com o site aberto agora: cada visitante marca presença enquanto a aba está ligada.
+// precisa da regra "presenca" no banco; sem ela, fica quieto. sozinho, não mostra nada.
+let presencaLigada = false;
+function ligarPresenca(uid){
+if(presencaLigada) return;
+presencaLigada = true;
+const eu = firebaseDbRef.ref("presenca/" + uid);
+firebaseDbRef.ref(".info/connected").on("value", s=>{
+if(s.val()) eu.onDisconnect().remove().then(()=> eu.set(true)).catch(()=>{});
+});
+firebaseDbRef.ref("presenca").on("value", s=>{
+const n = s.numChildren(), no = document.getElementById("tvVendo");
+no.hidden = n < 2;
+no.textContent = n + " vendo agora";
+}, ()=>{});
 }
 
 if(typeof firebase !== "undefined"){
@@ -1396,6 +1450,7 @@ firebase.auth().onAuthStateChanged((user)=>{
   if (user) {
     firebaseEnabled = true;
     startFirebaseListener();
+    ligarPresenca(user.uid);
   }
 });
 }
@@ -1410,10 +1465,16 @@ firebase.auth().onAuthStateChanged((user)=>{
   - 21:00 a sessão da noite: o essential mix do nicolas jaar (bbc radio 1, 2012)
     com a colagem de filmes da lagosta filmes por cima.
     video: um .mp4 (o do jaar fica no archive.org: o youtube bloqueia a colagem por direitos) ou id do youtube. sem video, a sessão não entra.
+    noite: true põe a sessão no rodízio da noite: uma por semana, na ordem da lista
+    (a semana vira no sábado, junto com a newsletter). com uma só, é ela toda noite.
+  - domingo, 19:00, a sessão de curtas: os curtas da casa, um atrás do outro.
+    lista: "curtas" = todos os trechos dessa fonte em TV_PROGRAMACAO, na ordem da lista.
+    dias: os dias da semana em que a sessão passa (0 = domingo … 6 = sábado); sem dias, todo dia.
   Pra testar no seu mac: ?hora=20:59:40 no endereço põe o relógio da tv nessa hora.
   ========================================================= */
 const TV_SESSOES = [
-{id:"essential", hora:"21:00", titulo:"essential mix", quem:"nicolas jaar, bbc radio 1, 2012. a colagem de filmes é da lagosta filmes", video:"https://archive.org/download/lagosta-essential-jaar/essential-jaar.mp4", duracao:7088.4},
+{id:"essential", hora:"21:00", noite:true, titulo:"essential mix", quem:"nicolas jaar, bbc radio 1, 2012. a colagem de filmes é da lagosta filmes", video:"https://archive.org/download/lagosta-essential-jaar/essential-jaar.mp4", duracao:7088.4},
+{id:"curtas", hora:"19:00", dias:[0], titulo:"sessão de curtas", quem:"os curtas da lagosta filmes, um atrás do outro", lista:"curtas"},
 {id:"fm", hora:"08:00", titulo:"lagosta fm", quem:"o programa da semana. o som vem da rádio", ep:true}
 ];
 // no seu mac, a sessão da noite passa o arquivo local (fora do repo)
@@ -1858,18 +1919,23 @@ const anelTv = document.getElementById("tvAnelTexto");
 const agoraEl = document.getElementById("tvAgora");
 const gradeEl = document.getElementById("tvGrade");
 const gradeBotao = document.getElementById("tvGradeBotao");
+const telaEl = document.getElementById("tvTela");
+const recadoForm = document.getElementById("tvRecadoForm");
 const total = grade.reduce((s,g)=>s + g.duracao, 0);
 const DIA = 86400000;
 const INTERVALO = 20;   // segundos de "a seguir" antes de cada sessão
 const FONTES = {zap:"zap", carro:"do carro", casa:"a casa", curtas:"curtas", bike:"de bike", fuji:"fuji"};
 
-// no seu mac, ?hora=20:59:40 põe o relógio da tv nessa hora
+// no seu mac, ?hora=20:59:40 põe o relógio da tv nessa hora (e &dia=0 no domingo)
 let desvio = 0;
 const horaTeste = new URLSearchParams(location.search).get("hora");
 if(local && horaTeste){
 const [a,b,c] = horaTeste.split(":").map(Number);
 const hoje = TV_INICIO + Math.floor((Date.now() - TV_INICIO)/DIA)*DIA;
 desvio = hoje + ((a||0)*3600 + (b||0)*60 + (c||0))*1000 - Date.now();
+// &dia=0 (domingo) … 6 (sábado): pula pro próximo dia da semana desse número
+const diaTeste = new URLSearchParams(location.search).get("dia");
+if(diaTeste !== null) desvio += ((Number(diaTeste) - Math.floor((Date.now() - TV_INICIO)/DIA) % 7 + 7) % 7) * DIA;
 }
 const relogio = ()=> Date.now() + desvio;
 const msDoDia = t => (((t - TV_INICIO) % DIA) + DIA) % DIA;
@@ -1884,9 +1950,31 @@ const ep = epDaTv();
 if(!ep) return null;
 return {...base, ep, video: ep.video, nome: "lagosta fm " + diaCurto(ep.data), duracao: ep.duracao || 7200};
 }
+if(s.lista){
+const itens = grade.filter(g => g.fonte === s.lista);
+return itens.length ? {...base, itens, nome: s.titulo, duracao: itens.reduce((t,g)=>t + g.duracao, 0)} : null;
+}
 const video = s.video || (local ? TV_SESSOES_TESTE[s.id] : "");
 return video ? {...base, video, nome: s.titulo} : null;
 }).filter(Boolean).sort((a,b)=>a.ini-b.ini);
+const NOMES_DIAS = ["dom","seg","ter","qua","qui","sex","sáb"];
+const diaDe = t => Math.floor((t - TV_INICIO)/DIA);   // o canal entrou no ar num domingo: dia % 7 é o dia da semana
+// o rodízio da noite: uma sessão por semana; a semana vira no sábado
+const noites = sessoes.filter(s => s.noite);
+const daSemana = (s, dia) => !s.noite || noites.length < 2 || noites[Math.floor((dia + 1)/7) % noites.length] === s;
+const doDia = (s, dia) => !s.dias || s.dias.includes(((dia % 7) + 7) % 7);
+// a sessão vale pelo dia em que começa
+const vale = (s, dia) => !s.fora && daSemana(s, dia) && doDia(s, dia);
+// numa sessão de lista: qual trecho e em que segundo dele
+function pontoDaSessao(s, seg){
+if(!s.itens) return {video: s.video, seg};
+for(const g of s.itens){
+if(seg < g.duracao) return {video: g.video, seg, falta: g.duracao - seg};
+seg -= g.duracao;
+}
+const u = s.itens[s.itens.length - 1];
+return {video: u.video, seg: u.duracao};
+}
 
 // embaralho com semente: o mesmo dia dá sempre a mesma ordem
 function sorteio(semente){
@@ -1934,14 +2022,14 @@ return {ordem, i:0, g: ordem[0], seg:0, falta: ordem[0].duracao};
 
 // o que passa neste instante: uma sessão, o intervalo antes dela, ou um trecho da programação normal
 function estado(t){
-const ms = msDoDia(t);
+const ms = msDoDia(t), dia = diaDe(t);
 for(const s of sessoes){
-if(s.fora) continue;   // o youtube recusou (direitos, vídeo apagado): volta a programação normal
+// fora = o vídeo não abriu (direitos, apagado): volta a programação normal
 const pos = (ms - s.ini + DIA) % DIA;
-if(pos < s.duracao*1000) return {sessao: s, seg: pos/1000, falta: s.duracao - pos/1000};
+if(pos < s.duracao*1000 && vale(s, ms >= s.ini ? dia : dia - 1)) return {sessao: s, seg: pos/1000, falta: s.duracao - pos/1000};
 }
 let prox = null, falta = Infinity;
-sessoes.forEach(s=>{ const f = (s.ini - ms + DIA) % DIA; if(f < falta){ falta = f; prox = s; } });
+sessoes.forEach(s=>{ const f = (s.ini - ms + DIA) % DIA; if(f < falta && vale(s, ms <= s.ini ? dia : dia + 1)){ falta = f; prox = s; } });
 if(prox && falta < INTERVALO*1000) return {intervalo: prox, falta: falta/1000, trecho: noAr(t)};
 return {trecho: noAr(t), prox, ate: falta/1000};
 }
@@ -1990,7 +2078,8 @@ pintarSom();
 }
 function pintarSom(){
 const ligado = fmNoAr() ? (som.tocando && som.ep === sessaoAtual.ep) : somTv;
-botaoSom.textContent = ligado ? "🔊" : "🔇";
+botaoSom.textContent = ligado ? "🔊" : (sessaoAtual ? "🔇 ligar o som" : "🔇");
+botaoSom.classList.toggle("desligado", !ligado);
 botaoSom.setAttribute("aria-label", ligado ? "desligar o som" : (fmNoAr() ? "ouvir o lagosta fm" : "ligar o som"));
 }
 // liga a rádio no episódio que está na tv, no mesmo ponto
@@ -2016,7 +2105,7 @@ no.textContent = "";
 partes.forEach(p => no.append(typeof p === "string" ? p : Object.assign(document.createElement("b"), {textContent: p.b})));
 }
 const nomeDoTrecho = g => g.titulo || FONTES[g.fonte] || g.fonte || "programação";
-let gradeQuem = null;
+let gradeQuem = null, gradeDia = null;
 function escreverAgora(e){
 if(e.sessao){
 escrever(agoraEl, ["agora: ", {b: e.sessao.nome}, " · até " + hhmm(e.sessao.ini + e.sessao.duracao*1000) + (fmNoAr() ? " · o som é a rádio" : "")]);
@@ -2027,7 +2116,8 @@ const p = e.prox;
 escrever(agoraEl, ["agora: ", {b: nomeDoTrecho(e.trecho.g)}].concat(p ? [" · às " + p.hora + ": " + p.nome] : []));
 }
 const quem = e.sessao ? e.sessao.id : "resto";
-if(quem !== gradeQuem){ gradeQuem = quem; montarGrade(); }
+const dia = diaDe(relogio());
+if(quem !== gradeQuem || dia !== gradeDia){ gradeQuem = quem; gradeDia = dia; montarGrade(); }
 }
 function montarGrade(){
 gradeEl.textContent = "";
@@ -2041,7 +2131,12 @@ d.append(Object.assign(document.createElement("span"), {className: nome ? "obs" 
 li.append(h, d);
 gradeEl.append(li);
 };
-sessoes.filter(s => !s.fora).forEach(s => item(s.hora, s.nome, s.quem + " · " + Math.round(s.duracao/60) + " min", gradeQuem === s.id));
+// as sessões de hoje; as de outro dia levam o dia na frente; das da noite, só a da semana
+const dia = diaDe(relogio());
+sessoes.filter(s => !s.fora && daSemana(s, dia)).forEach(s=>{
+const quando = (doDia(s, dia) ? "" : s.dias.map(d => NOMES_DIAS[d]).join(", ") + " ") + s.hora;
+item(quando, s.nome, s.quem + " · " + Math.round(s.duracao/60) + " min", gradeQuem === s.id);
+});
 const fontes = [...new Set(grade.map(g => FONTES[g.fonte] || g.fonte))].join(", ");
 item("o resto", "", fontes + ", embaralhados. a ordem muda todo dia, igual pra todo mundo.", gradeQuem === "resto");
 }
@@ -2068,8 +2163,11 @@ if(e.intervalo){
 const um = `a seguir · ${e.intervalo.hora} · ${e.intervalo.nome} · `;
 if(anelTv.textContent !== um + um) anelTv.textContent = um + um;
 }
-if(e.sessao) passar(e.sessao.video, e.seg);
+const ponto = e.sessao ? pontoDaSessao(e.sessao, e.seg) : null;
+if(ponto) passar(ponto.video, ponto.seg);
 else passar(e.trecho.g.video, e.trecho.seg);
+telaEl.classList.toggle("sessao", !!sessaoAtual);
+recadoForm.hidden = !(sessaoAtual && !sessaoAtual.ep);   // no lagosta fm, os recados são os do episódio
 aplicarSom();
 escreverAgora(e);
 // o próximo trecho já vai carregando
@@ -2081,7 +2179,7 @@ proximo.muted = true; proximo.preload = "auto"; proximo.dataset.src = prox.video
 }
 }
 const viradas = [15];
-if(e.sessao) viradas.push(e.falta);
+if(e.sessao) viradas.push(e.falta, ponto.falta || 0);
 else viradas.push(e.trecho.falta);
 if(e.intervalo) viradas.push(e.falta);
 if(e.ate) viradas.push(e.ate - INTERVALO);
@@ -2118,6 +2216,79 @@ somTv = !somTv;
 if(somTv) calarRadio();
 aplicarSom();
 }
+});
+
+/* --- tela cheia: pra deixar ligado. entra com som e não deixa a tela apagar --- */
+let trava = null;
+function travarTela(){
+if(document.fullscreenElement === telaEl && navigator.wakeLock && !document.hidden)
+navigator.wakeLock.request("screen").then(w=>{ trava = w; }).catch(()=>{});
+}
+function telaCheia(){
+if(document.fullscreenElement){ document.exitFullscreen(); return; }
+if(fmNoAr()){ if(!(som.tocando && som.ep === sessaoAtual.ep)) radioNaTv(); }
+else if(!somTv){ somTv = true; calarRadio(); aplicarSom(); }
+if(telaEl.requestFullscreen) telaEl.requestFullscreen().catch(()=>{});
+else if(telaEl.webkitRequestFullscreen) telaEl.webkitRequestFullscreen();
+else if(tv.webkitEnterFullscreen) tv.webkitEnterFullscreen();   // iphone: só o vídeo vai pra tela cheia
+}
+document.getElementById("tvCheia").addEventListener("click", telaCheia);
+document.addEventListener("fullscreenchange", ()=>{
+if(document.fullscreenElement === telaEl) travarTela();
+else if(trava){ trava.release().catch(()=>{}); trava = null; }
+});
+document.addEventListener("visibilitychange", travarTela);   // a trava cai quando a aba some; volta com ela
+
+/* --- recados da sessão: ficam presos no ponto em que foram deixados e passam na tela
+       toda vez que a sessão chega ali (como os comentários do rádio). no banco, ep = "tv-" + id da sessão --- */
+const recadosEl = document.getElementById("tvRecados");
+const campoRecado = document.getElementById("tvRecado");
+const tvNick = document.getElementById("tvNick");
+const naTela = new Set();
+function mostrarRecado(m){
+const k = m.at + "|" + m.text;
+if(naTela.has(k)) return;
+naTela.add(k);
+const d = document.createElement("div");
+d.className = "tv-diz";
+d.append(Object.assign(document.createElement("b"), {textContent: (m.nick || "ouvinte") + ": "}), String(m.text));
+recadosEl.append(d);
+while(recadosEl.children.length > 4) recadosEl.firstChild.remove();
+setTimeout(()=>{ d.remove(); naTela.delete(k); }, 7000);
+}
+const sessaoDeRecado = ()=> sessaoAtual && !sessaoAtual.ep ? sessaoAtual : null;
+// a cada segundo: os recados que caem no trecho que acabou de passar
+let ultimoSeg = -1;
+setInterval(()=>{
+const s = sessaoDeRecado();
+const e = s && !document.hidden ? estado(relogio()) : null;
+if(!e || e.sessao !== s){ ultimoSeg = -1; return; }
+if(ultimoSeg >= 0 && e.seg > ultimoSeg && e.seg - ultimoSeg < 5)
+messages.filter(m => m.ep === "tv-" + s.id && m.tAudio > ultimoSeg && m.tAudio <= e.seg).forEach(mostrarRecado);
+ultimoSeg = e.seg;
+}, 1000);
+// recado de outra pessoa, mandado agora: aparece na hora
+window.tvRecadoChegou = m=>{
+const s = sessaoDeRecado();
+if(s && m.ep === "tv-" + s.id && Date.now() - m.at < 20000) mostrarRecado(m);
+};
+// o nome é o mesmo dos comentários
+tvNick.value = nickInput.value;
+tvNick.addEventListener("input", ()=>{ nickInput.value = tvNick.value; });
+nickInput.addEventListener("input", ()=>{ tvNick.value = nickInput.value; });
+recadoForm.addEventListener("submit", ev=>{
+ev.preventDefault();
+const s = sessaoDeRecado(), txt = campoRecado.value.trim();
+if(!s || !txt) return;
+const e = estado(relogio());
+if(e.sessao !== s) return;
+const agora = new Date();
+const m = {text: txt, tAudio: Math.round(e.seg*10)/10, at: agora.getTime(), atHour: agora.getHours(), atMin: agora.getMinutes(), nick: nomeAtual(), ep: "tv-" + s.id};
+messages.push(m);
+saveLocalMessages(messages);
+sendToFirebase(m);
+campoRecado.value = "";
+mostrarRecado(m);
 });
 })();
 
