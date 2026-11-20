@@ -413,6 +413,11 @@ audio{display:none}
 .tv-recado{display:flex;gap:6px;margin-top:8px}
 .tv-recado[hidden]{display:none}
 .tv-recado .msg-field{flex:1;min-width:0}
+/* as luzes apagam: numa sessão (menos o lagosta fm, que é de manhã) o resto da página escurece em volta da tela,
+   como sala de cinema, e volta quando a sessão acaba. é uma sombra enorme da própria tela: não cobre clique nenhum */
+.tv{box-shadow:3px 3px 0 var(--moldura),0 0 0 200vmax rgba(12,14,24,0);transition:box-shadow 4s ease}
+.tv.escuro{z-index:5;border-color:#000;box-shadow:3px 3px 0 transparent,0 0 0 200vmax rgba(12,14,24,.62)}
+@media (prefers-reduced-motion:reduce){.tv{transition:none}}
 /* tela cheia: pra deixar ligado */
 .tv:fullscreen{border:0;box-shadow:none;aspect-ratio:auto;width:100vw;height:100vh}
 .tv:fullscreen .tv-diz{font-size:16px;padding:5px 10px}
@@ -2104,6 +2109,7 @@ const ponto = e.sessao ? pontoDaSessao(e.sessao, e.seg) : null;
 if(ponto) passar(ponto.video, ponto.seg);
 else passar(e.trecho.g.video, e.trecho.seg);
 telaEl.classList.toggle("sessao", !!sessaoAtual);
+telaEl.classList.toggle("escuro", !!(sessaoAtual && !sessaoAtual.ep));   // as luzes apagam
 recadoForm.hidden = !(sessaoAtual && !sessaoAtual.ep);   // no lagosta fm, os recados são os do episódio
 aplicarSom();
 escreverAgora(e);
