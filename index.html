@@ -76,7 +76,9 @@ a:hover{text-decoration:underline}
 .coluna p{margin:8px 0 0;color:var(--cinza)}
 .coluna-marca{display:block;transform:rotate(-8deg)}
 .coluna-nome{font:bold 20px/1.2 Georgia,"Times New Roman",serif;margin:0;color:var(--texto)}
-.coluna .assina{display:flex;flex-direction:column;gap:8px;margin:16px 0 4px}
+.coluna .assina{display:flex;flex-direction:column;gap:8px;margin:18px 0 4px;padding-top:16px;border-top:1px solid var(--regra)}
+/* o nome do bloco da newsletter: separado do "quem é" por uma linha, pra não parecer continuação dele */
+.assina-nome{font-weight:bold;color:var(--texto)}
 .coluna .msg-field{padding:8px 10px;font-size:12px;width:100%}
 .inscrever{
   font:bold 13px/1 var(--fonte);color:var(--branco);background:var(--vermelho);
@@ -398,11 +400,6 @@ audio{display:none}
 .tv-botao:hover{border-color:var(--texto)}
 /* a sessão no youtube ocupa a tela inteira, sem controles: quem manda é o relógio */
 .tv-yt,.tv-yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
-/* o intervalo antes de cada sessão: cor chapada e o anel do obs, "a seguir" */
-.tv-intervalo{position:absolute;inset:0;z-index:1;background:var(--faixa);display:grid;place-items:center}
-.tv-intervalo svg{width:34%;overflow:visible;animation:gira 40s linear infinite}
-.tv-intervalo text{font:bold 7.5px var(--fonte);fill:var(--vermelho);letter-spacing:.4px}
-@media (prefers-reduced-motion:reduce){.tv-intervalo svg{animation:none}}
 /* a linha de baixo da tv: o que está passando e o que vem; "grade" abre o dia inteiro, como no jornal */
 .tv-agora{font-size:11px;color:var(--cinza);min-width:0}
 .tv-agora b{color:var(--texto)}
@@ -603,12 +600,6 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
         <button class="tv-som" id="tvSom" type="button" aria-label="ligar o som" hidden>🔇</button>
         <video id="tvVideo" muted playsinline preload="metadata" hidden></video>
         <div class="tv-yt" id="tvYt" hidden></div>
-        <div class="tv-intervalo" id="tvIntervalo" hidden>
-          <svg viewBox="0 0 100 100" aria-hidden="true">
-            <defs><path id="tvAnelCirc" d="M50,50 m-40,0 a40,40 0 1,1 80,0 a40,40 0 1,1 -80,0"/></defs>
-            <text><textPath href="#tvAnelCirc" id="tvAnelTexto" textLength="250" lengthAdjust="spacing"></textPath></text>
-          </svg>
-        </div>
         <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
         <!-- os recados da sessão passam aqui, no ponto em que foram deixados -->
         <div class="tv-recados" id="tvRecados" aria-live="polite"></div>
@@ -636,9 +627,9 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
     <aside class="coluna">
       <h2 class="coluna-nome">lagosta filmes</h2>
       <p>produtora de filmes e outras coisas. fortaleza, ce.</p>
-      <p>newsletter aos sábados.</p>
       <form class="assina" id="assinaForm" method="post" target="_blank">
-        <input class="msg-field" type="email" name="email" placeholder="seu e-mail" required aria-label="seu e-mail">
+        <label class="assina-nome" for="assinaEmail">newsletter aos sábados</label>
+        <input class="msg-field" id="assinaEmail" type="email" name="email" placeholder="seu e-mail" required>
         <button class="inscrever" type="submit">se inscrever</button>
       </form>
       <p class="obs" id="assinaAviso" hidden>(ainda não ligado a um serviço de newsletter)</p>
@@ -1919,8 +1910,6 @@ const tv = document.getElementById("tvVideo");
 const semSinal = document.getElementById("tvSemSinal");
 const botaoSom = document.getElementById("tvSom");
 const ytCaixa = document.getElementById("tvYt");
-const intervaloEl = document.getElementById("tvIntervalo");
-const anelTv = document.getElementById("tvAnelTexto");
 const agoraEl = document.getElementById("tvAgora");
 const gradeEl = document.getElementById("tvGrade");
 const gradeBotao = document.getElementById("tvGradeBotao");
@@ -1928,7 +1917,6 @@ const telaEl = document.getElementById("tvTela");
 const recadoForm = document.getElementById("tvRecadoForm");
 const total = grade.reduce((s,g)=>s + g.duracao, 0);
 const DIA = 86400000;
-const INTERVALO = 20;   // segundos de "a seguir" antes de cada sessão
 const FONTES = {zap:"zap", carro:"do carro", casa:"a casa", curtas:"curtas", bike:"de bike", fuji:"fuji"};
 
 // no seu mac, ?hora=20:59:40 põe o relógio da tv nessa hora (e &dia=0 no domingo)
@@ -2025,7 +2013,8 @@ return {ordem, i:0, g: ordem[0], seg:0, falta: ordem[0].duracao};
 }
 
 
-// o que passa neste instante: uma sessão, o intervalo antes dela, ou um trecho da programação normal
+// o que passa neste instante: uma sessão ou um trecho da programação normal.
+// a sessão entra sem aviso: nada de "a seguir" na tela nem na linha de baixo (quem quiser saber, abre a grade)
 function estado(t){
 const ms = msDoDia(t), dia = diaDe(t);
 for(const s of sessoes){
@@ -2035,7 +2024,6 @@ if(pos < s.duracao*1000 && vale(s, ms >= s.ini ? dia : dia - 1)) return {sessao:
 }
 let prox = null, falta = Infinity;
 sessoes.forEach(s=>{ const f = (s.ini - ms + DIA) % DIA; if(f < falta && vale(s, ms <= s.ini ? dia : dia + 1)){ falta = f; prox = s; } });
-if(prox && falta < INTERVALO*1000) return {intervalo: prox, falta: falta/1000, trecho: noAr(t)};
 return {trecho: noAr(t), prox, ate: falta/1000};
 }
 
@@ -2114,11 +2102,8 @@ let gradeQuem = null, gradeDia = null;
 function escreverAgora(e){
 if(e.sessao){
 escrever(agoraEl, ["agora: ", {b: e.sessao.nome}, " · até " + hhmm(e.sessao.ini + e.sessao.duracao*1000) + (fmNoAr() ? " · o som é a rádio" : "")]);
-}else if(e.intervalo){
-escrever(agoraEl, ["a seguir: ", {b: e.intervalo.nome}, ", às " + e.intervalo.hora]);
 }else{
-const p = e.prox;
-escrever(agoraEl, ["agora: ", {b: nomeDoTrecho(e.trecho.g)}].concat(p ? [" · às " + p.hora + ": " + p.nome] : []));
+escrever(agoraEl, ["agora: ", {b: nomeDoTrecho(e.trecho.g)}]);
 }
 const quem = e.sessao ? e.sessao.id : "resto";
 const dia = diaDe(relogio());
@@ -2154,7 +2139,7 @@ gradeEl.hidden = !gradeEl.hidden;
 gradeBotao.setAttribute("aria-expanded", String(!gradeEl.hidden));
 });
 
-/* --- sintonizar: confere a cada virada (fim do trecho, intervalo, sessão) e a cada 15 s --- */
+/* --- sintonizar: confere a cada virada (fim do trecho, começo e fim de sessão) e a cada 15 s --- */
 let proximo = null;   // o próximo trecho, já carregando, pra troca não ter buraco
 let timer = null;
 function sintonizar(){
@@ -2163,11 +2148,6 @@ const antes = sessaoAtual;
 sessaoAtual = e.sessao || null;
 // entrou no lagosta fm com o som da tv ligado: o som passa pra rádio
 if(fmNoAr() && sessaoAtual !== antes && somTv){ somTv = false; radioNaTv(); }
-intervaloEl.hidden = !e.intervalo;
-if(e.intervalo){
-const um = `a seguir · ${e.intervalo.hora} · ${e.intervalo.nome} · `;
-if(anelTv.textContent !== um + um) anelTv.textContent = um + um;
-}
 const ponto = e.sessao ? pontoDaSessao(e.sessao, e.seg) : null;
 if(ponto) passar(ponto.video, ponto.seg);
 else passar(e.trecho.g.video, e.trecho.seg);
@@ -2186,8 +2166,7 @@ proximo.muted = true; proximo.preload = "auto"; proximo.dataset.src = prox.video
 const viradas = [15];
 if(e.sessao) viradas.push(e.falta, ponto.falta || 0);
 else viradas.push(e.trecho.falta);
-if(e.intervalo) viradas.push(e.falta);
-if(e.ate) viradas.push(e.ate - INTERVALO);
+if(e.ate) viradas.push(e.ate);
 clearTimeout(timer);
 timer = setTimeout(sintonizar, Math.max(0.3, Math.min(...viradas.filter(v => v > 0)) + 0.2) * 1000);
 }
