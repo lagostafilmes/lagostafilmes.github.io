@@ -400,7 +400,7 @@ audio{display:none}
 .tv-botao:hover{border-color:var(--texto)}
 /* a sessão no youtube ocupa a tela inteira, sem controles: quem manda é o relógio */
 .tv-yt,.tv-yt iframe{position:absolute;inset:0;width:100%;height:100%;border:0;pointer-events:none}
-/* a linha de baixo da tv: só o que está passando. não tem grade nem "a seguir": o que vem, vem */
+/* a linha de baixo da tv: o nome da sessão, quando é uma sessão. o resto do dia é só imagem, sem nome, sem grade, sem "a seguir" */
 .tv-agora{font-size:11px;color:var(--cinza);min-width:0}
 .tv-agora b{color:var(--texto)}
 .tv-botoes{align-items:center}
@@ -1451,6 +1451,7 @@ firebase.auth().onAuthStateChanged((user)=>{
   - 21:00 a sessão da noite: o essential mix do nicolas jaar (bbc radio 1, 2012)
     com a colagem de filmes da lagosta filmes por cima.
     video: um .mp4 (o do jaar fica no archive.org: o youtube bloqueia a colagem por direitos) ou id do youtube. sem video, a sessão não entra.
+    de: de quem é a obra, quando não é da casa (aparece do lado do nome: "essential mix, nicolas jaar").
     noite: true põe a sessão no rodízio da noite: uma por semana, na ordem da lista
     (a semana vira no sábado, junto com a newsletter). com uma só, é ela toda noite.
   - domingo, 19:00, a sessão de curtas: os curtas da casa, um atrás do outro.
@@ -1459,9 +1460,9 @@ firebase.auth().onAuthStateChanged((user)=>{
   Pra testar no seu mac: ?hora=20:59:40 no endereço põe o relógio da tv nessa hora.
   ========================================================= */
 const TV_SESSOES = [
-{id:"essential", hora:"21:00", noite:true, titulo:"essential mix", quem:"nicolas jaar, bbc radio 1, 2012. a colagem de filmes é da lagosta filmes", video:"https://archive.org/download/lagosta-essential-jaar/essential-jaar.mp4", duracao:7088.4},
-{id:"curtas", hora:"19:00", dias:[0], titulo:"sessão de curtas", quem:"os curtas da lagosta filmes, um atrás do outro", lista:"curtas"},
-{id:"fm", hora:"08:00", titulo:"lagosta fm", quem:"o programa da semana. o som vem da rádio", ep:true}
+{id:"essential", hora:"21:00", noite:true, titulo:"essential mix", de:"nicolas jaar", video:"https://archive.org/download/lagosta-essential-jaar/essential-jaar.mp4", duracao:7088.4},
+{id:"curtas", hora:"19:00", dias:[0], titulo:"sessão de curtas", lista:"curtas"},
+{id:"fm", hora:"08:00", titulo:"lagosta fm", ep:true}
 ];
 // no seu mac, a sessão da noite passa o arquivo local (fora do repo)
 const TV_SESSOES_TESTE = {essential: ".claude/teste-tv/essential-jaar.mp4"};
@@ -1903,7 +1904,6 @@ const telaEl = document.getElementById("tvTela");
 const recadoForm = document.getElementById("tvRecadoForm");
 const total = grade.reduce((s,g)=>s + g.duracao, 0);
 const DIA = 86400000;
-const FONTES = {zap:"zap", carro:"do carro", casa:"a casa", curtas:"curtas", bike:"de bike", fuji:"fuji"};
 
 // no seu mac, ?hora=20:59:40 põe o relógio da tv nessa hora (e &dia=0 no domingo)
 let desvio = 0;
@@ -2082,12 +2082,11 @@ function escrever(no, partes){
 no.textContent = "";
 partes.forEach(p => no.append(typeof p === "string" ? p : Object.assign(document.createElement("b"), {textContent: p.b})));
 }
-const nomeDoTrecho = g => g.titulo || FONTES[g.fonte] || g.fonte || "programação";
 function escreverAgora(e){
 if(e.sessao){
-escrever(agoraEl, ["agora: ", {b: e.sessao.nome}, " · até " + hhmm(e.sessao.ini + e.sessao.duracao*1000) + (fmNoAr() ? " · o som é a rádio" : "")]);
+escrever(agoraEl, ["agora: ", {b: e.sessao.nome}, (e.sessao.de ? ", " + e.sessao.de : "") + " · até " + hhmm(e.sessao.ini + e.sessao.duracao*1000) + (fmNoAr() ? " · o som é a rádio" : "")]);
 }else{
-escrever(agoraEl, ["agora: ", {b: nomeDoTrecho(e.trecho.g)}]);
+agoraEl.textContent = "";   // na programação normal a tela não diz o que é: só imagem
 }
 }
 
