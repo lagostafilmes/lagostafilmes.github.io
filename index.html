@@ -360,6 +360,8 @@ audio{display:none}
   box-shadow:3px 3px 0 var(--moldura);
 }
 .tv video{display:block;width:100%;height:100%;object-fit:contain;background:#000}
+.tv .tv-sessao{position:absolute;inset:0;z-index:0}
+.tv .tv-sessao.espera{opacity:0;pointer-events:none}
 .tv::after{  /* as linhas da tela, bem de leve */
   content:"";position:absolute;inset:0;pointer-events:none;
   background:repeating-linear-gradient(0deg,rgba(0,0,0,.10) 0 1px,transparent 1px 3px);
@@ -597,6 +599,8 @@ a.selo:hover{text-decoration:none;outline:2px solid var(--texto);outline-offset:
         <img class="tv-marca" src="lagosta-cheia.svg" alt="" aria-hidden="true">
         <button class="tv-som" id="tvSom" type="button" aria-label="ligar o som" hidden>🔇</button>
         <video id="tvVideo" muted playsinline preload="metadata" hidden></video>
+        <!-- a tela das sessões, por cima: só aparece quando o vídeo já tem imagem (até lá a programação segue embaixo) -->
+        <video class="tv-sessao espera" id="tvSessao" muted playsinline preload="auto"></video>
         <div class="tv-yt" id="tvYt" hidden></div>
         <div class="sem-sinal" id="tvSemSinal"><span>sem sinal</span></div>
         <!-- os recados da sessão passam aqui, no ponto em que foram deixados -->
@@ -1463,6 +1467,10 @@ firebase.auth().onAuthStateChanged((user)=>{
   - domingo, 19:00, a sessão de curtas: os curtas da casa, um atrás do outro.
     lista: "curtas" = todos os trechos dessa fonte em TV_PROGRAMACAO, na ordem da lista.
     dias: os dias da semana em que a sessão passa (0 = domingo … 6 = sábado); sem dias, todo dia.
+  - de madrugada o canal dorme (TV_DORME): sai do ar, ficam as barras de "sem sinal", e volta sozinho.
+    uma sessão que caia nesse horário passa mesmo assim.
+  - aparições raras: todo trecho de fonte "raro" (arquivo raro-*.mp4, ou fonte "raro" no painel) fica fora
+    do embaralho e passa uma única vez por semana, num instante sorteado, o mesmo pra todo mundo.
   Pra testar no seu mac: ?hora=20:59:40 no endereço põe o relógio da tv nessa hora.
   ========================================================= */
 const TV_SESSOES = [
@@ -1470,6 +1478,7 @@ const TV_SESSOES = [
 {id:"curtas", hora:"19:00", dias:[0], titulo:"sessão de curtas", lista:"curtas"},
 {id:"fm", hora:"08:00", titulo:"lagosta fm", ep:true}
 ];
+const TV_DORME = ["02:00", "08:00"];   // o canal sai do ar entre essas horas
 // no seu mac, a sessão da noite passa o arquivo local (fora do repo)
 const TV_SESSOES_TESTE = {essential: ".claude/teste-tv/essential-jaar.mp4"};
 // o episódio que passa na tv de manhã: o mais novo com vídeo
@@ -1896,12 +1905,15 @@ const TV_TESTE = [
 
 (function(){
 const local = location.hostname === "localhost" || location.hostname === "127.0.0.1";
-const grade = TV_PROGRAMACAO.length ? TV_PROGRAMACAO : (local ? TV_TESTE : []);
+const tudo = TV_PROGRAMACAO.length ? TV_PROGRAMACAO : (local ? TV_TESTE : []);
+const grade = tudo.filter(g => g.fonte !== "raro");
+const raros = tudo.filter(g => g.fonte === "raro");
 const canto = document.getElementById("tvCanto");
 if(!grade.length) return;  // sem programação: o bloco da tv nem aparece
 canto.hidden = false;
 
 const tv = document.getElementById("tvVideo");
+const tvS = document.getElementById("tvSessao");
 const semSinal = document.getElementById("tvSemSinal");
 const botaoSom = document.getElementById("tvSom");
 const ytCaixa = document.getElementById("tvYt");
@@ -2004,18 +2016,65 @@ return {ordem, i:0, g: ordem[0], seg:0, falta: ordem[0].duracao};
 }
 
 
-// o que passa neste instante: uma sessão ou um trecho da programação normal.
-// a sessão entra sem aviso: nada de "a seguir" na tela nem na linha de baixo, e não existe grade pra consultar
-function estado(t){
+// a sessão que está passando neste instante (ou nenhuma)
+function sessaoEm(t){
 const ms = msDoDia(t), dia = diaDe(t);
 for(const s of sessoes){
 // fora = o vídeo não abriu (direitos, apagado): volta a programação normal
 const pos = (ms - s.ini + DIA) % DIA;
 if(pos < s.duracao*1000 && vale(s, ms >= s.ini ? dia : dia - 1)) return {sessao: s, seg: pos/1000, falta: s.duracao - pos/1000};
 }
-let prox = null, falta = Infinity;
-sessoes.forEach(s=>{ const f = (s.ini - ms + DIA) % DIA; if(f < falta && vale(s, ms <= s.ini ? dia : dia + 1)){ falta = f; prox = s; } });
-return {trecho: noAr(t), prox, ate: falta/1000};
+return null;
+}
+// de madrugada o canal dorme: quantos segundos faltam pra acordar (0 = acordado)
+const horaMs = h => { const [a,b] = h.split(":").map(Number); return (a*60 + b)*60000; };
+const dormeIni = horaMs(TV_DORME[0]), dormeDur = (horaMs(TV_DORME[1]) - dormeIni + DIA) % DIA;
+function dormindo(t){ const pos = (msDoDia(t) - dormeIni + DIA) % DIA; return pos < dormeDur ? (dormeDur - pos)/1000 : 0; }
+// as aparições raras da semana: cada trecho raro passa uma vez, num instante sorteado (igual pra todo mundo),
+// com o canal acordado e fora das sessões
+const livre = t => !sessaoEm(t) && !dormindo(t);
+const aparicoesDaSemana = {};
+function aparicoes(sem){
+if(aparicoesDaSemana[sem]) return aparicoesDaSemana[sem];
+const r = sorteio((sem + 11) * 40503);
+r(); r(); r();
+const lista = [];
+raros.forEach(g=>{
+for(let k=0;k<60;k++){
+const ini = TV_INICIO + sem*7*DIA + Math.floor(r()*7*DIA), fim = ini + g.duracao*1000;
+if(livre(ini) && livre(fim) && !lista.some(a => ini < a.fim && fim > a.ini)){ lista.push({g, ini, fim}); break; }
+}
+});
+return aparicoesDaSemana[sem] = lista.sort((a,b)=>a.ini - b.ini);
+}
+const semanaDe = t => Math.floor(diaDe(t)/7);
+function raroEm(t){
+if(!raros.length) return null;
+for(const sem of [semanaDe(t) - 1, semanaDe(t)]) for(const a of aparicoes(sem)) if(t >= a.ini && t < a.fim) return a;
+return null;
+}
+function ateORaro(t){
+let m = Infinity;
+if(raros.length) for(const sem of [semanaDe(t), semanaDe(t) + 1]) for(const a of aparicoes(sem)) if(a.ini > t) m = Math.min(m, (a.ini - t)/1000);
+return m;
+}
+
+// o que passa neste instante: uma sessão, o canal dormindo, uma aparição rara ou um trecho da programação normal.
+// a sessão entra sem aviso: nada de "a seguir" na tela nem na linha de baixo, e não existe grade pra consultar.
+// ate = segundos até a próxima virada que não é fim de trecho (sessão, sono, aparição)
+function estado(t){
+const s = sessaoEm(t);
+if(s) return s;
+const ms = msDoDia(t), dia = diaDe(t);
+let falta = Infinity;
+sessoes.forEach(x=>{ const f = (x.ini - ms + DIA) % DIA; if(f < falta && vale(x, ms <= x.ini ? dia : dia + 1)) falta = f; });
+let ate = falta/1000;
+const sono = dormindo(t);
+if(sono) return {dorme: true, ate: Math.min(ate, sono)};
+ate = Math.min(ate, ((dormeIni - ms + DIA) % DIA)/1000 || Infinity, ateORaro(t));
+const a = raroEm(t);
+if(a) return {raro: a.g, seg: (t - a.ini)/1000, falta: (a.fim - t)/1000, ate};
+return {trecho: noAr(t), ate};
 }
 
 /* --- a tela: um .mp4 no <video> ou um vídeo do youtube por cima --- */
@@ -2052,11 +2111,36 @@ tv.hidden = false;
 semSinal.hidden = true; botaoSom.hidden = false;
 }
 
+/* --- a tela das sessões: carrega por cima, escondida, e só aparece quando tem imagem.
+       quem chega no meio de uma sessão vê a programação seguir por uns segundos, não uma tela preta --- */
+let srcSessao = null, revelada = false;
+function passarSessao(video, seg){
+if(srcSessao !== video){ srcSessao = video; tvS.src = video; }
+if(tvS.readyState >= 1 && Math.abs(tvS.currentTime - seg) > 2) tvS.currentTime = seg;
+// se o navegador não deixar tocar com som sem um clique, toca mudo (o botão "ligar o som" fica à vista)
+tvS.play().catch(()=>{ if(!tvS.muted){ somTv = false; tvS.muted = true; pintarSom(); tvS.play().catch(()=>{}); } });
+if(!revelada && tvS.readyState >= 3 && !tvS.seeking && Math.abs(tvS.currentTime - seg) <= 2) revelada = true;
+tvS.classList.toggle("espera", !revelada);
+if(revelada){ tv.pause(); ytCaixa.hidden = true; semSinal.hidden = true; botaoSom.hidden = false; }
+}
+function soltarSessao(){
+if(!srcSessao) return;
+srcSessao = null; revelada = false;
+tvS.pause(); tvS.removeAttribute("src"); tvS.load();
+tvS.classList.add("espera");
+}
+// o canal dormindo: nada passa, ficam as barras
+function dormir(){
+tv.pause(); tv.hidden = true; ytCaixa.hidden = true;
+semSinal.hidden = false; botaoSom.hidden = true;
+}
+
 /* --- o som: no lagosta fm, o som é a rádio; no resto, o da própria tv --- */
 const fmNoAr = ()=> !!(sessaoAtual && sessaoAtual.ep);
 function aplicarSom(){
 const ligado = somTv && !fmNoAr();
-tv.muted = !ligado;
+tv.muted = !(ligado && !revelada);
+tvS.muted = !(ligado && revelada);
 if(yt && ytPronto){ if(ligado) yt.unMute(); else yt.mute(); }
 pintarSom();
 }
@@ -2106,15 +2190,24 @@ sessaoAtual = e.sessao || null;
 // entrou no lagosta fm com o som da tv ligado: o som passa pra rádio
 if(fmNoAr() && sessaoAtual !== antes && somTv){ somTv = false; radioNaTv(); }
 const ponto = e.sessao ? pontoDaSessao(e.sessao, e.seg) : null;
+if(ponto && !ehYoutube(ponto.video)){
+passarSessao(ponto.video, ponto.seg);
+// enquanto o vídeo da sessão carrega, a programação segue na tela
+if(!revelada){ const tr = noAr(relogio()); passar(tr.g.video, tr.seg); }
+}else{
+soltarSessao();
 if(ponto) passar(ponto.video, ponto.seg);
+else if(e.dorme) dormir();
+else if(e.raro) passar(e.raro.video, e.seg);
 else passar(e.trecho.g.video, e.trecho.seg);
+}
 telaEl.classList.toggle("sessao", !!sessaoAtual);
 telaEl.classList.toggle("escuro", !!(sessaoAtual && !sessaoAtual.ep));   // as luzes apagam
 recadoForm.hidden = !(sessaoAtual && !sessaoAtual.ep);   // no lagosta fm, os recados são os do episódio
 aplicarSom();
 escreverAgora(e);
 // o próximo trecho já vai carregando
-if(!e.sessao && e.trecho.falta < 12){
+if(e.trecho && e.trecho.falta < 12){
 const prox = e.trecho.ordem[e.trecho.i + 1];
 if(prox && (!proximo || proximo.dataset.src !== prox.video)){
 proximo = document.createElement("video");
@@ -2123,21 +2216,25 @@ proximo.muted = true; proximo.preload = "auto"; proximo.dataset.src = prox.video
 }
 const viradas = [15];
 if(e.sessao) viradas.push(e.falta, ponto.falta || 0);
-else viradas.push(e.trecho.falta);
+else if(e.raro) viradas.push(e.falta);
+else if(e.trecho) viradas.push(e.trecho.falta);
 if(e.ate) viradas.push(e.ate);
+if(e.sessao && !revelada) viradas.push(1);   // esperando a imagem da sessão: confere de novo logo
 clearTimeout(timer);
 timer = setTimeout(sintonizar, Math.max(0.3, Math.min(...viradas.filter(v => v > 0)) + 0.2) * 1000);
 }
 
 tv.addEventListener("loadedmetadata", sintonizar);
+["loadedmetadata","canplay","seeked"].forEach(ev => tvS.addEventListener(ev, sintonizar));
 // o .mp4 de uma sessão não abriu (tirado do ar, servidor fora): ela sai do ar e volta a programação normal
-tv.addEventListener("error", ()=>{
-const caiu = sessoes.filter(s=>s.video && !s.fora && srcAtual === s.video);
+tvS.addEventListener("error", ()=>{
+if(!srcSessao) return;
+const caiu = sessoes.filter(s=>s.video && !s.fora && srcSessao === s.video);
 if(!caiu.length) return;
 caiu.forEach(s=>{ s.fora = true; });
-srcAtual = null; sintonizar();
+soltarSessao(); sintonizar();
 });
-if(local){ window.tvEstado = ()=> estado(relogio()); window.tvSintonizar = sintonizar; }   // pra conferir no console
+if(local){ window.tvEstado = ()=> estado(relogio()); window.tvSintonizar = sintonizar; window.tvAparicoes = (mais=0)=> aparicoes(semanaDe(relogio()) + mais).map(a => ({dia: diaDe(a.ini) % 7, hora: new Date(msDoDia(a.ini)).toISOString().slice(11,19), video: a.g.video})); }   // pra conferir no console
 document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) sintonizar(); });
 sintonizar();
 
@@ -2172,7 +2269,7 @@ if(fmNoAr()){ if(!(som.tocando && som.ep === sessaoAtual.ep)) radioNaTv(); }
 else if(!somTv){ somTv = true; calarRadio(); aplicarSom(); }
 if(telaEl.requestFullscreen) telaEl.requestFullscreen().catch(()=>{});
 else if(telaEl.webkitRequestFullscreen) telaEl.webkitRequestFullscreen();
-else if(tv.webkitEnterFullscreen) tv.webkitEnterFullscreen();   // iphone: só o vídeo vai pra tela cheia
+else if(tv.webkitEnterFullscreen) (revelada ? tvS : tv).webkitEnterFullscreen();   // iphone: só o vídeo vai pra tela cheia
 }
 document.getElementById("tvCheia").addEventListener("click", telaCheia);
 document.addEventListener("fullscreenchange", ()=>{
